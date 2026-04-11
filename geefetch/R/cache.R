@@ -2,7 +2,10 @@
 #
 # Two-layer cache:
 #   1. In-memory (session-level) — keyed list in .geefetch_env$mem_cache
-#   2. On-disk — fst files (if available) or RDS in user cache dir
+#   2. On-disk — format-aware:
+#      - data.frames: .fst (if available) or .rds
+#      - SpatRaster: .tif (GeoTIFF via terra::writeRaster)
+#      - Other objects: .rds
 #
 # Cache keys are SHA256 hashes of (dataset_id, extraction_parameters).
 # TTL: 30 days for dynamic datasets, infinite for static (SRTM, SLGA).
@@ -41,7 +44,7 @@
 #' @param did Character. Normalised dataset ID.
 #' @param params Named list. Extraction parameters (date, region, bands, etc.).
 #'
-#' @returns Character. 64-character hex SHA256 hash.
+#' @returns Character. Hex SHA256 hash string.
 #'
 #' @noRd
 .cache_hash <- function(did, params) {
@@ -51,6 +54,30 @@
     params  = params[order(names(params))]
   )
   digest::digest(key_parts, algo = "sha256")
+}
+
+
+#' Determine the disk cache file extension for an object
+#' @noRd
+.cache_ext <- function(result) {
+  if (inherits(result, "SpatRaster")) {
+    ".tif"
+  } else if (is.data.frame(result) && rlang::is_installed("fst")) {
+    ".fst"
+  } else {
+    ".rds"
+  }
+}
+
+
+#' Find an existing cache file for a given hash
+#' @noRd
+.cache_find_file <- function(d, hash) {
+  for (ext in c(".tif", ".fst", ".rds")) {
+    fpath <- file.path(d, paste0(hash, ext))
+    if (file.exists(fpath)) return(fpath)
+  }
+  NULL
 }
 
 
@@ -75,17 +102,7 @@
   d <- .cache_dir()
   if (!dir.exists(d)) return(NULL)
 
-  # Try fst first, then RDS
-  fst_path <- file.path(d, paste0(hash, ".fst"))
-  rds_path <- file.path(d, paste0(hash, ".rds"))
-
-  fpath <- NULL
-  if (file.exists(fst_path)) {
-    fpath <- fst_path
-  } else if (file.exists(rds_path)) {
-    fpath <- rds_path
-  }
-
+  fpath <- .cache_find_file(d, hash)
   if (is.null(fpath)) return(NULL)
 
   # Check TTL for dynamic datasets
@@ -93,7 +110,9 @@
   is_static <- !is.null(meta) && identical(meta$temporal, "static")
 
   if (!is_static) {
-    age_days <- as.numeric(difftime(Sys.time(), file.mtime(fpath), units = "days"))
+    age_days <- as.numeric(
+      difftime(Sys.time(), file.mtime(fpath), units = "days")
+    )
     ttl <- getOption("geefetch.cache_ttl", 30)
     if (age_days > ttl) {
       unlink(fpath)
@@ -101,9 +120,11 @@
     }
   }
 
-  # Read from disk
+  # Read from disk — format-aware
   result <- tryCatch({
-    if (endsWith(fpath, ".fst") && rlang::is_installed("fst")) {
+    if (endsWith(fpath, ".tif")) {
+      terra::rast(fpath)
+    } else if (endsWith(fpath, ".fst") && rlang::is_installed("fst")) {
       fst::read_fst(fpath, as.data.table = TRUE)
     } else {
       readRDS(fpath)
@@ -131,7 +152,9 @@
 
 #' Store a result in cache
 #'
-#' Writes to both memory and disk.
+#' Writes to both memory and disk. SpatRaster objects are written as
+#' GeoTIFF files (not RDS, which would lose the raster data across
+#' sessions). Data frames use fst (fast) or RDS (fallback).
 #'
 #' @param did Character. Normalised dataset ID.
 #' @param params Named list. Extraction parameters.
@@ -149,14 +172,18 @@
   }
   .geefetch_env$mem_cache[[hash]] <- result
 
-  # Disk cache
+  # Disk cache — format-aware
   d <- .cache_ensure_dir()
+  ext <- .cache_ext(result)
+  fpath <- file.path(d, paste0(hash, ext))
 
   tryCatch({
-    if (is.data.frame(result) && rlang::is_installed("fst")) {
-      fst::write_fst(result, file.path(d, paste0(hash, ".fst")))
+    if (ext == ".tif") {
+      terra::writeRaster(result, fpath, overwrite = TRUE)
+    } else if (ext == ".fst") {
+      fst::write_fst(result, fpath)
     } else {
-      saveRDS(result, file.path(d, paste0(hash, ".rds")))
+      saveRDS(result, fpath)
     }
   }, error = function(e) {
     cli::cli_warn(c(
@@ -199,7 +226,9 @@ gee_clear_cache <- function(older_than = NULL) {
     return(invisible(0L))
   }
 
-  files <- list.files(d, pattern = "\\.(fst|rds)$", full.names = TRUE)
+  files <- list.files(
+    d, pattern = "\\.(fst|rds|tif)$", full.names = TRUE
+  )
 
   if (length(files) == 0L) {
     cli::cli_inform("Cache is empty. Nothing to clear.")
@@ -207,7 +236,9 @@ gee_clear_cache <- function(older_than = NULL) {
   }
 
   if (!is.null(older_than)) {
-    ages <- as.numeric(difftime(Sys.time(), file.mtime(files), units = "days"))
+    ages <- as.numeric(
+      difftime(Sys.time(), file.mtime(files), units = "days")
+    )
     files <- files[ages > older_than]
   }
 

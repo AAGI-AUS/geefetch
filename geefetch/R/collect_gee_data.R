@@ -124,44 +124,74 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
     .print_collection_info(coords, dates, resolved, is_static, combined_meta)
   }
 
-  # 7. Extract: per-location
+  # 7. Build scaffold: one row per (location x date)
   n_locs <- nrow(coords)
-  all_results <- vector("list", n_locs)
+  n_dates <- length(dates)
 
-  if (verbose && n_locs > 1L) {
+  dt <- data.table::data.table(
+    point_id = rep(coords$point_id, each = n_dates),
+    lon      = rep(coords$lon, each = n_dates),
+    lat      = rep(coords$lat, each = n_dates),
+    date     = rep(dates, times = n_locs)
+  )
+
+  # 8. Extract: per-dataset (batching all points per API call)
+  total_ops <- length(ts_datasets) * n_dates + length(static_datasets)
+  op_count <- 0L
+
+  if (verbose && total_ops > 1L) {
     cli::cli_progress_bar(
       "Extracting",
-      total = n_locs,
-      format = "{cli::pb_spin} Extracting location {cli::pb_current}/{cli::pb_total} | {cli::pb_elapsed}"
+      total = total_ops,
+      format = "{cli::pb_spin} {cli::pb_current}/{cli::pb_total} API calls | {cli::pb_elapsed}"
     )
   }
 
-  for (i in seq_len(n_locs)) {
-    pt_coords <- coords[i, ]
+  # -- Time-series datasets: one API call per date (all points batched) --
+  for (did in ts_datasets) {
+    meta <- combined_meta[[did]]
+    all_vals <- rep(NA_real_, nrow(dt))
 
-    all_results[[i]] <- .collect_single_location(
-      pt_coords       = pt_coords,
-      dates           = dates,
-      ts_datasets     = ts_datasets,
-      static_datasets = static_datasets,
-      combined_meta   = combined_meta,
-      backend         = backend,
-      cache           = cache,
-      max_tries       = 3L,
-      initial_delay   = 1
-    )
+    for (j in seq_len(n_dates)) {
+      date_j <- dates[j]
+      row_idx <- which(dt$date == date_j)
+      pts_for_date <- coords
 
-    if (verbose && n_locs > 1L) {
-      cli::cli_progress_update()
+      vals <- .safe_extract_points_batch(
+        meta = meta, date = date_j, coords = pts_for_date,
+        did = did, backend = backend, cache = cache,
+        max_tries = 3L, initial_delay = 1
+      )
+      all_vals[row_idx] <- vals
+
+      op_count <- op_count + 1L
+      if (verbose && total_ops > 1L) cli::cli_progress_update()
     }
+
+    data.table::set(dt, j = did, value = all_vals)
   }
 
-  if (verbose && n_locs > 1L) {
+  # -- Static datasets: one API call total (all points batched) --
+  for (did in static_datasets) {
+    meta <- combined_meta[[did]]
+
+    vals <- .safe_extract_points_batch(
+      meta = meta, date = NULL, coords = coords,
+      did = did, backend = backend, cache = cache,
+      max_tries = 3L, initial_delay = 1
+    )
+
+    # Replicate static values across all dates for each point
+    all_vals <- rep(vals, each = n_dates)
+    data.table::set(dt, j = did, value = all_vals)
+
+    op_count <- op_count + 1L
+    if (verbose && total_ops > 1L) cli::cli_progress_update()
+  }
+
+  if (verbose && total_ops > 1L) {
     cli::cli_progress_done()
   }
-
-  # 8. Bind all locations
-  dt <- data.table::rbindlist(all_results, fill = TRUE)
 
   # 9. Set column order: point_id, lon, lat, date, then datasets
   id_cols <- c("point_id", "lon", "lat", "date")
@@ -183,126 +213,140 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
 # Internal helpers
 # ===========================================================================
 
-#' Extract data for a single location across all dates and datasets
+#' Safely extract values for ALL points for one dataset and one date
 #'
-#' @param pt_coords data.table row with point_id, lon, lat.
-#' @param dates Date vector.
-#' @param ts_datasets Character vector of time-series dataset IDs.
-#' @param static_datasets Character vector of static dataset IDs.
-#' @param combined_meta Named list of all dataset metadata.
+#' Sends all points in a single API call (batched). Falls back to
+#' per-point extraction if batch fails. Returns a numeric vector
+#' with one value per point (in coords row order).
+#'
+#' @param meta List. Dataset metadata.
+#' @param date Date or NULL (for static).
+#' @param coords data.table with point_id, lon, lat.
+#' @param did Character. Dataset ID.
 #' @param backend Character.
 #' @param cache Logical.
 #' @param max_tries Integer.
 #' @param initial_delay Numeric.
 #'
-#' @returns A data.table with one row per date.
+#' @returns Numeric vector of length nrow(coords). NAs for failed points.
 #' @noRd
-.collect_single_location <- function(pt_coords,
-                                     dates,
-                                     ts_datasets,
-                                     static_datasets,
-                                     combined_meta,
-                                     backend,
-                                     cache,
-                                     max_tries,
-                                     initial_delay) {
+.safe_extract_points_batch <- function(meta, date, coords, did,
+                                       backend, cache,
+                                       max_tries, initial_delay) {
 
-  n_dates <- length(dates)
+  n_pts <- nrow(coords)
 
-  # Scaffold: one row per date with point info
-  dt <- data.table::data.table(
-    point_id = rep(pt_coords$point_id, n_dates),
-    lon      = rep(pt_coords$lon, n_dates),
-    lat      = rep(pt_coords$lat, n_dates),
-    date     = dates
-  )
-
-  # -- Time-series datasets: extract per date --
-  for (did in ts_datasets) {
-    meta <- combined_meta[[did]]
-    values <- rep(NA_real_, n_dates)
-
-    for (j in seq_len(n_dates)) {
-      values[j] <- .safe_extract_point(
-        meta          = meta,
-        date          = dates[j],
-        pt_coords     = pt_coords,
-        did           = did,
-        backend       = backend,
-        cache         = cache,
-        max_tries     = max_tries,
-        initial_delay = initial_delay
-      )
-    }
-
-    data.table::set(dt, j = did, value = values)
-  }
-
-  # -- Static datasets: extract once, replicate --
-  for (did in static_datasets) {
-    meta <- combined_meta[[did]]
-    single_val <- .safe_extract_point(
-      meta          = meta,
-      date          = NULL,
-      pt_coords     = pt_coords,
-      did           = did,
-      backend       = backend,
-      cache         = cache,
-      max_tries     = max_tries,
-      initial_delay = initial_delay
-    )
-
-    data.table::set(dt, j = did, value = rep(single_val, n_dates))
-  }
-
-  dt
-}
-
-
-#' Safely extract a single point value for one dataset and date
-#'
-#' Wraps the REST point extraction in tryCatch. Returns NA with a
-#' warning on failure (nert's resilient batch pattern).
-#'
-#' @returns Numeric value or NA_real_.
-#' @noRd
-.safe_extract_point <- function(meta, date, pt_coords, did,
-                                backend, cache, max_tries, initial_delay) {
-
-  # Build cache key for point extraction
+  # Check batch cache first
   cache_key <- list(
-    type    = "point",
-    did     = did,
-    lon     = pt_coords$lon,
-    lat     = pt_coords$lat,
-    date    = as.character(date)
+    type = "batch", did = did,
+    date = as.character(date),
+    pts_hash = digest::digest(coords[, .(lon, lat)], algo = "sha256")
   )
 
   if (cache) {
     cached <- .cache_get(did, cache_key)
-    if (!is.null(cached)) return(as.numeric(cached))
+    if (!is.null(cached) && length(cached) == n_pts) {
+      return(as.numeric(cached))
+    }
   }
 
   result <- tryCatch({
     if (backend == "rest") {
-      .rest_extract_single_point(meta, date, pt_coords, max_tries, initial_delay)
+      .rest_extract_batch_points(meta, date, coords, max_tries, initial_delay)
     } else {
-      .rgee_extract_point(meta, date, pt_coords, max_tries, initial_delay)
+      .rgee_extract_point(meta, date, coords[1L, ], max_tries, initial_delay)
     }
   }, error = function(e) {
     cli::cli_warn(c(
-      "!" = "Extraction failed for {.val {did}} at ({pt_coords$lon}, {pt_coords$lat})",
+      "!" = "Batch extraction failed for {.val {did}}",
       "!" = if (!is.null(date)) paste0("Date: ", date) else "Static dataset",
       "i" = conditionMessage(e)
     ))
-    NA_real_
+    rep(NA_real_, n_pts)
   })
 
-  if (cache && !is.na(result)) {
+  if (cache && !all(is.na(result))) {
     .cache_set(did, cache_key, result)
   }
 
   result
+}
+
+
+#' Extract point values for multiple locations via REST API (batched)
+#'
+#' Sends ALL points in a single computeFeatures call. Returns a
+#' numeric vector aligned to coords row order.
+#'
+#' @returns Numeric vector of length nrow(coords).
+#' @noRd
+.rest_extract_batch_points <- function(meta, date, coords,
+                                       max_tries, initial_delay) {
+
+  bands <- meta$bands
+  n_pts <- nrow(coords)
+
+  # Build image expression
+  if (meta$temporal == "static") {
+    img <- .ee_load_image(meta$collection)
+  } else {
+    date_end <- switch(meta$temporal,
+      daily   = date + 1L,
+      "8day"  = date + 8L,
+      "16day" = date + 16L,
+      "5day"  = date + 5L,
+      monthly = lubridate::ceiling_date(date, "month"),
+      date + 1L
+    )
+    col <- .ee_load_collection(meta$collection)
+    col_filtered <- .ee_filter_date(col, date, date_end)
+    img <- .ee_first(col_filtered)
+  }
+
+  # Apply QA masking for known datasets
+  if (grepl("^MODIS/061/MOD13", meta$collection)) {
+    img <- .ee_mask_modis_vi(img)
+  } else if (grepl("^MODIS/061/MOD11", meta$collection)) {
+    img <- .ee_mask_modis_lst(img)
+  }
+
+  img <- .ee_select(img, bands)
+  img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
+
+  # Build multi-point GeoJSON (all points in one FeatureCollection)
+  geojson <- .coords_to_geojson(coords)
+  sample_expr <- .ee_sample_regions(img, geojson, meta$scale)
+
+  dt <- .rest_compute_features(
+    expression    = sample_expr,
+    max_tries     = max_tries,
+    initial_delay = initial_delay
+  )
+
+  # Parse results: match returned point_ids to coords order
+  band_name <- if (length(bands) == 1L) bands else bands[1L]
+  values <- rep(NA_real_, n_pts)
+
+  if (nrow(dt) > 0L && "point_id" %in% names(dt) &&
+      band_name %in% names(dt)) {
+    for (i in seq_len(nrow(dt))) {
+      pid <- dt$point_id[i]
+      idx <- which(coords$point_id == pid)
+      if (length(idx) == 1L) {
+        val <- dt[[band_name]][i]
+        values[idx] <- if (is.null(val) || is.na(val)) NA_real_ else as.numeric(val)
+      }
+    }
+  } else if (nrow(dt) > 0L && band_name %in% names(dt)) {
+    # No point_id in response — assume same order as input
+    n_ret <- min(nrow(dt), n_pts)
+    for (i in seq_len(n_ret)) {
+      val <- dt[[band_name]][i]
+      values[i] <- if (is.null(val) || is.na(val)) NA_real_ else as.numeric(val)
+    }
+  }
+
+  values
 }
 
 

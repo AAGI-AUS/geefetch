@@ -36,7 +36,6 @@ Suggests:
     fst,
     ggplot2 (>= 3.5.0),
     httptest2,
-    keyring,
     knitr,
     rgee,
     rmarkdown,

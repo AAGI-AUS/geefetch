@@ -65,36 +65,36 @@ test_that("handler rgee backend aborts with message", {
 
 # ---- collect_gee_data.R: point extraction for time-series ----
 
-test_that(".rest_extract_single_point handles time-series with band match", {
+test_that(".rest_extract_batch_points handles time-series with band match", {
   local_mocked_bindings(
     .rest_compute_features = function(...) {
       data.table::data.table(point_id = 1L, precipitation = 12.5)
     }
   )
-  pt <- data.table::data.table(point_id = 1L, lon = 138.6, lat = -34.9)
-  val <- .rest_extract_single_point(
+  coords <- data.table::data.table(point_id = 1L, lon = 138.6, lat = -34.9)
+  vals <- .rest_extract_batch_points(
     meta = .GEE_META$chirps_precip,
     date = as.Date("2024-06-15"),
-    pt_coords = pt,
+    coords = coords,
     max_tries = 1L, initial_delay = 0
   )
-  expect_equal(val, 12.5)
+  expect_equal(vals, 12.5)
 })
 
-test_that(".rest_extract_single_point returns NA when band not in response", {
+test_that(".rest_extract_batch_points returns NA when band not in response", {
   local_mocked_bindings(
     .rest_compute_features = function(...) {
       data.table::data.table(point_id = 1L, wrong_band = 99)
     }
   )
-  pt <- data.table::data.table(point_id = 1L, lon = 138.6, lat = -34.9)
-  val <- .rest_extract_single_point(
+  coords <- data.table::data.table(point_id = 1L, lon = 138.6, lat = -34.9)
+  vals <- .rest_extract_batch_points(
     meta = .GEE_META$chirps_precip,
     date = as.Date("2024-06-15"),
-    pt_coords = pt,
+    coords = coords,
     max_tries = 1L, initial_delay = 0
   )
-  expect_true(is.na(val))
+  expect_true(is.na(vals))
 })
 
 # ---- read_gee.R: cache hit returns early ----

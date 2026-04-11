@@ -24,6 +24,52 @@ NULL
 
 
 # ===========================================================================
+# Section 1b: Token management helpers
+# ===========================================================================
+
+#' Refresh a gargle token if it's near expiry
+#'
+#' gargle tokens expire after 3600 seconds. For long-running batch
+#' jobs, we need to refresh before each request.
+#'
+#' @param token A gargle token object or raw string.
+#' @returns The (possibly refreshed) token.
+#' @noRd
+.maybe_refresh_token <- function(token) {
+  # Only refresh real gargle tokens, not test strings
+  if (inherits(token, "Token2.0") || inherits(token, "request")) {
+    tryCatch({
+      if (is.function(token$refresh)) token$refresh()
+    }, error = function(e) {
+      # Refresh failed — token may still be valid, proceed
+    })
+  }
+  # Update stored token
+  .geefetch_env$token <- token
+  token
+}
+
+#' Extract access token string from token object
+#'
+#' Handles gargle Token2.0 objects, httr tokens, and raw strings.
+#'
+#' @param token Token object or character string.
+#' @returns Character. Access token string.
+#' @noRd
+.extract_access_token <- function(token) {
+  if (is.character(token)) return(token)
+  if (!is.null(token$credentials$access_token)) {
+    return(token$credentials$access_token)
+  }
+  if (!is.null(token$auth_token$credentials$access_token)) {
+    return(token$auth_token$credentials$access_token)
+  }
+  # Fallback: try to use as-is
+  as.character(token)
+}
+
+
+# ===========================================================================
 # Section 2: Expression builder utilities
 # ===========================================================================
 # These construct the GEE computation graph as nested R lists, which
@@ -278,12 +324,18 @@ NULL
     ))
   }
 
+  # Refresh token if it's a gargle token nearing expiry
+  token <- .maybe_refresh_token(token)
+
   project <- .gee_project()
   url <- paste0(.GEE_REST_BASE, "/projects/", project, "/", endpoint)
 
+  # Extract access token string (handles both gargle and raw string tokens)
+  access_token <- .extract_access_token(token)
+
   req <- httr2::request(url)
   req <- httr2::req_headers(req,
-    Authorization  = paste("Bearer", token$credentials$access_token),
+    Authorization  = paste("Bearer", access_token),
     `Content-Type` = "application/json"
   )
 

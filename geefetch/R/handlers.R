@@ -341,6 +341,11 @@
     cli::cli_abort("No metadata found for dataset {.val {did}}.")
   }
 
+  # Inform user that generic handler applies no QA masking
+  cli::cli_inform(c(
+    "i" = "Using generic handler for {.val {did}} (no QA masking applied)."
+  ))
+
   date <- if (meta$temporal != "static") {
     .validate_date(dots$date, "date", did)
   } else {

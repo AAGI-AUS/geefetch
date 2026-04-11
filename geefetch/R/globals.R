@@ -7,6 +7,8 @@ utils::globalVariables(c(
   "collection",
   "description",
   "domain",
+  "lat",
+  "lon",
   "resolution",
   "temporal"
 ))

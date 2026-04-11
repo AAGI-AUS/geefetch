@@ -371,7 +371,7 @@ test_that(".rest_extract_single_point returns NA for empty response", {
   expect_true(is.na(val))
 })
 
-test_that(".rest_extract_single_point applies QA masking for MODIS", {
+test_that(".rest_extract_batch_points applies QA masking for MODIS", {
   local_mocked_bindings(
     .rest_compute_features = function(expression, ...) {
       # Verify the expression contains updateMask (QA masking)
@@ -381,15 +381,40 @@ test_that(".rest_extract_single_point applies QA masking for MODIS", {
     }
   )
 
-  pt <- data.table::data.table(point_id = 1L, lon = 138.6, lat = -34.9)
-  val <- .rest_extract_single_point(
+  coords <- data.table::data.table(point_id = 1L, lon = 138.6, lat = -34.9)
+  vals <- .rest_extract_batch_points(
     meta = .GEE_META$modis_ndvi,
     date = as.Date("2024-06-15"),
-    pt_coords = pt,
+    coords = coords,
     max_tries = 1L,
     initial_delay = 0
   )
-  expect_equal(val, 0.65)
+  expect_equal(vals, 0.65)
+})
+
+test_that(".rest_extract_batch_points handles multi-point response", {
+  local_mocked_bindings(
+    .rest_compute_features = function(...) {
+      data.table::data.table(
+        point_id = 1:3,
+        elevation = c(100, 200, 300)
+      )
+    }
+  )
+
+  coords <- data.table::data.table(
+    point_id = 1:3,
+    lon = c(138, 139, 140),
+    lat = c(-34, -35, -36)
+  )
+  vals <- .rest_extract_batch_points(
+    meta = .GEE_META$srtm_elevation,
+    date = NULL,
+    coords = coords,
+    max_tries = 1L,
+    initial_delay = 0
+  )
+  expect_equal(vals, c(100, 200, 300))
 })
 
 test_that("collect_gee_data verbose mode prints info table", {
@@ -398,7 +423,9 @@ test_that("collect_gee_data verbose mode prints info table", {
   withr::defer(.geefetch_env$token <- old_token)
 
   local_mocked_bindings(
-    .safe_extract_point = function(...) 1.0
+    .safe_extract_points_batch = function(meta, date, coords, ...) {
+      rep(1.0, nrow(coords))
+    }
   )
 
   expect_message(
