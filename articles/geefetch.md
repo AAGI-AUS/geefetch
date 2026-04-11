@@ -25,7 +25,7 @@ Key features:
 
 ``` r
 # From GitHub (development version, with vignettes)
-remotes::install_github("max578/geefetch", subdir = "geefetch",
+remotes::install_github("AAGI-AUS/geefetch", subdir = "geefetch",
                         build_vignettes = TRUE)
 ```
 

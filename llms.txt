@@ -27,7 +27,7 @@ R package and authenticate with the same Google OAuth flow as
 
 ``` r
 # Install from GitHub (with vignettes)
-remotes::install_github("max578/geefetch", subdir = "geefetch",
+remotes::install_github("AAGI-AUS/geefetch", subdir = "geefetch",
                         build_vignettes = TRUE)
 ```
 
