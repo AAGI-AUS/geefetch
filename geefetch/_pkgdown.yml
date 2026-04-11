@@ -2,6 +2,37 @@ url: https://aagi-aus.github.io/geefetch/
 
 template:
   bootstrap: 5
+  bslib:
+    primary: "#2E7D32"
+
+home:
+  title: "geefetch — Python-free Google Earth Engine for R"
+  description: >
+    Extract environmental covariates from Google Earth Engine without Python.
+    Pure R interface via the GEE REST API with automatic caching and batch extraction.
+  links:
+    - text: Report a bug
+      href: https://github.com/AAGI-AUS/geefetch/issues
+    - text: GEE Data Catalog
+      href: https://developers.google.com/earth-engine/datasets
+
+navbar:
+  structure:
+    left: [intro, reference, articles]
+    right: [search, github]
+  components:
+    intro:
+      text: Get Started
+      href: articles/geefetch.html
+    articles:
+      text: Articles
+      menu:
+        - text: Getting Started
+          href: articles/geefetch.html
+        - text: Batch Extraction
+          href: articles/collect_gee_data.html
+        - text: Custom Datasets
+          href: articles/custom_datasets.html
 
 reference:
   - title: "GEE Readers"
