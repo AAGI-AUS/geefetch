@@ -24,5 +24,11 @@ geefetch/docs/
 # Binary files — never commit
 *.pdf
 
-# Research / notes (don't ignore — these are design docs)
-# research_gee_ecosystem.md  # keep in repo
+# Working notes and planning docs (keep locally, not in repo)
+CLAUDE.md
+aa_notes_gee.md
+progress_phases.md
+executive_summary.md
+implementation_plan_v0.md
+implementation_plan_v1.md
+research_gee_ecosystem.md
