@@ -262,20 +262,36 @@ NULL
 #' @returns A list suitable for the `grid` field of computePixels.
 #' @noRd
 .build_grid <- function(bbox, scale, max_dim = 2048L) {
+  # Ensure bbox is a plain numeric vector with correct names
+  # (sf::st_bbox can produce double-nested names when subscripted)
+  xmin <- unname(bbox[["xmin"]])
+  ymin <- unname(bbox[["ymin"]])
+  xmax <- unname(bbox[["xmax"]])
+  ymax <- unname(bbox[["ymax"]])
+
   # Convert scale in metres to approximate degrees (at midpoint latitude)
-  mid_lat <- (bbox["ymin"] + bbox["ymax"]) / 2
+  mid_lat <- (ymin + ymax) / 2
   deg_per_m <- 1 / (111320 * cos(mid_lat * pi / 180))
   pixel_size_deg <- scale * deg_per_m
 
-  width  <- as.integer(ceiling((bbox["xmax"] - bbox["xmin"]) / pixel_size_deg))
-  height <- as.integer(ceiling((bbox["ymax"] - bbox["ymin"]) / pixel_size_deg))
+  width  <- as.integer(ceiling((xmax - xmin) / pixel_size_deg))
+  height <- as.integer(ceiling((ymax - ymin) / pixel_size_deg))
+
+  # Guard against NA/NaN from degenerate inputs
+  if (is.na(width) || is.na(height) || width <= 0L || height <= 0L) {
+    cli::cli_abort(c(
+      "Cannot compute grid dimensions for the given region and scale.",
+      "i" = "Region: xmin={xmin}, ymin={ymin}, xmax={xmax}, ymax={ymax}",
+      "i" = "Scale: {scale}m, pixel_size: {round(pixel_size_deg, 6)} deg"
+    ))
+  }
 
   # Clamp to max_dim
   if (width > max_dim || height > max_dim) {
-    scale_factor <- max(width, height) / max_dim
-    width  <- as.integer(ceiling(width / scale_factor))
-    height <- as.integer(ceiling(height / scale_factor))
-    pixel_size_deg <- pixel_size_deg * scale_factor
+    scale_ratio <- max(width, height) / max_dim
+    width  <- as.integer(ceiling(width / scale_ratio))
+    height <- as.integer(ceiling(height / scale_ratio))
+    pixel_size_deg <- pixel_size_deg * scale_ratio
     cli::cli_warn(c(
       "!" = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
       "i" = "Resampling to {width}x{height} pixels."
@@ -287,10 +303,10 @@ NULL
     affineTransform = list(
       scaleX     = pixel_size_deg,
       shearX     = 0,
-      translateX = unname(bbox["xmin"]),
+      translateX = xmin,
       shearY     = 0,
       scaleY     = -pixel_size_deg,
-      translateY = unname(bbox["ymax"])
+      translateY = ymax
     ),
     crsCode = "EPSG:4326"
   )
@@ -552,11 +568,7 @@ NULL
 
   region <- .validate_region(region)
   bbox <- sf::st_bbox(region)
-  grid <- .build_grid(
-    bbox  = c(xmin = bbox["xmin"], ymin = bbox["ymin"],
-              xmax = bbox["xmax"], ymax = bbox["ymax"]),
-    scale = meta$scale
-  )
+  grid <- .build_grid(bbox = bbox, scale = meta$scale)
 
   .rest_compute_pixels(
     expression    = img,

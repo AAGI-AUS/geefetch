@@ -173,11 +173,7 @@
   }
 
   bbox <- sf::st_bbox(region)
-  grid <- .build_grid(
-    bbox  = c(xmin = bbox["xmin"], ymin = bbox["ymin"],
-              xmax = bbox["xmax"], ymax = bbox["ymax"]),
-    scale = meta$scale
-  )
+  grid <- .build_grid(bbox = bbox, scale = meta$scale)
 
   .rest_compute_pixels(
     expression    = expr,
