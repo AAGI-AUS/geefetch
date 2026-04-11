@@ -109,7 +109,7 @@ gee_auth <- function(email = gargle::gargle_oauth_email(),
 
   cli::cli_inform(c(
     "v" = "GEE authentication successful.",
-    "i" = "Project: {.val {.geefetch_env$project}}"
+    "i" = "Project: {.val {(.geefetch_env$project)}}"
   ))
 
   invisible(token)
