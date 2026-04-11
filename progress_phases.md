@@ -719,3 +719,142 @@ These four issues could all have been caught with a pre-release checklist:
 | R-CMD-check (Ubuntu devel) | SUCCESS | Slow (~25 min) but passes |
 | pkgdown | SUCCESS | Site builds correctly |
 | test-coverage | SUCCESS | Coverage computed; Codecov upload skipped gracefully |
+
+---
+
+## Final Comprehensive Audit (2026-04-11)
+
+### Issues Found and Fixed
+
+**Issue 5: `browseVignettes("geefetch")` returns "No vignettes found"**
+
+| Aspect | Detail |
+|---|---|
+| Symptom | `browseVignettes(package = "geefetch")` returns empty |
+| Root cause | Package installed via `R CMD INSTALL .` on the source directory, which **skips vignette compilation**. The `doc/` directory and `Meta/vignette.rds` are not created. Only `R CMD build` (tarball creation) compiles vignettes. |
+| Tactical fix | Reinstalled via `R CMD build . && R CMD INSTALL geefetch_*.tar.gz`. Vignettes now discoverable (3 found). |
+| Strategic lesson | **Never install an R package from source directory during development.** Always: `R CMD build .` then `R CMD INSTALL pkg_*.tar.gz`. This is already in CLAUDE.md but was not followed during iterative reinstalls. When using `devtools::install()`, pass `build_vignettes = TRUE`. |
+
+**Issue 6: `.build_grid()` produces NaN from sf::st_bbox double-nested names** (found in previous session)
+
+| Aspect | Detail |
+|---|---|
+| Symptom | `read_modis_ndvi(date = "2024-06-15", region = aoi)` fails with `missing value where TRUE/FALSE needed` in `.build_grid()` |
+| Root cause | `sf::st_bbox()` returns a named vector. `c(xmin = bbox["xmin"])` creates double-nested names (`xmin.xmin`). Subsequent `bbox_vec["xmin"]` returns `NA`, propagating NaN through all arithmetic. |
+| Tactical fix | Changed `.build_grid()` to use `[[` extraction (`bbox[["xmin"]]`) which returns unnamed scalars. Added NA guard with informative error message. Callers now pass bbox directly. |
+| Strategic lesson | **Never subscript a named vector and re-wrap it in `c(name = ...)`**. Use `[[` or `unname()` when extracting from named vectors for arithmetic. |
+
+**Issue 7: cli dot-prefix error in `gee_auth()` success message** (found in previous session)
+
+| Aspect | Detail |
+|---|---|
+| Symptom | After successful OAuth, `gee_auth()` throws `Invalid cli literal: {.geefetch_env$project} starts with a dot` |
+| Root cause | cli >= 3.4.0 interprets `{.xxx}` as a style directive. `.geefetch_env$project` starts with a dot. |
+| Tactical fix | Changed to `{(.geefetch_env$project)}` (parentheses prevent dot-style interpretation). |
+| Strategic lesson | **This is the third time this bug class appeared.** Root prevention: add a linting step that greps for `\{\.` patterns in cli strings that aren't known styles. The sweep script written during this audit found 0 remaining instances. |
+
+### Detailed Test Results (136 test cases)
+
+**gee_datasets(domain)** -- 6 tests, all passed
+- Returns data.table with 7 required columns
+- >= 19 rows, no duplicates, no NA in dataset, valid temporal values
+- Domain filter: exact match, empty result for nonexistent domain
+
+**gee_register_dataset(name, collection, bands, scale, temporal, description, ...)** -- 12 tests, all passed
+- Valid registration (minimal args + all optional args)
+- Registered dataset appears in catalogue
+- Rejects overwriting 2 different built-in datasets
+- Rejects 2 invalid temporal values
+- Accepts all 6 valid temporal values
+
+**gee_auth(email, path, project, scopes, cache)** -- 1 test, passed
+- Rejects nonexistent service account path
+
+**gee_status()** -- 6 tests, all passed
+- Returns list with all 6 documented fields
+- Correct type for each field
+- Not authenticated when no token; authenticated when token present
+
+**gee_setup()** -- 1 test, passed
+- Runs without error
+
+**gee_clear_cache(older_than)** -- 5 tests, all passed
+- Returns 0 for non-existent/empty directory
+- Removes .rds, .tif, .fst files and returns correct count
+- older_than filter keeps recent files, removes old
+
+**read_gee(dataset_id, ..., backend, cache, max_tries, initial_delay)** -- 22 tests, all passed
+- Rejects: NULL, numeric, vector, empty string, unknown dataset_id
+- Rejects invalid backend
+- Requires auth
+- 5 case-insensitive aliases resolve correctly (MODIS_NDVI, modis_ndvi, NDVI, ndvi, Ndvi)
+- 4 static aliases resolve correctly
+- Requires date for 2 time-series datasets; does NOT require date for 2 static datasets
+- Rejects date before availability; rejects unparseable date
+- Cache set/get works for SpatRaster objects
+
+**read_modis_ndvi(date, region, ...)** -- 2 tests, all passed
+**read_modis_lst(date, region, ...)** -- 1 test, passed
+**read_era5(date, region, variable, ...)** -- 3 tests, all passed (both valid variables + 1 invalid)
+**read_chirps(date, region, ...)** -- 1 test, passed
+**read_srtm(region, ...)** -- 2 tests, all passed (auth + no date required)
+**read_sentinel2(date, region, ...)** -- 1 test, passed
+**read_landsat(date, region, ...)** -- 1 test, passed
+**read_worldclim(region, variable, ...)** -- 3 tests, all passed (default + bio12 + no date required)
+
+**read_slga(region, collection, depth, stat, ...)** -- 20 tests, all passed
+- Rejects 1 invalid collection, 1 invalid stat, 1 invalid depth
+- Accepts all 7 valid collections, 3 valid stats, 6 valid depths
+
+**collect_gee_data(lon, lat, xy, date_range, datasets, ...)** -- 17 tests, all passed
+- Missing coords, mismatched lengths, out-of-range lon/lat, unrecognised xy columns
+- Empty/reversed/unparseable date ranges
+- NULL/empty/unknown datasets
+- Invalid backend, auth requirement
+- 5 coordinate input formats (lon/lat, df lon/lat, df x/y, df longitude/latitude, sf POINT)
+
+**Re-exports (ext, rast, st_as_sf, st_bbox)** -- 6 tests, all passed
+- Correct class and values for each
+
+**Cache internals** -- 5 tests, all passed
+- Raster GeoTIFF round-trip (values preserved), data.frame round-trip, cache miss, hash determinism
+
+**.build_grid()** -- 9 tests, all passed
+- Normal case (7 field checks), large region clamping, polar coordinates
+
+**Expression builder** -- 7 tests, all passed
+- .ee_const, .ee_call, .date_to_ms, identity optimisations, scale_offset identity
+
+**SLGA internals** -- 5 tests, all passed
+- Depth/stat code mapping, invalid depth, invalid stat
+
+### Overall Assessment
+
+**Rating: Excellent.**
+
+| Metric | Value |
+|---|---|
+| Functions tested | 17 exports + 4 re-exports + 6 internal components |
+| Test cases | 136 |
+| Passed | 136 (100%) |
+| Runtime | 4.2 seconds |
+| testthat suite | 497 pass, 0 fail |
+| R CMD check --as-cran | 0/0/0 |
+| Vignettes | 3, all discoverable |
+| CI (GitHub Actions) | All 7 jobs green |
+
+### Remaining Limitations
+
+| Limitation | Severity | Path to resolution |
+|---|---|---|
+| REST API never called against live GEE | Critical | Authenticate with `gee_auth()`, then `read_modis_ndvi(date = "2024-06-15", region = ext(138, 140, -36, -34))`. Success validates the entire pipeline. |
+| Expression DAG format unvalidated | High | Same as above -- first successful extraction proves it. |
+| Token refresh untested in practice | Low | Run a batch job >1 hour and monitor for 401 errors. |
+| `computeFeatures` pagination untested | Low | Test with >5000 points against live GEE. |
+
+### Recommendations
+
+1. **First priority:** Run a single live GEE extraction. This validates or invalidates everything.
+2. **Add a linter hook** for cli dot-prefix patterns (prevent recurrence of the `{.env$var}` bug class).
+3. **Document the install path** prominently: always `R CMD build` then `R CMD INSTALL` on tarball.
+4. **Consider `devtools::install(build_vignettes = TRUE)`** as the default development install command.
