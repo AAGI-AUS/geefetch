@@ -1,0 +1,96 @@
+# geefetch ![](reference/figures/logo.png)
+
+**Google Earth Engine Fast Easy Terrestrial Covariate Harvester**
+
+geefetch provides a unified R interface for extracting spatio-temporal
+environmental covariates from [Google Earth
+Engine](https://earthengine.google.com/).
+
+**No Python required.** Unlike `rgee`, geefetch accesses GEE directly
+via the REST API using `httr2` and `gargle`. Install it like any normal
+R package and authenticate with the same Google OAuth flow as
+`googlesheets4`.
+
+## Features
+
+| Feature                     | Detail                                                                                                                                  |
+|-----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| **Python-free**             | Uses GEE REST API directly – no reticulate, no conda                                                                                    |
+| **19+ built-in datasets**   | Vegetation, climate, soil, topography, bioclimatic                                                                                      |
+| **One-function extraction** | [`read_gee()`](https://aagi-aus.github.io/geefetch/reference/read_gee.md) dispatcher + named convenience aliases                        |
+| **Batch extraction**        | [`collect_gee_data()`](https://aagi-aus.github.io/geefetch/reference/collect_gee_data.md) – multi-location x multi-date x multi-dataset |
+| **Automatic caching**       | Disk-backed, hash-keyed, TTL-aware                                                                                                      |
+| **User-extensible**         | Register any GEE collection with [`gee_register_dataset()`](https://aagi-aus.github.io/geefetch/reference/gee_register_dataset.md)      |
+| **nert-compatible**         | Same output types ([`terra::rast()`](https://rspatial.github.io/terra/reference/rast.html), `data.table`), same naming patterns         |
+
+## Installation
+
+``` r
+# Install from GitHub (with vignettes)
+remotes::install_github("max578/geefetch", subdir = "geefetch",
+                        build_vignettes = TRUE)
+```
+
+## Quick start
+
+``` r
+library(geefetch)
+
+# Authenticate (opens browser -- same as googlesheets4)
+gee_auth()
+
+# Extract MODIS NDVI for a region
+ndvi <- read_modis_ndvi(
+  date   = "2024-06-15",
+  region = terra::ext(138, 140, -36, -34)
+)
+terra::plot(ndvi)
+
+# Batch extraction: multiple datasets, multiple locations
+sites <- data.frame(lon = c(138.6, 149.1), lat = c(-34.9, -35.3))
+
+covariates <- collect_gee_data(
+  xy         = sites,
+  date_range = c("2024-01-01", "2024-12-31"),
+  datasets   = c("modis_ndvi", "era5_temp", "chirps_precip", "srtm_elevation")
+)
+```
+
+## Built-in datasets
+
+| Dataset                  | Alias                                                                                   | Domain        | Resolution | Temporal |
+|--------------------------|-----------------------------------------------------------------------------------------|---------------|------------|----------|
+| MODIS Terra NDVI         | [`read_modis_ndvi()`](https://aagi-aus.github.io/geefetch/reference/read_modis_ndvi.md) | Vegetation    | 1 km       | 16-day   |
+| MODIS Terra LST          | [`read_modis_lst()`](https://aagi-aus.github.io/geefetch/reference/read_modis_lst.md)   | Temperature   | 1 km       | 8-day    |
+| ERA5-Land temperature    | [`read_era5()`](https://aagi-aus.github.io/geefetch/reference/read_era5.md)             | Climate       | 11 km      | Daily    |
+| ERA5-Land precipitation  | [`read_era5()`](https://aagi-aus.github.io/geefetch/reference/read_era5.md)             | Climate       | 11 km      | Daily    |
+| CHIRPS precipitation     | [`read_chirps()`](https://aagi-aus.github.io/geefetch/reference/read_chirps.md)         | Precipitation | 5.5 km     | Daily    |
+| SRTM elevation           | [`read_srtm()`](https://aagi-aus.github.io/geefetch/reference/read_srtm.md)             | Topography    | 30 m       | Static   |
+| SLGA soil (7 attributes) | [`read_slga()`](https://aagi-aus.github.io/geefetch/reference/read_slga.md)             | Soil (AU)     | 90 m       | Static   |
+| Sentinel-2 NDVI          | [`read_sentinel2()`](https://aagi-aus.github.io/geefetch/reference/read_sentinel2.md)   | Vegetation    | 10 m       | 5-day    |
+| Landsat 9 NDVI           | [`read_landsat()`](https://aagi-aus.github.io/geefetch/reference/read_landsat.md)       | Vegetation    | 30 m       | 16-day   |
+| WorldClim bioclim        | [`read_worldclim()`](https://aagi-aus.github.io/geefetch/reference/read_worldclim.md)   | Bioclimatic   | 1 km       | Static   |
+| OpenLandMap soil         | [`read_gee()`](https://aagi-aus.github.io/geefetch/reference/read_gee.md)               | Soil (Global) | 250 m      | Static   |
+
+Browse all datasets:
+[`gee_datasets()`](https://aagi-aus.github.io/geefetch/reference/gee_datasets.md)
+
+## Documentation
+
+- [`vignette("geefetch")`](https://aagi-aus.github.io/geefetch/articles/geefetch.md)
+  – Getting started
+- [`vignette("collect_gee_data")`](https://aagi-aus.github.io/geefetch/articles/collect_gee_data.md)
+  – Batch extraction workflows
+- [`vignette("custom_datasets")`](https://aagi-aus.github.io/geefetch/articles/custom_datasets.md)
+  – Adding your own GEE collections
+
+## Authors
+
+- **Max Moldovan** (maintainer) – Adelaide University
+  ([ORCID](https://orcid.org/0000-0001-9680-8474))
+- **Adam H. Sparks** – DPIRD / Curtin University
+  ([ORCID](https://orcid.org/0000-0002-0061-8359))
+
+## Licence
+
+MIT
