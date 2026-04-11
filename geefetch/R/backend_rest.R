@@ -386,9 +386,32 @@ NULL
       error = function(e) list(error = list(message = "Unknown error"))
     )
     err_msg <- err_body$error$message %||% "No error message returned."
+
+    # Specific guidance for common errors
+    hints <- character()
+    if (status == 403L && grepl("API has not been used", err_msg)) {
+      hints <- c(
+        "i" = "The Earth Engine API is not enabled on your Google Cloud project.",
+        "i" = "To fix: visit the link in the error above and click 'Enable'.",
+        "i" = "Then wait 2-3 minutes and try again.",
+        "i" = "See {.code gee_setup()} for full setup instructions."
+      )
+    } else if (status == 401L) {
+      hints <- c(
+        "i" = "Your authentication token may have expired.",
+        "i" = "Run {.code gee_auth()} to re-authenticate."
+      )
+    } else if (status == 429L) {
+      hints <- c(
+        "i" = "Rate limit exceeded. Wait a moment and retry.",
+        "i" = "Consider using {.code cache = TRUE} to avoid repeated calls."
+      )
+    }
+
     cli::cli_abort(c(
       "GEE REST API error (HTTP {status}).",
       "x" = err_msg,
+      hints,
       "i" = "Endpoint: {.val {url}}"
     ))
   }

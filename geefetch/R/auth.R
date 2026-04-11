@@ -290,20 +290,26 @@ gee_setup <- function() {
   cli::cli_text("")
 
 
-  # Step 3: Google Cloud project
-  cli::cli_h2("Step 3: Google Cloud project (recommended)")
+  # Step 3: Enable the Earth Engine API (REQUIRED)
+  cli::cli_h2("Step 3: Enable the Earth Engine API (required)")
   cli::cli_text(
-    "For higher quotas, create a project at:"
+    "The Earth Engine API must be enabled on your Google Cloud project."
   )
-  cli::cli_text("{.url https://console.cloud.google.com/}")
   cli::cli_text(
-    "Enable the Earth Engine API in your project, then pass the project ID:"
+    "After authenticating (Step 4), if you get a 403 error, visit:"
   )
-  cli::cli_code('gee_auth(project = "my-project-id")')
+  cli::cli_text(
+    "{.url https://console.developers.google.com/apis/api/earthengine.googleapis.com/}"
+  )
+  cli::cli_text("Select your project and click {.strong Enable}.")
+  cli::cli_text("Wait 2-3 minutes, then retry your extraction.")
   cli::cli_text("")
   cli::cli_text(
-    "The default project ({.val earthengine-legacy}) works for basic use."
+    "For higher quotas, create a dedicated project at:"
   )
+  cli::cli_text("{.url https://console.cloud.google.com/}")
+  cli::cli_text("Then pass the project ID:")
+  cli::cli_code('gee_auth(project = "my-project-id")')
 
   # Step 4: Authenticate
   cli::cli_h2("Step 4: Authenticate")
