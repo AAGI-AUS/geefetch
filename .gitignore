@@ -21,5 +21,8 @@ Thumbs.db
 # pkgdown site (built locally)
 geefetch/docs/
 
+# Binary files — never commit
+*.pdf
+
 # Research / notes (don't ignore — these are design docs)
 # research_gee_ecosystem.md  # keep in repo
