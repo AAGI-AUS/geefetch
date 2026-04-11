@@ -858,3 +858,141 @@ These four issues could all have been caught with a pre-release checklist:
 2. **Add a linter hook** for cli dot-prefix patterns (prevent recurrence of the `{.env$var}` bug class).
 3. **Document the install path** prominently: always `R CMD build` then `R CMD INSTALL` on tarball.
 4. **Consider `devtools::install(build_vignettes = TRUE)`** as the default development install command.
+
+---
+
+## Project Retrospective: What Should Have Been Done Differently
+
+An honest, self-critical assessment of process failures ordered by impact. These are not hypothetical suggestions -- they are specific mistakes made during this project that caused wasted time, missed bugs, or unnecessary rework.
+
+### 1. Authenticate with GEE before writing any extraction code
+
+**Impact: Would have saved ~40% of total debugging time.**
+
+We built the entire REST API expression builder (~300 LOC), 6 dataset handlers, QA masking, and grid construction -- all from documentation research -- without making a single successful API call. The first real user test (Max running `read_modis_ndvi()`) immediately revealed the `.build_grid()` NaN bug, which would have been caught in 5 minutes if we'd tried a live extraction in Phase 2.
+
+**The correct sequence was:**
+1. Phase 1: skeleton + auth (`gee_auth()` working with real credentials)
+2. Phase 2 start: one hardcoded `computePixels` call in an R script (no framework, no handlers, no expression builder -- just raw httr2)
+3. Phase 2 continued: if the raw call works, generalise into the expression builder
+4. Phase 3+: everything else
+
+**Principle:** Never build a client for an API you haven't successfully called. Validate the wire format with a throwaway script first, then build the framework around proven patterns. This is the single highest-leverage change that would have improved both speed and quality.
+
+### 2. One plan, researched first -- not two rounds of planning
+
+**Impact: Would have saved ~1 hour of document writing.**
+
+We wrote executive_summary.md v1 and implementationplan.md v1 BEFORE researching nert's architecture, the competitive landscape, or the GEE REST API. Then we rewrote both documents from scratch after the research. The first versions were not just incomplete -- they were wrong (wrong function names, wrong dependency strategy, wrong backend architecture).
+
+**The correct sequence was:** Research first (nert, rgee, REST API) -> one plan -> review -> implement. Never plan before you understand the landscape.
+
+### 3. Ship `read_gee()` + `collect_gee_data()` first, convenience aliases later
+
+**Impact: Would have reduced Phase 2-4 by ~30%.**
+
+We created 10 separate `read_*.R` files (each ~50 lines of roxygen boilerplate) before knowing if the REST API works. For a v0.1.0, a single `read_gee("modis_ndvi", ...)` with good documentation is sufficient. Convenience aliases (`read_modis_ndvi()`, etc.) are polish, not core functionality. They should have been Phase 5 or post-release.
+
+**Principle:** For an R package MVP, export the minimum viable API surface. One well-documented dispatcher is better than ten undocumented wrappers. Aliases are syntactic sugar -- they don't enable new workflows.
+
+### 4. Run a post-install smoke test after every reinstall
+
+**Impact: Would have caught 4 of 7 post-release bugs immediately.**
+
+The vignette issue, the `ext()` re-export gap, the cli dot-prefix in `gee_auth()`, and the `.build_grid()` NaN were all discoverable with a 30-second smoke test:
+
+```r
+library(geefetch)
+aoi <- ext(138, 140, -36, -34)   # re-export works?
+gee_status()                      # cli formatting works?
+browseVignettes("geefetch")       # vignettes installed?
+gee_auth()                        # live auth works?
+read_modis_ndvi("2024-06-15", aoi) # extraction works?
+```
+
+This script should have existed from Phase 1 and been run after every `R CMD INSTALL`. None of the bugs above were caught by testthat because they only manifest in a clean installed-package context, not in `devtools::test()`.
+
+**Principle:** Unit tests validate internals. Smoke tests validate the user experience. You need both.
+
+### 5. The 6-phase waterfall was artificial overhead
+
+**Impact: Would have saved ~30 min of progress logging and phase transitions.**
+
+Phases 1 (skeleton) and 2 (handlers) should have been one phase. Phase 3 (batch extraction) was natural. Phase 4 (extended datasets) was premature -- adding 13 more datasets before proving the first 6 work. Phase 5 (docs) and Phase 6 (testing) could have been merged.
+
+A leaner structure:
+1. **Foundation** (skeleton + auth + one working extraction)
+2. **Core** (dispatcher + batch + caching + 6 datasets)
+3. **Release** (docs + tests + CI + release)
+
+Three phases, not six. Each with a gate that requires live validation, not just `R CMD check`.
+
+### 6. Coverage-chasing tests added no value
+
+**Impact: ~30 min spent writing `test-coverage_boost.R` and `test-coverage_boost2.R` that caught zero real bugs.**
+
+These files were written explicitly to push coverage from 62% to 80%. They test things like "does `.ee_mask_modis_vi()` return an `Image.updateMask` node?" -- which is structural correctness, not behavioural correctness. None of these tests would have caught the `.build_grid()` NaN, the SpatRaster caching corruption, or the cli dot-prefix bug.
+
+**What would have been higher-value:** A single integration test with httptest2 mocking a realistic REST API response (GeoTIFF bytes -> terra::rast()) would have tested the entire pipeline and caught the raster caching bug.
+
+**Principle:** Coverage is a metric, not a goal. A 60% coverage suite that tests real user workflows is more valuable than 80% coverage that tests implementation details.
+
+### 7. The critical review should have been Phase 4, not post-release
+
+**Impact: v0.1.0 shipped with 2 critical bugs (raster caching, per-point API calls).**
+
+The ruthless architecture review was done AFTER tagging v0.1.0 and creating a GitHub release. It found:
+- SpatRaster caching silently corrupts data (critical)
+- Per-point API calls make batch extraction ~100x too slow (high)
+- Token refresh missing (medium)
+
+All three should have been identified during implementation, not in a post-mortem. The review was valuable but it was too late -- the release was already tagged.
+
+**Principle:** Code review before release, not after. Especially review the data paths (cache write -> cache read, API request -> response parse) with concrete examples.
+
+### 8. Same bug class appeared three times (cli dot-prefix)
+
+**Impact: ~20 min cumulative debugging across three separate sessions.**
+
+The cli `{.variable_name}` dot-prefix issue was found in Phase 1 (`.gee_project()`), found AGAIN in the critical review audit, and found a THIRD time when Max ran `gee_auth()` live. Each time it was the same root cause and the same fix (add parentheses).
+
+After the first occurrence, we should have:
+1. Grepped the entire codebase for `\{\.` patterns
+2. Added a test or linting rule to prevent recurrence
+
+We did neither until the third occurrence. This is a process failure.
+
+**Principle:** When you fix a bug, immediately search for all other instances of the same pattern. Then add a prevention mechanism (grep, lint rule, or test).
+
+### 9. Progress documentation became overhead
+
+**Impact: ~45 min spent writing, formatting, and regenerating progress_phases.md/pdf across 8 append cycles.**
+
+The progress log is now 860 lines and 127 KB of PDF. It's thorough, but much of it is redundant with the git history. The phase-by-phase test count tracking (266 -> 345 -> 371 -> 443 -> 497) is visible in commits. The architecture descriptions duplicate the actual code comments.
+
+**What would have been sufficient:** A single PROJECT_LOG.md with compressed context (as specified in CLAUDE.md), updated at major milestones -- not after every sub-task.
+
+### 10. Scope expanded before core was validated
+
+**Impact: 19 datasets, 3 tiers, extensible registry, 10 convenience aliases -- all before one successful GEE extraction.**
+
+The generic handler, WorldClim, OpenLandMap, and the user-extensible `gee_register_dataset()` were added in Phase 4. These are excellent features -- but they were built on an unproven REST API backend. If the expression format had been wrong, all 19 handlers would have needed rework.
+
+**The lean approach:** Ship with 3 datasets (MODIS NDVI, ERA5, SRTM -- one time-series with QA, one climate, one static). Validate against live GEE. Then expand.
+
+### Summary: The Lean R Package Development Checklist
+
+If starting this project again:
+
+| Step | Action | Gate |
+|---|---|---|
+| 1 | Research: read nert source, read GEE REST API docs, read competitor packages | Understanding, not documents |
+| 2 | One plan (not two drafts) | Approved by stakeholder |
+| 3 | Skeleton + auth + ONE live API call | `gee_auth()` works, one `computePixels` returns valid GeoTIFF |
+| 4 | Dispatcher + 3 handlers + caching | `read_gee("modis_ndvi", ...)` returns valid raster from live GEE |
+| 5 | Batch extraction | `collect_gee_data()` returns valid data.table from live GEE |
+| 6 | Docs + smoke test + release | `browseVignettes()` works, smoke test passes, CI green |
+| 7 | Expand datasets and aliases | Post-release, validated incrementally |
+
+**Total phases: 7 (not 6 + 4 rounds of post-release fixes).**
+**Key difference: live validation at steps 3, 4, 5 -- not just `R CMD check`.**
