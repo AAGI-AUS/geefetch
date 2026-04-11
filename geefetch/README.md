@@ -30,8 +30,9 @@ package and authenticate with the same Google OAuth flow as `googlesheets4`.
 ## Installation
 
 ``` r
-# Install from GitHub
-remotes::install_github("AAGI-AUS/geefetch")
+# Install from GitHub (with vignettes)
+remotes::install_github("max578/geefetch", subdir = "geefetch",
+                        build_vignettes = TRUE)
 ```
 
 ## Quick start
