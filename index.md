@@ -1,4 +1,4 @@
-# geefetch ![](reference/figures/logo.png)
+# geefetch
 
 **Google Earth Engine Fast Easy Terrestrial Covariate Harvester**
 
