@@ -1,0 +1,52 @@
+Package: geefetch
+Title: Google Earth Engine Fast Easy Terrestrial Covariate Harvester
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Max", "Moldovan", , "max.moldovan@adelaide.edu.au",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-9680-8474")),
+    person("Adam H.", "Sparks", , "adam.sparks@dpird.wa.gov.au",
+           role = "aut",
+           comment = c(ORCID = "0000-0002-0061-8359"))
+  )
+Description: Unified interface for extracting spatio-temporal environmental
+    covariates from Google Earth Engine. Provides a central dispatcher
+    ('read_gee()') with convenience aliases for common datasets, batch
+    extraction ('collect_gee_data()') returning 'data.table', and automatic
+    disk caching. Works without Python via the GEE REST API; optionally
+    supports 'rgee' for advanced server-side computations.
+License: MIT + file LICENSE
+URL: https://github.com/AAGI-AUS/geefetch
+BugReports: https://github.com/AAGI-AUS/geefetch/issues
+Depends:
+    R (>= 4.1.0)
+Imports:
+    cli,
+    data.table,
+    digest,
+    gargle (>= 1.5.0),
+    httr2 (>= 1.0.0),
+    jsonlite,
+    lubridate,
+    rlang (>= 1.1.0),
+    sf,
+    terra,
+    utils
+Suggests:
+    fst,
+    ggplot2 (>= 3.5.0),
+    httptest2,
+    keyring,
+    knitr,
+    rgee,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    tidyterra,
+    withr
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/testthat/parallel: true
+Encoding: UTF-8
+Language: en-AU
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3

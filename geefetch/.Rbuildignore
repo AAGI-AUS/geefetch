@@ -1,0 +1,13 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^README\.Rmd$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
+^codecov\.yml$
+^\.lintr$
+^data-raw$
+^vignettes/.*\.Rmd\.orig$
+^vignettes/!precompile\.R$

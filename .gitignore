@@ -1,0 +1,25 @@
+# R package build artefacts
+geefetch/*.tar.gz
+geefetch/src/*.o
+geefetch/src/*.so
+geefetch/src/*.dll
+
+# RStudio / IDE
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# OS
+.DS_Store
+Thumbs.db
+
+# R session
+.Rproj.user/
+
+# pkgdown site (built locally)
+geefetch/docs/
+
+# Research / notes (don't ignore — these are design docs)
+# research_gee_ecosystem.md  # keep in repo

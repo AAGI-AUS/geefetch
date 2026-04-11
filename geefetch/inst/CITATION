@@ -1,0 +1,11 @@
+bibentry(
+  bibtype  = "Manual",
+  title    = "geefetch: Google Earth Engine Fast Easy Terrestrial Covariate Harvester",
+  author   = c(
+    person("Max", "Moldovan", comment = c(ORCID = "0000-0001-9680-8474")),
+    person("Adam H.", "Sparks", comment = c(ORCID = "0000-0002-0061-8359"))
+  ),
+  year     = "2026",
+  note     = "R package version 0.0.0.9000",
+  url      = "https://github.com/AAGI-AUS/geefetch"
+)

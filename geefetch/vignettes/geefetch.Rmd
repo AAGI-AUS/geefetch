@@ -1,0 +1,170 @@
+---
+title: "Getting Started with geefetch"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with geefetch}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview
+
+**geefetch** provides a unified R interface for extracting environmental
+covariates from Google Earth Engine (GEE). Unlike other GEE R packages,
+geefetch works **without Python** — it uses the GEE REST API directly via
+`httr2` and `gargle`.
+
+Key features:
+
+- **No Python required** — installs like any normal R package
+- **19+ built-in datasets** — vegetation, climate, soil, topography
+- **Single-function extraction** — `read_gee()` dispatcher + convenience aliases
+- **Batch extraction** — `collect_gee_data()` for multi-location, multi-date, multi-dataset
+- **Automatic caching** — repeated queries are served from disk
+- **User-extensible** — register any GEE collection with `gee_register_dataset()`
+
+## Installation
+
+```{r install, eval = FALSE}
+# From GitHub (development version)
+remotes::install_github("AAGI-AUS/geefetch")
+```
+
+## Authentication
+
+geefetch uses the same Google OAuth flow as `googlesheets4`, `googledrive`,
+and `bigrquery` via the `gargle` package.
+
+```{r auth, eval = FALSE}
+library(geefetch)
+
+# Interactive OAuth (opens browser)
+gee_auth()
+
+# Check your connection
+gee_status()
+```
+
+```
+## -- geefetch status --
+## v Authenticated: yes
+## i Project: "earthengine-legacy"
+## i Backend: REST API (httr2 + gargle)
+## i Cache dir: '~/Library/Caches/.../geefetch'
+## i Registered datasets: 19
+```
+
+For non-interactive use (CI, HPC), use a service account:
+
+```{r auth-sa, eval = FALSE}
+gee_auth(path = "path/to/service-account.json")
+```
+
+For first-time setup, `gee_setup()` provides step-by-step instructions.
+
+## Your first extraction
+
+Extract MODIS NDVI for a region in South Australia:
+
+```{r first-extraction, eval = FALSE}
+library(terra)
+
+# Define a region of interest
+aoi <- ext(138, 140, -36, -34)
+
+# Extract NDVI for a specific date
+ndvi <- read_modis_ndvi(date = "2024-06-15", region = aoi)
+
+# Plot the result
+plot(ndvi, main = "MODIS NDVI — 15 June 2024")
+```
+
+The result is a standard `terra::SpatRaster` — you can use all `terra`
+functions for analysis, cropping, masking, and export.
+
+## Point extraction
+
+To extract values at specific coordinates, use `terra::extract()`:
+
+```{r point-extraction, eval = FALSE}
+# Define some sites
+sites <- data.frame(
+  lon = c(138.6, 139.5, 140.2),
+  lat = c(-34.9, -35.5, -34.2)
+)
+
+# Convert to spatial points
+pts <- vect(sites, geom = c("lon", "lat"), crs = "EPSG:4326")
+
+# Extract NDVI at the sites
+values <- extract(ndvi, pts)
+print(values)
+```
+
+```
+##   ID      NDVI
+## 1  1 0.3245
+## 2  2 0.4512
+## 3  3 0.2891
+```
+
+## Using the dispatcher
+
+All convenience functions (`read_modis_ndvi()`, `read_era5()`, etc.) are
+thin wrappers around the central `read_gee()` dispatcher. You can use
+either form:
+
+```{r dispatcher, eval = FALSE}
+# These are equivalent:
+ndvi <- read_modis_ndvi(date = "2024-06-15", region = aoi)
+ndvi <- read_gee("MODIS_NDVI", date = "2024-06-15", region = aoi)
+ndvi <- read_gee("NDVI", date = "2024-06-15", region = aoi)  # alias
+```
+
+## Browsing available datasets
+
+```{r datasets, eval = FALSE}
+gee_datasets()
+```
+
+```
+##            dataset                          collection       domain resolution temporal
+##  1:     modis_ndvi                  MODIS/061/MOD13A2   Vegetation     1000m    16day
+##  2:      modis_lst                  MODIS/061/MOD11A2  Temperature     1000m     8day
+##  3:      era5_temp       ECMWF/ERA5_LAND/DAILY_AGGR      Climate    11132m    daily
+##  ...
+## 19: openlandmap_ph  OpenLandMap/SOL/SOL_PH-H2O_...  Soil (Global)      250m   static
+```
+
+## Caching
+
+geefetch automatically caches extraction results to disk. Repeated
+identical queries are served instantly:
+
+```{r caching, eval = FALSE}
+# First call: hits GEE REST API (~2-5 seconds)
+elev <- read_srtm(region = aoi)
+
+# Second call: served from disk cache (< 10 ms)
+elev <- read_srtm(region = aoi)
+
+# Check cache size
+gee_status()
+
+# Clear cache if needed
+gee_clear_cache()
+```
+
+## Next steps
+
+- See `vignette("collect_gee_data")` for batch extraction across multiple
+  locations, dates, and datasets
+- See `vignette("custom_datasets")` for registering your own GEE collections
+- See `gee_datasets()` for the full list of supported datasets

@@ -1,0 +1,47 @@
+url: https://aagi-aus.github.io/geefetch/
+
+template:
+  bootstrap: 5
+
+reference:
+  - title: "GEE Readers"
+    desc: "Extract raster data from Google Earth Engine collections."
+    contents:
+      - read_gee
+      - read_modis_ndvi
+      - read_modis_lst
+      - read_era5
+      - read_chirps
+      - read_srtm
+      - read_slga
+      - read_sentinel2
+      - read_landsat
+      - read_worldclim
+
+  - title: "Batch Extraction"
+    desc: "Extract point values across multiple locations, dates, and datasets."
+    contents:
+      - collect_gee_data
+
+  - title: "Authentication"
+    desc: "Authenticate with Google Earth Engine and check connection status."
+    contents:
+      - gee_auth
+      - gee_status
+      - gee_setup
+
+  - title: "Utilities"
+    desc: "Browse datasets, register custom collections, manage cache."
+    contents:
+      - gee_datasets
+      - gee_register_dataset
+      - gee_clear_cache
+
+articles:
+  - title: "Getting Started"
+    contents:
+      - geefetch
+  - title: "Workflows"
+    contents:
+      - collect_gee_data
+      - custom_datasets
