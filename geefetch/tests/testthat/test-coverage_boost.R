@@ -126,6 +126,7 @@ test_that("cache uses RDS when fst not available", {
 })
 
 test_that(".cache_set warns on disk write failure", {
+  skip_on_os("windows")  # Path handling differs on Windows
   # Use a non-writable directory
   withr::local_options(list(geefetch.cache_dir = "/nonexistent/path"))
   .geefetch_env$mem_cache <- NULL
