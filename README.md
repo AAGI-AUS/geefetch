@@ -15,6 +15,8 @@ environmental covariates from [Google Earth Engine](https://earthengine.google.c
 the REST API using `httr2` and `gargle`. Install it like any normal R
 package and authenticate with the same Google OAuth flow as `googlesheets4`.
 
+**Documentation: <https://aagi-aus.github.io/geefetch/>**
+
 ## Features
 
 | Feature | Detail |
@@ -80,9 +82,12 @@ Browse all datasets: `gee_datasets()`
 
 ## Documentation
 
-- `vignette("geefetch")` -- Getting started
-- `vignette("collect_gee_data")` -- Batch extraction workflows
-- `vignette("custom_datasets")` -- Adding your own GEE collections
+Full documentation and tutorials are available at
+**<https://aagi-aus.github.io/geefetch/>**
+
+- [Getting started](https://aagi-aus.github.io/geefetch/articles/geefetch.html)
+- [Batch extraction workflows](https://aagi-aus.github.io/geefetch/articles/collect_gee_data.html)
+- [Adding custom GEE collections](https://aagi-aus.github.io/geefetch/articles/custom_datasets.html)
 
 ## Authors
 
