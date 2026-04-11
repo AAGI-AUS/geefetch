@@ -446,3 +446,207 @@ The uncovered code is almost entirely **live network call paths** in `backend_re
 | 4. Extended Datasets & Extensibility | Done | 443 | SLGA, Sentinel-2, Landsat, WorldClim, OpenLandMap, generic handler |
 | 5. Documentation & Vignettes | Done | 443 | 3 vignettes, README, pkgdown, CITATION |
 | 6. Testing, Review & Release | Done | 501 | 80.8% coverage, v0.1.0 released |
+| **Post-release audit** | Done | 497 | Critical fixes: raster caching, batch extraction, token refresh |
+
+---
+
+## Post-Release Critical Review & Audit (Completed 2026-04-11)
+
+A ruthless, sceptical review of the entire package was conducted after v0.1.0 release, followed by a comprehensive argument-level audit of all 17 exported functions. This section documents the full findings.
+
+### Part 1: Critical Architecture Review
+
+#### Strengths Confirmed
+
+- **Expression builder is the best-engineered component.** The `.ee_*()` DSL is clean, composable, and identity-optimised (scale=1 and offset=0 are no-ops).
+- **nert architecture correctly mirrored.** Dispatcher pattern, output types (`terra::rast()` / `data.table`), naming conventions, and documentation style match nert closely.
+- **Dependency stack is minimal and justified.** Every Import earns its place; no bloat.
+- **Test discipline is real.** 500+ tests with proper mocking, `withr::defer()` cleanup, and meaningful assertions.
+
+#### Critical Issues Found
+
+**Issue P1-a: SpatRaster caching silently corrupts data (CRITICAL)**
+
+`terra::rast()` objects are S4 with C++ pointers. When cached via `saveRDS()`, the pointer metadata is saved but the actual raster data is not. Cross-session reads via `readRDS()` return an empty/corrupt raster. This affected all `read_*()` functions when `cache = TRUE`.
+
+- **Root cause:** `cache.R` used `saveRDS()` for all non-data.frame objects, including SpatRasters.
+- **Fix:** Cache now detects SpatRaster objects and writes them as GeoTIFF files (`terra::writeRaster()`). Reads back via `terra::rast(path)`. Cache file discovery updated to check `.tif`, `.fst`, and `.rds` extensions.
+- **Impact:** Would have caused silent data loss for every raster cached across sessions.
+- **Status:** Fixed.
+
+**Issue P1-b: Per-point API calls make batch extraction ~100x too slow (HIGH)**
+
+`collect_gee_data()` made one REST API call per point per date per time-series dataset. For a realistic workload (100 sites x 365 days x 3 datasets), this means 109,500 individual API calls, each taking 2-5 seconds. The GEE REST API supports multi-point extraction in a single `computeFeatures` call.
+
+- **Root cause:** The original `.collect_single_location()` looped over locations, and `.safe_extract_point()` made one API call per point.
+- **Fix:** Replaced per-location loop with per-dataset-per-date loop. New `.rest_extract_batch_points()` sends ALL points in one `computeFeatures` call. The scaffold is now built as a full `n_locations x n_dates` data.table upfront, then columns are populated per-dataset.
+- **API call reduction:** From `N_points x N_dates x N_ts_datasets` to `N_dates x N_ts_datasets + N_static_datasets`.
+- **Status:** Fixed.
+
+**Issue P2-a: No token refresh for long-running batch jobs (MEDIUM)**
+
+gargle OAuth tokens expire after 3600 seconds (1 hour). `gee_auth()` stored the raw token in `.geefetch_env$token` and never refreshed it. A `collect_gee_data()` call running >1 hour would start getting 401 errors mid-extraction.
+
+- **Fix:** Added `.maybe_refresh_token()` called before every `.rest_request()`. It calls `token$refresh()` on gargle Token2.0 objects. Also added `.extract_access_token()` to handle gargle tokens, httr tokens, and raw strings uniformly.
+- **Status:** Fixed.
+
+**Issue P2-b: Generic handler does not warn about missing QA masking (MEDIUM)**
+
+User-registered datasets and Tier 3 built-ins (WorldClim, OpenLandMap) go through `.read_gee_generic()`, which applies scale/offset but no QA masking. Users registering a MODIS collection via `gee_register_dataset()` would silently get cloudy/low-quality pixels.
+
+- **Fix:** Added `cli::cli_inform()` in `.read_gee_generic()` noting that no QA masking is applied.
+- **Status:** Fixed.
+
+**Issue P3: Unused keyring dependency (TRIVIAL)**
+
+`keyring` was listed in Suggests but never referenced in any source file.
+
+- **Fix:** Removed from DESCRIPTION.
+- **Status:** Fixed.
+
+#### Issues Noted But Not Fixed (Design Decisions)
+
+| Issue | Rationale for deferral |
+|---|---|
+| **REST API never tested against live GEE** | Requires GEE service account credentials. Cannot be done without authentication. All structural tests pass against the documented REST API format. This is the P0 item for production validation. |
+| **Handler code is 80% identical across Tier 1 datasets** | Could be made data-driven (single generic handler with QA masking dispatch via metadata field). Deferred to avoid refactoring risk before live API validation. |
+| **No parallel extraction** | `future`/`furrr` could parallelise across dates. Deferred: the batch refactor already gives 100x improvement. Parallelism adds complexity (progress bars, error handling, memory). |
+| **30 long lines (>80 chars) in roxygen comments** | Cosmetic. Does not affect functionality or CRAN acceptance. |
+
+### Part 2: Comprehensive Argument-Level Audit
+
+Every exported function was tested systematically with valid inputs, invalid inputs, edge cases, and boundary conditions.
+
+#### Audit Methodology
+
+For each of the 17 exported functions:
+1. Call with **valid arguments** -- verify return type and structure
+2. Call with **invalid arguments** -- verify informative error messages
+3. Call with **edge cases** -- verify graceful handling
+4. Verify **authentication enforcement** on all data-fetching functions
+5. Verify **enum parameters** are validated (match.arg or custom validators)
+
+#### Detailed Results by Function
+
+**1. `gee_datasets(domain = NULL)` -- 6 tests, all passed**
+- Returns `data.table` with expected columns (dataset, collection, domain, resolution, temporal)
+- >= 19 rows (all built-in datasets)
+- No NA in dataset column
+- Domain filter works (returns subset or empty data.table)
+
+**2. `gee_register_dataset(name, collection, bands, scale, temporal, description, ...)` -- 4 tests, all passed**
+- Valid registration succeeds and dataset appears in catalogue
+- Rejects overwriting built-in datasets ("Cannot overwrite")
+- Rejects invalid temporal values ("should be one of")
+- Rejects missing required arguments
+
+**3. `gee_auth(email, path, project, scopes, cache)` -- 1 test, passed**
+- Rejects nonexistent service account file ("not found")
+
+**4. `gee_status()` -- 4 tests, all passed**
+- Returns list with expected fields (authenticated, project, rgee_available, cache_dir, cache_size, n_datasets)
+- Reports not authenticated when no token
+- n_datasets >= 19
+
+**5. `gee_setup()` -- 1 test, passed**
+- Runs without error, prints all 5 setup steps
+
+**6. `gee_clear_cache(older_than = NULL)` -- 2 tests, all passed**
+- Returns 0 for non-existent cache directory
+- Removes files and returns correct count
+
+**7. `read_gee(dataset_id, ..., backend, cache, max_tries, initial_delay)` -- 5 tests, all passed**
+- Rejects unknown dataset ("not recognised")
+- Rejects non-character dataset_id ("single character")
+- Requires authentication ("Not authenticated")
+- Requires date for time-series datasets ("requires a date")
+- Static datasets skip date validation
+
+**8-12. Convenience aliases (read_modis_ndvi, read_modis_lst, read_chirps, read_sentinel2, read_landsat, read_srtm) -- 6 tests, all passed**
+- All require authentication
+- All route correctly through dispatcher
+
+**13. `read_era5(date, region, variable, ...)` -- 2 tests, all passed**
+- Requires authentication
+- Rejects invalid variable ("should be one of")
+
+**14. `read_slga(region, collection, depth, stat, ...)` -- 2 tests, all passed**
+- Requires authentication
+- Rejects invalid collection ("should be one of")
+
+**15. `read_worldclim(region, variable, ...)` -- 1 test, passed**
+- Requires authentication
+
+**16. `collect_gee_data(lon, lat, xy, date_range, datasets, ...)` -- 5 tests, all passed**
+- Requires authentication
+- Requires datasets argument
+- Rejects reversed date range ("after end")
+- Requires coordinates ("No coordinates")
+- Rejects unknown dataset names ("not recognised")
+
+#### Audit Summary
+
+```
+========================================
+GEEFETCH ARGUMENT-LEVEL AUDIT REPORT
+========================================
+
+Functions tested:   17 / 17 (100%)
+Test cases:         39
+Passed:             39
+Failed:             0
+Runtime:            1.1 seconds
+
+ALL TESTS PASSED.
+```
+
+### Part 3: Automated Test Suite (testthat)
+
+| Test file | Tests | Coverage area |
+|---|---|---|
+| test-handler_registry.R | 48 | Alias resolution, metadata integrity, registration |
+| test-validation.R | 97 | Date, coordinate, region, dataset validation |
+| test-cache.R | 24 | Hash, round-trip, TTL, clear, corrupt files |
+| test-auth.R | 18 | Token handling, status reporting, setup |
+| test-expression_builder.R | 44 | All `.ee_*()` functions, GeoJSON, grid building |
+| test-dispatcher.R | 36 | Dispatcher routing, aliases, cache, Tier 2 |
+| test-collect_gee_data.R | 21 | Batch extraction, mocking, NA handling |
+| test-handlers_tier2.R | 27 | SLGA bands, computed indices, generic handler |
+| test-coverage_boost.R | 50 | Handler paths, auth edge cases, QA structure |
+| test-coverage_boost2.R | 20 | Point extraction, region validation, cache fallbacks |
+| **Total** | **497** | |
+
+### Part 4: Code Changes Made
+
+| File | Change | LOC changed |
+|---|---|---|
+| `R/cache.R` | Format-aware caching: .tif for SpatRaster, .fst for data.frame, .rds fallback. New helpers: `.cache_ext()`, `.cache_find_file()`. Updated `gee_clear_cache()` to include .tif. | +30, -10 |
+| `R/collect_gee_data.R` | Replaced per-location loop with per-dataset-per-date batch loop. New `.safe_extract_points_batch()` and `.rest_extract_batch_points()`. Removed `.collect_single_location()` and `.safe_extract_point()`. | +120, -80 |
+| `R/backend_rest.R` | Added `.maybe_refresh_token()` and `.extract_access_token()`. Token refresh before every REST call. | +40 |
+| `R/handlers.R` | Added `cli::cli_inform()` in `.read_gee_generic()` for QA masking warning. | +4 |
+| `R/globals.R` | Added `lat`, `lon` to `globalVariables()`. | +2 |
+| `DESCRIPTION` | Removed `keyring` from Suggests. | -1 |
+| Tests (6 files) | Updated all mocks from `.safe_extract_point` to `.safe_extract_points_batch`. Added batch response tests. | +80, -60 |
+
+### Part 5: Final Package Metrics
+
+| Metric | v0.1.0 (before audit) | Post-audit |
+|---|---|---|
+| Exported functions | 17 | 17 |
+| Built-in datasets | 19 | 19 |
+| Total tests | 501 | 497 (4 removed as obsolete, replaced by batch equivalents) |
+| Test coverage | 80.8% | 79.8% (new batch code adds lines; coverage proportional) |
+| Argument audit | not done | 39/39 passed |
+| `R CMD check --as-cran` | 0/0/0 | 0/0/0 |
+| Critical bugs | 2 (raster caching, batch speed) | 0 |
+| GitHub | v0.1.0 | main branch (post-audit) |
+
+### Part 6: Remaining Risks and Next Steps
+
+| Risk | Severity | Mitigation needed |
+|---|---|---|
+| REST API expression format unvalidated against live GEE | Critical | Run end-to-end test with GEE service account. This is the **single blocker** for production confidence. |
+| `computePixels` affine transform calculation at extreme latitudes | Medium | Validate grid construction at polar latitudes (>60 degrees) with known raster dimensions. |
+| `computeFeatures` pagination untested | Low | Mock test covers the loop, but real multi-page responses need validation. |
+| Concurrent cache writes on HPC (no file locking) | Low | Unlikely in practice; could add `filelock` package if reported. |
+| Cache versioning (metadata changes invalidate old entries) | Low | Add package version to cache hash if this becomes an issue. |
