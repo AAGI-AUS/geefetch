@@ -47,10 +47,14 @@ read_era5 <- function(
   max_tries = 3L,
   initial_delay = 1L
 ) {
-  backend <- rlang::arg_match(backend)
-  variable <- rlang::arg_match(variable)
+  backend <- rlang::arg_match(tolower(backend))
+  variable <- rlang::arg_match(tolower(variable))
 
-  did <- if (variable == "temperature") "era5_temp" else "era5_precip"
+  did <- data.table::fifelse(
+    variable == "temperature",
+    "era5_temp",
+    "era5_precip"
+  )
 
   read_gee(
     did,
