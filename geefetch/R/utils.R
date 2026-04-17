@@ -18,7 +18,7 @@
   if (is.null(date)) {
     cli::cli_abort(c(
       "{.arg {arg_name}} is required for this dataset.",
-      "i" = "Provide a date as {.val YYYY-MM-DD} character or a Date object."
+      i = "Provide a date as {.val YYYY-MM-DD} character or a Date object."
     ))
   }
 
@@ -31,7 +31,7 @@
   if (is.null(parsed) || is.na(parsed)) {
     cli::cli_abort(c(
       "Cannot parse {.arg {arg_name}} = {.val {date}} as a date.",
-      "i" = "Expected format: {.val YYYY-MM-DD} (e.g., {.val 2024-06-15})."
+      i = "Expected format: {.val YYYY-MM-DD} (e.g., {.val 2024-06-15})."
     ))
   }
 
@@ -44,7 +44,7 @@
       if (parsed < ds) {
         cli::cli_abort(c(
           "Date {.val {parsed}} is before {.val {dataset_id}} availability.",
-          "i" = "Earliest available date: {.val {ds}}."
+          i = "Earliest available date: {.val {ds}}."
         ))
       }
     }
@@ -53,7 +53,7 @@
       if (parsed > de) {
         cli::cli_abort(c(
           "Date {.val {parsed}} is after {.val {dataset_id}} availability.",
-          "i" = "Latest available date: {.val {de}}."
+          i = "Latest available date: {.val {de}}."
         ))
       }
     }
@@ -75,7 +75,7 @@
   if (is.null(date_range) || length(date_range) == 0L) {
     cli::cli_abort(c(
       "{.arg date_range} must not be empty.",
-      "i" = "Provide {.code c(start, end)} or an explicit date vector."
+      i = "Provide {.code c(start, end)} or an explicit date vector."
     ))
   }
 
@@ -89,8 +89,8 @@
   if (is.null(dates) || any(is.na(dates))) {
     cli::cli_abort(c(
       "Cannot parse {.arg date_range} as dates.",
-      "i" = "Expected format: {.val YYYY-MM-DD}.",
-      "i" = "Example: {.code c(\"2024-01-01\", \"2024-12-31\")}"
+      i = "Expected format: {.val YYYY-MM-DD}.",
+      i = "Example: {.code c(\"2024-01-01\", \"2024-12-31\")}"
     ))
   }
 
@@ -100,7 +100,7 @@
     if (dates[1L] > dates[2L]) {
       cli::cli_abort(c(
         "Start date {.val {dates[1L]}} is after end date {.val {dates[2L]}}.",
-        "i" = "Provide dates in chronological order."
+        i = "Provide dates in chronological order."
       ))
     }
     dates <- seq.Date(dates[1L], dates[2L], by = "day")
@@ -134,7 +134,7 @@
   if (value < limits[1L] || value > limits[2L]) {
     cli::cli_abort(c(
       "{.arg {name}} = {.val {value}} is out of range.",
-      "i" = "Valid range: [{limits[1L]}, {limits[2L]}]."
+      i = "Valid range: [{limits[1L]}, {limits[2L]}]."
     ))
   }
 
@@ -160,7 +160,7 @@
     if (!all(sf::st_geometry_type(xy) %in% c("POINT", "MULTIPOINT"))) {
       cli::cli_abort(c(
         "{.arg xy} must contain POINT geometries.",
-        "i" = "Got geometry type(s): {.val {unique(sf::st_geometry_type(xy))}}."
+        i = "Got geometry type(s): {.val {unique(sf::st_geometry_type(xy))}}."
       ))
     }
     # Transform to WGS84 if needed
@@ -198,7 +198,7 @@
       cli::cli_abort(c(
         "{.arg xy} must have columns named {.val lon}/{.val lat}, ",
         "{.val x}/{.val y}, or {.val longitude}/{.val latitude}.",
-        "i" = "Found columns: {.val {names(xy)}}."
+        i = "Found columns: {.val {names(xy)}}."
       ))
     }
     lon <- xy[[lon_col]]
@@ -209,7 +209,7 @@
   if (is.null(lon) || is.null(lat)) {
     cli::cli_abort(c(
       "No coordinates provided.",
-      "i" = "Provide {.arg lon} and {.arg lat} vectors, or an {.arg xy} object."
+      i = "Provide {.arg lon} and {.arg lat} vectors, or an {.arg xy} object."
     ))
   }
 
@@ -279,7 +279,7 @@
   if (!inherits(region, c("sf", "sfc"))) {
     cli::cli_abort(c(
       "{.arg region} must be an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
-      "i" = "Got class: {.val {class(region)}}."
+      i = "Got class: {.val {class(region)}}."
     ))
   }
 
@@ -317,7 +317,7 @@
     if (is.null(dots$date)) {
       cli::cli_abort(c(
         "Dataset {.val {did}} requires a {.arg date} argument.",
-        "i" = "Example: {.code read_gee(\"{did}\", date = \"2024-06-15\")}"
+        i = "Example: {.code read_gee(\"{did}\", date = \"2024-06-15\")}"
       ))
     }
     .validate_date(dots$date, "date", did)
@@ -338,7 +338,7 @@
       if (!dots$depth %in% valid_depths) {
         cli::cli_abort(c(
           "Invalid {.arg depth} = {.val {dots$depth}} for SLGA dataset.",
-          "i" = "Valid depths: {.val {valid_depths}}."
+          i = "Valid depths: {.val {valid_depths}}."
         ))
       }
     }
@@ -347,7 +347,7 @@
       if (!dots$stat %in% valid_stats) {
         cli::cli_abort(c(
           "Invalid {.arg stat} = {.val {dots$stat}} for SLGA dataset.",
-          "i" = "Valid stats: {.val {valid_stats}}."
+          i = "Valid stats: {.val {valid_stats}}."
         ))
       }
     }

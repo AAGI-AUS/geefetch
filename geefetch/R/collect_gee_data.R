@@ -90,7 +90,7 @@ collect_gee_data <- function(
   verbose = TRUE,
   na.rm = FALSE
 ) {
-  backend <- match.arg(backend)
+  backend <- rlang::arg_match(backend)
 
   # 1. Parse and validate coordinates
   coords <- .parse_coordinates(lon, lat, xy)
@@ -102,7 +102,7 @@ collect_gee_data <- function(
   if (is.null(datasets) || length(datasets) == 0L) {
     cli::cli_abort(c(
       "{.arg datasets} must be a non-empty character vector.",
-      "i" = "Use {.code gee_datasets()} to see available datasets."
+      i = "Use {.code gee_datasets()} to see available datasets."
     ))
   }
   resolved <- vapply(
@@ -289,7 +289,7 @@ collect_gee_data <- function(
       cli::cli_warn(c(
         "!" = "Batch extraction failed for {.val {did}}",
         "!" = if (!is.null(date)) paste0("Date: ", date) else "Static dataset",
-        "i" = conditionMessage(e)
+        i = conditionMessage(e)
       ))
       rep(NA_real_, n_pts)
     }
@@ -468,8 +468,8 @@ collect_gee_data <- function(
   if (!rlang::is_installed("rgee")) {
     cli::cli_abort(c(
       "The {.pkg rgee} package is required for {.code backend = \"rgee\"}.",
-      "i" = "Install with: {.code install.packages(\"rgee\")}",
-      "i" = "Or use {.code backend = \"rest\"} (default, no Python needed)."
+      i = "Install with: {.code install.packages(\"rgee\")}",
+      i = "Or use {.code backend = \"rest\"} (default, no Python needed)."
     ))
   }
   cli::cli_abort("rgee point extraction not yet implemented.")

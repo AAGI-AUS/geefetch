@@ -78,7 +78,7 @@ gee_auth <- function(
     if (!file.exists(path)) {
       cli::cli_abort(c(
         "Service account key file not found: {.path {path}}",
-        "i" = "Download a key from Google Cloud Console > IAM > Service Accounts."
+        i = "Download a key from Google Cloud Console > IAM > Service Accounts."
       ))
     }
     token <- gargle::credentials_service_account(
@@ -97,8 +97,8 @@ gee_auth <- function(
   if (is.null(token)) {
     cli::cli_abort(c(
       "GEE authentication failed.",
-      "i" = "Run {.code gee_setup()} for guided setup instructions.",
-      "i" = "Or try {.code gee_auth(email = NA)} to force account selection."
+      i = "Run {.code gee_setup()} for guided setup instructions.",
+      i = "Or try {.code gee_auth(email = NA)} to force account selection."
     ))
   }
 
@@ -109,7 +109,7 @@ gee_auth <- function(
 
   cli::cli_inform(c(
     "v" = "GEE authentication successful.",
-    "i" = "Project: {.val {(.geefetch_env$project)}}"
+    i = "Project: {.val {(.geefetch_env$project)}}"
   ))
 
   invisible(token)
@@ -149,16 +149,16 @@ gee_auth <- function(
     if (is.null(.gee_token())) {
       cli::cli_abort(c(
         "Not authenticated with Google Earth Engine.",
-        "i" = "Run {.code gee_auth()} to authenticate.",
-        "i" = "Run {.code gee_setup()} for first-time setup instructions."
+        i = "Run {.code gee_auth()} to authenticate.",
+        i = "Run {.code gee_setup()} for first-time setup instructions."
       ))
     }
   } else if (backend == "rgee") {
     if (!rlang::is_installed("rgee")) {
       cli::cli_abort(c(
         "The {.pkg rgee} package is required for {.code backend = \"rgee\"}.",
-        "i" = "Install with: {.code install.packages(\"rgee\")}",
-        "i" = "Or use {.code backend = \"rest\"} (default, no Python needed)."
+        i = "Install with: {.code install.packages(\"rgee\")}",
+        i = "Or use {.code backend = \"rest\"} (default, no Python needed)."
       ))
     }
   }

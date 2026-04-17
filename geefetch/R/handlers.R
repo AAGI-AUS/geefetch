@@ -208,8 +208,8 @@
   if (is.null(region)) {
     cli::cli_abort(c(
       "{.arg region} is required for raster extraction.",
-      "i" = "Provide an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
-      "i" = "Example: {.code terra::ext(138, 140, -36, -34)}"
+      i = "Provide an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
+      i = "Example: {.code terra::ext(138, 140, -36, -34)}"
     ))
   }
 
@@ -289,7 +289,7 @@
   if (is.na(code)) {
     cli::cli_abort(c(
       "Invalid SLGA depth: {.val {depth}}.",
-      "i" = "Valid depths: {.val {names(map)}}"
+      i = "Valid depths: {.val {names(map)}}"
     ))
   }
   unname(code)
@@ -303,7 +303,7 @@
   if (is.na(code)) {
     cli::cli_abort(c(
       "Invalid SLGA stat: {.val {stat}}.",
-      "i" = "Valid stats: {.val {names(map)}}"
+      i = "Valid stats: {.val {names(map)}}"
     ))
   }
   unname(code)
@@ -409,7 +409,7 @@
 
   # Inform user that generic handler applies no QA masking
   cli::cli_inform(c(
-    "i" = "Using generic handler for {.val {did}} (no QA masking applied)."
+    i = "Using generic handler for {.val {did}} (no QA masking applied)."
   ))
 
   date <- if (meta$temporal != "static") {
@@ -464,12 +464,12 @@
   if (!rlang::is_installed("rgee")) {
     cli::cli_abort(c(
       "The {.pkg rgee} package is required for {.code backend = \"rgee\"}.",
-      "i" = "Install with: {.code install.packages(\"rgee\")}",
-      "i" = "Or use {.code backend = \"rest\"} (default, no Python needed)."
+      i = "Install with: {.code install.packages(\"rgee\")}",
+      i = "Or use {.code backend = \"rest\"} (default, no Python needed)."
     ))
   }
   cli::cli_abort(c(
     "rgee backend handlers are not yet implemented.",
-    "i" = "Use {.code backend = \"rest\"} (default) for now."
+    i = "Use {.code backend = \"rest\"} (default) for now."
   ))
 }

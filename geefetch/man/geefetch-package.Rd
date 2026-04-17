@@ -21,7 +21,7 @@ Useful links:
 
 Authors:
 \itemize{
-  \item Adam H. Sparks \email{adam.sparks@dpird.wa.gov.au} (\href{https://orcid.org/0000-0002-0061-8359}{ORCID})
+  \item Adam H. Sparks \email{adam.sparks@curtin.edu.au} (\href{https://orcid.org/0000-0002-0061-8359}{ORCID})
 }
 
 }

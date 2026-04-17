@@ -468,7 +468,7 @@
   if (!is.character(dataset_id) || length(dataset_id) != 1L) {
     cli::cli_abort(c(
       "{.arg dataset_id} must be a single character string.",
-      "i" = "Use {.code gee_datasets()} to list available datasets."
+      i = "Use {.code gee_datasets()} to list available datasets."
     ))
   }
 
@@ -503,9 +503,9 @@
   available <- sort(unique(c(names(.GEE_ALIASES), names(.GEE_META))))
   cli::cli_abort(c(
     "Dataset {.val {dataset_id}} is not recognised.",
-    "i" = "Available datasets: {.val {names(.GEE_META)}}",
-    "i" = "Available aliases: {.val {names(.GEE_ALIASES)}}",
-    "i" = "Use {.code gee_datasets()} to browse all datasets with metadata."
+    i = "Available datasets: {.val {names(.GEE_META)}}",
+    i = "Available aliases: {.val {names(.GEE_ALIASES)}}",
+    i = "Use {.code gee_datasets()} to browse all datasets with metadata."
   ))
 }
 
@@ -653,7 +653,7 @@ gee_register_dataset <- function(
   if (name %in% names(.GEE_META)) {
     cli::cli_abort(c(
       "Cannot overwrite built-in dataset {.val {name}}.",
-      "i" = "Choose a different name for your custom dataset."
+      i = "Choose a different name for your custom dataset."
     ))
   }
 
@@ -686,8 +686,8 @@ gee_register_dataset <- function(
 
   cli::cli_inform(c(
     "v" = "Registered custom dataset {.val {name}}.",
-    "i" = "Collection: {.val {collection}}",
-    "i" = "Available via {.code read_gee({.val {name}})} and {.code collect_gee_data()}."
+    i = "Collection: {.val {collection}}",
+    i = "Available via {.code read_gee({.val {name}})} and {.code collect_gee_data()}."
   ))
 
   invisible(NULL)

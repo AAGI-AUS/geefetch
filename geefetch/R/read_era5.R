@@ -47,8 +47,8 @@ read_era5 <- function(
   max_tries = 3L,
   initial_delay = 1
 ) {
-  backend <- match.arg(backend)
-  variable <- match.arg(variable)
+  backend <- rlang::arg_match(backend)
+  variable <- rlang::arg_match(variable)
 
   did <- if (variable == "temperature") "era5_temp" else "era5_precip"
 

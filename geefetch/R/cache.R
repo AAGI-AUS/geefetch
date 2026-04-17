@@ -139,7 +139,7 @@
     error = function(e) {
       cli::cli_warn(c(
         "!" = "Corrupt cache file removed: {.path {fpath}}",
-        "i" = "Will re-fetch from GEE."
+        i = "Will re-fetch from GEE."
       ))
       unlink(fpath)
       NULL
@@ -198,8 +198,8 @@
     error = function(e) {
       cli::cli_warn(c(
         "!" = "Failed to write to disk cache.",
-        "i" = "Result is cached in memory only for this session.",
-        "i" = "Error: {conditionMessage(e)}"
+        i = "Result is cached in memory only for this session.",
+        i = "Error: {conditionMessage(e)}"
       ))
     }
   )

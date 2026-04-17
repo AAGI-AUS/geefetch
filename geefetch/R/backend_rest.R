@@ -296,8 +296,8 @@ NULL
   if (is.na(width) || is.na(height) || width <= 0L || height <= 0L) {
     cli::cli_abort(c(
       "Cannot compute grid dimensions for the given region and scale.",
-      "i" = "Region: xmin={xmin}, ymin={ymin}, xmax={xmax}, ymax={ymax}",
-      "i" = "Scale: {scale}m, pixel_size: {round(pixel_size_deg, 6)} deg"
+      i = "Region: xmin={xmin}, ymin={ymin}, xmax={xmax}, ymax={ymax}",
+      i = "Scale: {scale}m, pixel_size: {round(pixel_size_deg, 6)} deg"
     ))
   }
 
@@ -309,7 +309,7 @@ NULL
     pixel_size_deg <- pixel_size_deg * scale_ratio
     cli::cli_warn(c(
       "!" = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
-      "i" = "Resampling to {width}x{height} pixels."
+      i = "Resampling to {width}x{height} pixels."
     ))
   }
 
@@ -353,7 +353,7 @@ NULL
   if (is.null(token)) {
     cli::cli_abort(c(
       "Not authenticated. Run {.code gee_auth()} first.",
-      "i" = "See {.code gee_setup()} for first-time configuration."
+      i = "See {.code gee_setup()} for first-time configuration."
     ))
   }
 
@@ -390,8 +390,8 @@ NULL
       cli::cli_abort(c(
         "GEE REST API request failed.",
         "x" = conditionMessage(e),
-        "i" = "Check your authentication with {.code gee_status()}.",
-        "i" = "Endpoint: {.val {url}}"
+        i = "Check your authentication with {.code gee_status()}.",
+        i = "Endpoint: {.val {url}}"
       ))
     }
   )
@@ -408,20 +408,20 @@ NULL
     hints <- character()
     if (status == 403L && grepl("API has not been used", err_msg)) {
       hints <- c(
-        "i" = "The Earth Engine API is not enabled on your Google Cloud project.",
-        "i" = "To fix: visit the link in the error above and click 'Enable'.",
-        "i" = "Then wait 2-3 minutes and try again.",
-        "i" = "See {.code gee_setup()} for full setup instructions."
+        i = "The Earth Engine API is not enabled on your Google Cloud project.",
+        i = "To fix: visit the link in the error above and click 'Enable'.",
+        i = "Then wait 2-3 minutes and try again.",
+        i = "See {.code gee_setup()} for full setup instructions."
       )
     } else if (status == 401L) {
       hints <- c(
-        "i" = "Your authentication token may have expired.",
-        "i" = "Run {.code gee_auth()} to re-authenticate."
+        i = "Your authentication token may have expired.",
+        i = "Run {.code gee_auth()} to re-authenticate."
       )
     } else if (status == 429L) {
       hints <- c(
-        "i" = "Rate limit exceeded. Wait a moment and retry.",
-        "i" = "Consider using {.code cache = TRUE} to avoid repeated calls."
+        i = "Rate limit exceeded. Wait a moment and retry.",
+        i = "Consider using {.code cache = TRUE} to avoid repeated calls."
       )
     }
 
@@ -429,7 +429,7 @@ NULL
       "GEE REST API error (HTTP {status}).",
       "x" = err_msg,
       hints,
-      "i" = "Endpoint: {.val {url}}"
+      i = "Endpoint: {.val {url}}"
     ))
   }
 
@@ -607,8 +607,8 @@ NULL
     # Default: small region for safety (won't request the whole globe)
     cli::cli_abort(c(
       "{.arg region} is required for raster extraction via REST API.",
-      "i" = "Provide an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
-      "i" = paste0("Example: {.code terra::ext(138, 140, -36, -34)}")
+      i = "Provide an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
+      i = paste0("Example: {.code terra::ext(138, 140, -36, -34)}")
     ))
   }
 
