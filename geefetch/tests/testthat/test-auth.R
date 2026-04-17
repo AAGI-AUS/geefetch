@@ -8,8 +8,17 @@ test_that("gee_status() returns expected structure", {
 
   result <- gee_status()
   expect_type(result, "list")
-  expect_named(result, c("authenticated", "project", "rgee_available",
-                          "cache_dir", "cache_size", "n_datasets"))
+  expect_named(
+    result,
+    c(
+      "authenticated",
+      "project",
+      "rgee_available",
+      "cache_dir",
+      "cache_size",
+      "n_datasets"
+    )
+  )
   expect_false(result$authenticated)
   expect_true(is.character(result$project))
   expect_true(is.logical(result$rgee_available))

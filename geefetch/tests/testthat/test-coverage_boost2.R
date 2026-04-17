@@ -20,7 +20,9 @@ test_that(".read_gee_modis_lst builds and extracts", {
   )
   result <- .read_gee_modis_lst(
     dots = list(date = "2024-06-15", region = terra::ext(138, 140, -36, -34)),
-    backend = "rest", max_tries = 1L, initial_delay = 0
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_s4_class(result, "SpatRaster")
 })
@@ -33,7 +35,9 @@ test_that(".read_gee_era5_precip builds and extracts", {
   )
   result <- .read_gee_era5_precip(
     dots = list(date = "2024-06-15", region = terra::ext(138, 140, -36, -34)),
-    backend = "rest", max_tries = 1L, initial_delay = 0
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_s4_class(result, "SpatRaster")
 })
@@ -46,7 +50,9 @@ test_that(".read_gee_chirps builds and extracts", {
   )
   result <- .read_gee_chirps(
     dots = list(date = "2024-06-15", region = terra::ext(138, 140, -36, -34)),
-    backend = "rest", max_tries = 1L, initial_delay = 0
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_s4_class(result, "SpatRaster")
 })
@@ -57,7 +63,9 @@ test_that("handler rgee backend aborts with message", {
   expect_error(
     .read_gee_modis_ndvi(
       dots = list(date = "2024-06-15", region = terra::ext(138, 140, -36, -34)),
-      backend = "rgee", max_tries = 1L, initial_delay = 0
+      backend = "rgee",
+      max_tries = 1L,
+      initial_delay = 0
     ),
     "rgee.*not yet implemented|rgee.*required"
   )
@@ -76,7 +84,8 @@ test_that(".rest_extract_batch_points handles time-series with band match", {
     meta = .GEE_META$chirps_precip,
     date = as.Date("2024-06-15"),
     coords = coords,
-    max_tries = 1L, initial_delay = 0
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_equal(vals, 12.5)
 })
@@ -92,7 +101,8 @@ test_that(".rest_extract_batch_points returns NA when band not in response", {
     meta = .GEE_META$chirps_precip,
     date = as.Date("2024-06-15"),
     coords = coords,
-    max_tries = 1L, initial_delay = 0
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_true(is.na(vals))
 })
@@ -113,9 +123,11 @@ test_that("read_gee returns cached raster on hit", {
   )
   .cache_set("era5_temp", cache_key, fake_rast)
 
-  result <- read_gee("era5_temp",
-                     date = "2024-01-01",
-                     region = terra::ext(138, 140, -36, -34))
+  result <- read_gee(
+    "era5_temp",
+    date = "2024-01-01",
+    region = terra::ext(138, 140, -36, -34)
+  )
   expect_s4_class(result, "SpatRaster")
 })
 
@@ -127,7 +139,12 @@ test_that(".validate_date handles POSIXct input", {
 })
 
 test_that(".parse_date_range returns sorted unique dates", {
-  dates <- .parse_date_range(as.Date(c("2024-01-05", "2024-01-01", "2024-01-03", "2024-01-01")))
+  dates <- .parse_date_range(as.Date(c(
+    "2024-01-05",
+    "2024-01-01",
+    "2024-01-03",
+    "2024-01-01"
+  )))
   expect_equal(length(dates), 3L)
   expect_equal(dates[1L], as.Date("2024-01-01"))
 })

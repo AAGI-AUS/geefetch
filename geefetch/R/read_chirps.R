@@ -33,18 +33,22 @@
 #'                       region = terra::ext(138, 140, -36, -34))
 #'
 #' @export
-read_chirps <- function(date,
-                        region,
-                        backend = c("rest", "rgee"),
-                        cache = TRUE,
-                        max_tries = 3L,
-                        initial_delay = 1) {
+read_chirps <- function(
+  date,
+  region,
+  backend = c("rest", "rgee"),
+  cache = TRUE,
+  max_tries = 3L,
+  initial_delay = 1
+) {
   backend <- match.arg(backend)
-  read_gee("chirps_precip",
-           date          = date,
-           region        = region,
-           backend       = backend,
-           cache         = cache,
-           max_tries     = max_tries,
-           initial_delay = initial_delay)
+  read_gee(
+    "chirps_precip",
+    date = date,
+    region = region,
+    backend = backend,
+    cache = cache,
+    max_tries = max_tries,
+    initial_delay = initial_delay
+  )
 }

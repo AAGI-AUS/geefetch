@@ -7,7 +7,7 @@ test_that(".cache_hash produces consistent SHA256 hashes", {
 
   expect_equal(h1, h2)
   expect_false(h1 == h3)
-  expect_true(nchar(h1) > 0L)  # digest length depends on algo
+  expect_true(nchar(h1) > 0L) # digest length depends on algo
 })
 
 test_that(".cache_hash is order-independent for parameter names", {

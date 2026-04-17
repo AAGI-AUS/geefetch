@@ -14,18 +14,16 @@
 #' @noRd
 .ee_mask_modis_vi <- function(image_node) {
   # Select the QA band
- qa <- .ee_select(image_node, "SummaryQA")
+  qa <- .ee_select(image_node, "SummaryQA")
   # QA <= 1 means good or marginal quality
   # bitwiseAnd with 3 (mask for the 2-bit quality field), then lte 1
-  mask <- .ee_call("Image.lte",
+  mask <- .ee_call(
+    "Image.lte",
     image1 = qa,
     image2 = .ee_call("Image.constant", value = .ee_const(1L))
   )
   # Apply mask: updateMask keeps pixels where mask == 1
-  .ee_call("Image.updateMask",
-    image = image_node,
-    mask  = mask
-  )
+  .ee_call("Image.updateMask", image = image_node, mask = mask)
 }
 
 
@@ -41,18 +39,17 @@
 .ee_mask_modis_lst <- function(image_node) {
   qa <- .ee_select(image_node, "QC_Day")
   # bitwiseAnd(3) extracts bits 0-1; eq(0) keeps only good quality
-  bits01 <- .ee_call("Image.bitwiseAnd",
+  bits01 <- .ee_call(
+    "Image.bitwiseAnd",
     image1 = qa,
     image2 = .ee_call("Image.constant", value = .ee_const(3L))
   )
-  mask <- .ee_call("Image.eq",
+  mask <- .ee_call(
+    "Image.eq",
     image1 = bits01,
     image2 = .ee_call("Image.constant", value = .ee_const(0L))
   )
-  .ee_call("Image.updateMask",
-    image = image_node,
-    mask  = mask
-  )
+  .ee_call("Image.updateMask", image = image_node, mask = mask)
 }
 
 
@@ -70,23 +67,32 @@
 .ee_mask_s2_scl <- function(image_node) {
   scl <- .ee_select(image_node, "SCL")
   # Keep pixels where SCL is in {4, 5, 6, 7}
-  mask_4 <- .ee_call("Image.eq", image1 = scl,
-                      image2 = .ee_call("Image.constant", value = .ee_const(4L)))
-  mask_5 <- .ee_call("Image.eq", image1 = scl,
-                      image2 = .ee_call("Image.constant", value = .ee_const(5L)))
-  mask_6 <- .ee_call("Image.eq", image1 = scl,
-                      image2 = .ee_call("Image.constant", value = .ee_const(6L)))
-  mask_7 <- .ee_call("Image.eq", image1 = scl,
-                      image2 = .ee_call("Image.constant", value = .ee_const(7L)))
+  mask_4 <- .ee_call(
+    "Image.eq",
+    image1 = scl,
+    image2 = .ee_call("Image.constant", value = .ee_const(4L))
+  )
+  mask_5 <- .ee_call(
+    "Image.eq",
+    image1 = scl,
+    image2 = .ee_call("Image.constant", value = .ee_const(5L))
+  )
+  mask_6 <- .ee_call(
+    "Image.eq",
+    image1 = scl,
+    image2 = .ee_call("Image.constant", value = .ee_const(6L))
+  )
+  mask_7 <- .ee_call(
+    "Image.eq",
+    image1 = scl,
+    image2 = .ee_call("Image.constant", value = .ee_const(7L))
+  )
   # OR them together
   mask <- .ee_call("Image.Or", image1 = mask_4, image2 = mask_5)
   mask <- .ee_call("Image.Or", image1 = mask, image2 = mask_6)
   mask <- .ee_call("Image.Or", image1 = mask, image2 = mask_7)
 
-  .ee_call("Image.updateMask",
-    image = image_node,
-    mask  = mask
-  )
+  .ee_call("Image.updateMask", image = image_node, mask = mask)
 }
 
 
@@ -102,19 +108,18 @@
 .ee_mask_landsat_qa <- function(image_node) {
   qa <- .ee_select(image_node, "QA_PIXEL")
   # Bits 3,4,5 = cloud shadow, cloud, snow -> combined mask = 56
-  bits <- .ee_call("Image.bitwiseAnd",
+  bits <- .ee_call(
+    "Image.bitwiseAnd",
     image1 = qa,
     image2 = .ee_call("Image.constant", value = .ee_const(56L))
   )
   # Mask where bits are zero (clear)
-  mask <- .ee_call("Image.eq",
+  mask <- .ee_call(
+    "Image.eq",
     image1 = bits,
     image2 = .ee_call("Image.constant", value = .ee_const(0L))
   )
-  .ee_call("Image.updateMask",
-    image = image_node,
-    mask  = mask
-  )
+  .ee_call("Image.updateMask", image = image_node, mask = mask)
 }
 
 

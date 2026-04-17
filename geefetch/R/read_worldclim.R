@@ -47,20 +47,24 @@
 #'                          variable = "bio12")
 #'
 #' @export
-read_worldclim <- function(region,
-                           variable = "bio01",
-                           backend = c("rest", "rgee"),
-                           cache = TRUE,
-                           max_tries = 3L,
-                           initial_delay = 1) {
+read_worldclim <- function(
+  region,
+  variable = "bio01",
+  backend = c("rest", "rgee"),
+  cache = TRUE,
+  max_tries = 3L,
+  initial_delay = 1
+) {
   backend <- match.arg(backend)
 
   # Override the band in metadata via dots
-  read_gee("worldclim_bio",
-           region        = region,
-           variable      = variable,
-           backend       = backend,
-           cache         = cache,
-           max_tries     = max_tries,
-           initial_delay = initial_delay)
+  read_gee(
+    "worldclim_bio",
+    region = region,
+    variable = variable,
+    backend = backend,
+    cache = cache,
+    max_tries = max_tries,
+    initial_delay = initial_delay
+  )
 }

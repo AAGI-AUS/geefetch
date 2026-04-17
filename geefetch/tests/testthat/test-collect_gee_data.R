@@ -8,8 +8,11 @@ test_that("collect_gee_data requires datasets argument", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    collect_gee_data(lon = 138.6, lat = -34.9,
-                     date_range = c("2024-01-01", "2024-01-05")),
+    collect_gee_data(
+      lon = 138.6,
+      lat = -34.9,
+      date_range = c("2024-01-01", "2024-01-05")
+    ),
     "datasets.*must be"
   )
 })
@@ -20,8 +23,10 @@ test_that("collect_gee_data validates coordinates", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    collect_gee_data(date_range = c("2024-01-01", "2024-01-05"),
-                     datasets = "modis_ndvi"),
+    collect_gee_data(
+      date_range = c("2024-01-01", "2024-01-05"),
+      datasets = "modis_ndvi"
+    ),
     "No coordinates"
   )
 })
@@ -32,9 +37,12 @@ test_that("collect_gee_data validates date_range", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    collect_gee_data(lon = 138.6, lat = -34.9,
-                     date_range = c("2024-12-31", "2024-01-01"),
-                     datasets = "modis_ndvi"),
+    collect_gee_data(
+      lon = 138.6,
+      lat = -34.9,
+      date_range = c("2024-12-31", "2024-01-01"),
+      datasets = "modis_ndvi"
+    ),
     "after end date"
   )
 })
@@ -45,9 +53,12 @@ test_that("collect_gee_data validates dataset names", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    collect_gee_data(lon = 138.6, lat = -34.9,
-                     date_range = c("2024-01-01", "2024-01-05"),
-                     datasets = c("modis_ndvi", "nonexistent")),
+    collect_gee_data(
+      lon = 138.6,
+      lat = -34.9,
+      date_range = c("2024-01-01", "2024-01-05"),
+      datasets = c("modis_ndvi", "nonexistent")
+    ),
     "not recognised"
   )
 })
@@ -58,9 +69,12 @@ test_that("collect_gee_data requires authentication", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    collect_gee_data(lon = 138.6, lat = -34.9,
-                     date_range = c("2024-01-01", "2024-01-05"),
-                     datasets = "modis_ndvi"),
+    collect_gee_data(
+      lon = 138.6,
+      lat = -34.9,
+      date_range = c("2024-01-01", "2024-01-05"),
+      datasets = "modis_ndvi"
+    ),
     "Not authenticated"
   )
 })
@@ -73,12 +87,15 @@ test_that("collect_gee_data accepts sf input", {
   skip_if_not_installed("sf")
   pts <- sf::st_as_sf(
     data.frame(lon = 138.6, lat = -34.9),
-    coords = c("lon", "lat"), crs = 4326
+    coords = c("lon", "lat"),
+    crs = 4326
   )
   expect_error(
-    collect_gee_data(xy = pts,
-                     date_range = c("2024-01-01", "2024-01-02"),
-                     datasets = "modis_ndvi"),
+    collect_gee_data(
+      xy = pts,
+      date_range = c("2024-01-01", "2024-01-02"),
+      datasets = "modis_ndvi"
+    ),
     "Not authenticated"
   )
 })
@@ -89,9 +106,12 @@ test_that("collect_gee_data resolves aliases in datasets", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    collect_gee_data(lon = 138.6, lat = -34.9,
-                     date_range = c("2024-01-01", "2024-01-02"),
-                     datasets = c("NDVI", "SRTM")),
+    collect_gee_data(
+      lon = 138.6,
+      lat = -34.9,
+      date_range = c("2024-01-01", "2024-01-02"),
+      datasets = c("NDVI", "SRTM")
+    ),
     "Not authenticated"
   )
 })
@@ -105,16 +125,21 @@ test_that(".safe_extract_points_batch returns NA vector on error", {
   )
 
   coords <- data.table::data.table(
-    point_id = 1:2, lon = c(138.6, 149.1), lat = c(-34.9, -35.3)
+    point_id = 1:2,
+    lon = c(138.6, 149.1),
+    lat = c(-34.9, -35.3)
   )
 
   expect_warning(
     vals <- .safe_extract_points_batch(
       meta = .GEE_META$era5_temp,
       date = as.Date("2024-01-01"),
-      coords = coords, did = "era5_temp",
-      backend = "rest", cache = FALSE,
-      max_tries = 1L, initial_delay = 0
+      coords = coords,
+      did = "era5_temp",
+      backend = "rest",
+      cache = FALSE,
+      max_tries = 1L,
+      initial_delay = 0
     ),
     "Batch extraction failed"
   )
@@ -130,8 +155,9 @@ test_that("collect_gee_data with mock produces correct output shape", {
   local_mocked_bindings(
     .safe_extract_points_batch = function(meta, date, coords, did, ...) {
       n <- nrow(coords)
-      switch(did,
-        modis_ndvi     = rep(0.65, n),
+      switch(
+        did,
+        modis_ndvi = rep(0.65, n),
         srtm_elevation = rep(200.0, n),
         rep(NA_real_, n)
       )
@@ -149,8 +175,10 @@ test_that("collect_gee_data with mock produces correct output shape", {
   expect_s3_class(dt, "data.table")
   # 2 locations x 3 dates = 6 rows
   expect_equal(nrow(dt), 6L)
-  expect_true(all(c("point_id", "lon", "lat", "date",
-                     "modis_ndvi", "srtm_elevation") %in% names(dt)))
+  expect_true(all(
+    c("point_id", "lon", "lat", "date", "modis_ndvi", "srtm_elevation") %in%
+      names(dt)
+  ))
   expect_equal(unique(dt$modis_ndvi), 0.65)
   expect_equal(unique(dt$srtm_elevation), 200.0)
   expect_equal(sort(unique(dt$point_id)), c(1L, 2L))
@@ -173,7 +201,8 @@ test_that("collect_gee_data na.rm removes all-NA rows", {
   )
 
   dt <- collect_gee_data(
-    lon = 138.6, lat = -34.9,
+    lon = 138.6,
+    lat = -34.9,
     date_range = c("2024-01-01", "2024-01-03"),
     datasets = "modis_ndvi",
     na.rm = TRUE,
@@ -196,7 +225,8 @@ test_that("collect_gee_data column order is correct", {
   )
 
   dt <- collect_gee_data(
-    lon = 138.6, lat = -34.9,
+    lon = 138.6,
+    lat = -34.9,
     date_range = c("2024-01-01", "2024-01-01"),
     datasets = c("era5_temp", "modis_ndvi"),
     verbose = FALSE
@@ -216,7 +246,8 @@ test_that("collect_gee_data verbose mode prints info", {
 
   expect_message(
     collect_gee_data(
-      lon = 138.6, lat = -34.9,
+      lon = 138.6,
+      lat = -34.9,
       date_range = c("2024-01-01", "2024-01-01"),
       datasets = "modis_ndvi",
       verbose = TRUE
@@ -235,7 +266,12 @@ test_that(".print_collection_info runs without error", {
   is_static <- c(FALSE, TRUE)
 
   expect_no_error(
-    .print_collection_info(coords, dates, resolved, is_static,
-                           .gee_combined_meta())
+    .print_collection_info(
+      coords,
+      dates,
+      resolved,
+      is_static,
+      .gee_combined_meta()
+    )
   )
 })

@@ -38,11 +38,14 @@ NULL
 .maybe_refresh_token <- function(token) {
   # Only refresh real gargle tokens, not test strings
   if (inherits(token, "Token2.0") || inherits(token, "request")) {
-    tryCatch({
-      if (is.function(token$refresh)) token$refresh()
-    }, error = function(e) {
-      # Refresh failed — token may still be valid, proceed
-    })
+    tryCatch(
+      {
+        if (is.function(token$refresh)) token$refresh()
+      },
+      error = function(e) {
+        # Refresh failed — token may still be valid, proceed
+      }
+    )
   }
   # Update stored token
   .geefetch_env$token <- token
@@ -57,7 +60,9 @@ NULL
 #' @returns Character. Access token string.
 #' @noRd
 .extract_access_token <- function(token) {
-  if (is.character(token)) return(token)
+  if (is.character(token)) {
+    return(token)
+  }
   if (!is.null(token$credentials$access_token)) {
     return(token$credentials$access_token)
   }
@@ -85,10 +90,12 @@ NULL
 #' @noRd
 .ee_call <- function(fn_name, ...) {
   args <- list(...)
-  list(functionInvocationValue = list(
-    functionName = fn_name,
-    arguments    = args
-  ))
+  list(
+    functionInvocationValue = list(
+      functionName = fn_name,
+      arguments = args
+    )
+  )
 }
 
 #' Create an EE constant value node
@@ -121,17 +128,15 @@ NULL
 #' Create an EE DateRange node
 #' @noRd
 .ee_date_range <- function(start, end) {
-  .ee_call("DateRange",
-    start = .ee_date(start),
-    end   = .ee_date(end)
-  )
+  .ee_call("DateRange", start = .ee_date(start), end = .ee_date(end))
 }
 
 #' Create a date filter node
 #' @noRd
 .ee_date_filter <- function(start, end) {
-  .ee_call("Filter.dateRangeContains",
-    leftValue  = .ee_date_range(start, end),
+  .ee_call(
+    "Filter.dateRangeContains",
+    leftValue = .ee_date_range(start, end),
     rightField = .ee_const("system:time_start")
   )
 }
@@ -151,9 +156,10 @@ NULL
 #' Filter a collection by date
 #' @noRd
 .ee_filter_date <- function(collection_node, start, end) {
-  .ee_call("Collection.filter",
+  .ee_call(
+    "Collection.filter",
     collection = collection_node,
-    filter     = .ee_date_filter(start, end)
+    filter = .ee_date_filter(start, end)
   )
 }
 
@@ -172,8 +178,9 @@ NULL
 #' Select bands from an image
 #' @noRd
 .ee_select <- function(image_node, bands) {
-  .ee_call("Image.select",
-    input         = image_node,
+  .ee_call(
+    "Image.select",
+    input = image_node,
     bandSelectors = .ee_const(as.list(bands))
   )
 }
@@ -181,8 +188,11 @@ NULL
 #' Apply scale factor: image * scale_factor
 #' @noRd
 .ee_multiply <- function(image_node, factor) {
-  if (identical(factor, 1) || identical(factor, 1L)) return(image_node)
-  .ee_call("Image.multiply",
+  if (identical(factor, 1) || identical(factor, 1L)) {
+    return(image_node)
+  }
+  .ee_call(
+    "Image.multiply",
     image1 = image_node,
     image2 = .ee_call("Image.constant", value = .ee_const(factor))
   )
@@ -191,8 +201,11 @@ NULL
 #' Apply offset: image + offset
 #' @noRd
 .ee_add <- function(image_node, offset) {
-  if (identical(offset, 0) || identical(offset, 0L)) return(image_node)
-  .ee_call("Image.add",
+  if (identical(offset, 0) || identical(offset, 0L)) {
+    return(image_node)
+  }
+  .ee_call(
+    "Image.add",
     image1 = image_node,
     image2 = .ee_call("Image.constant", value = .ee_const(offset))
   )
@@ -208,10 +221,11 @@ NULL
 #' Build Image.sampleRegions expression for point extraction
 #' @noRd
 .ee_sample_regions <- function(image_node, points_geojson, scale) {
-  .ee_call("Image.sampleRegions",
-    image      = image_node,
+  .ee_call(
+    "Image.sampleRegions",
+    image = image_node,
     collection = .ee_const(points_geojson),
-    scale      = .ee_const(as.integer(scale)),
+    scale = .ee_const(as.integer(scale)),
     geometries = .ee_const(TRUE)
   )
 }
@@ -219,11 +233,12 @@ NULL
 #' Build Image.reduceRegions expression for polygon extraction
 #' @noRd
 .ee_reduce_regions <- function(image_node, regions_geojson, reducer, scale) {
-  .ee_call("Image.reduceRegions",
-    image      = image_node,
+  .ee_call(
+    "Image.reduceRegions",
+    image = image_node,
     collection = .ee_const(regions_geojson),
-    reducer    = .ee_call(paste0("Reducer.", reducer)),
-    scale      = .ee_const(as.integer(scale))
+    reducer = .ee_call(paste0("Reducer.", reducer)),
+    scale = .ee_const(as.integer(scale))
   )
 }
 
@@ -274,7 +289,7 @@ NULL
   deg_per_m <- 1 / (111320 * cos(mid_lat * pi / 180))
   pixel_size_deg <- scale * deg_per_m
 
-  width  <- as.integer(ceiling((xmax - xmin) / pixel_size_deg))
+  width <- as.integer(ceiling((xmax - xmin) / pixel_size_deg))
   height <- as.integer(ceiling((ymax - ymin) / pixel_size_deg))
 
   # Guard against NA/NaN from degenerate inputs
@@ -289,7 +304,7 @@ NULL
   # Clamp to max_dim
   if (width > max_dim || height > max_dim) {
     scale_ratio <- max(width, height) / max_dim
-    width  <- as.integer(ceiling(width / scale_ratio))
+    width <- as.integer(ceiling(width / scale_ratio))
     height <- as.integer(ceiling(height / scale_ratio))
     pixel_size_deg <- pixel_size_deg * scale_ratio
     cli::cli_warn(c(
@@ -301,11 +316,11 @@ NULL
   list(
     dimensions = list(width = width, height = height),
     affineTransform = list(
-      scaleX     = pixel_size_deg,
-      shearX     = 0,
+      scaleX = pixel_size_deg,
+      shearX = 0,
       translateX = xmin,
-      shearY     = 0,
-      scaleY     = -pixel_size_deg,
+      shearY = 0,
+      scaleY = -pixel_size_deg,
       translateY = ymax
     ),
     crsCode = "EPSG:4326"
@@ -327,11 +342,13 @@ NULL
 #'
 #' @returns Parsed JSON response as a list, or raw bytes if raw = TRUE.
 #' @noRd
-.rest_request <- function(endpoint,
-                          body = NULL,
-                          max_tries = 3L,
-                          initial_delay = 1,
-                          raw = FALSE) {
+.rest_request <- function(
+  endpoint,
+  body = NULL,
+  max_tries = 3L,
+  initial_delay = 1,
+  raw = FALSE
+) {
   token <- .gee_token()
   if (is.null(token)) {
     cli::cli_abort(c(
@@ -350,8 +367,9 @@ NULL
   access_token <- .extract_access_token(token)
 
   req <- httr2::request(url)
-  req <- httr2::req_headers(req,
-    Authorization  = paste("Bearer", access_token),
+  req <- httr2::req_headers(
+    req,
+    Authorization = paste("Bearer", access_token),
     `Content-Type` = "application/json"
   )
 
@@ -359,10 +377,9 @@ NULL
     req <- httr2::req_body_json(req, body, auto_unbox = TRUE)
   }
 
-  req <- httr2::req_retry(req,
-    max_tries = max_tries,
-    backoff   = function(i) initial_delay * 2^(i - 1L)
-  )
+  req <- httr2::req_retry(req, max_tries = max_tries, backoff = function(i) {
+    initial_delay * 2^(i - 1L)
+  })
 
   # Don't error on HTTP status — we handle it ourselves
   req <- httr2::req_error(req, is_error = function(resp) FALSE)
@@ -434,15 +451,17 @@ NULL
 #'
 #' @returns A terra::rast() SpatRaster.
 #' @noRd
-.rest_compute_pixels <- function(expression,
-                                 grid,
-                                 bands = NULL,
-                                 max_tries = 3L,
-                                 initial_delay = 1) {
+.rest_compute_pixels <- function(
+  expression,
+  grid,
+  bands = NULL,
+  max_tries = 3L,
+  initial_delay = 1
+) {
   body <- list(
     expression = .ee_expression(expression),
     fileFormat = "GEO_TIFF",
-    grid       = grid
+    grid = grid
   )
   if (!is.null(bands)) {
     body$bandIds <- as.list(bands)
@@ -450,10 +469,10 @@ NULL
 
   raw_bytes <- .rest_request(
     "image:computePixels",
-    body          = body,
-    max_tries     = max_tries,
+    body = body,
+    max_tries = max_tries,
     initial_delay = initial_delay,
-    raw           = TRUE
+    raw = TRUE
   )
 
   # Write to temp file and read with terra
@@ -472,12 +491,14 @@ NULL
 #'
 #' @returns A data.table of extracted values.
 #' @noRd
-.rest_compute_features <- function(expression,
-                                   max_tries = 3L,
-                                   initial_delay = 1) {
+.rest_compute_features <- function(
+  expression,
+  max_tries = 3L,
+  initial_delay = 1
+) {
   body <- list(
     expression = .ee_expression(expression),
-    pageSize   = 5000L
+    pageSize = 5000L
   )
 
   all_features <- list()
@@ -490,8 +511,8 @@ NULL
 
     resp <- .rest_request(
       "table:computeFeatures",
-      body          = body,
-      max_tries     = max_tries,
+      body = body,
+      max_tries = max_tries,
       initial_delay = initial_delay
     )
 
@@ -546,13 +567,14 @@ NULL
 #'
 #' @returns A terra::rast() SpatRaster.
 #' @noRd
-.rest_extract_raster <- function(meta,
-                                 date = NULL,
-                                 region = NULL,
-                                 bands = NULL,
-                                 max_tries = 3L,
-                                 initial_delay = 1) {
-
+.rest_extract_raster <- function(
+  meta,
+  date = NULL,
+  region = NULL,
+  bands = NULL,
+  max_tries = 3L,
+  initial_delay = 1
+) {
   bands <- bands %||% meta$bands
 
   # Build expression: load → filter → first → select → scale/offset
@@ -563,8 +585,9 @@ NULL
     # Time-series: filter collection by date window, take first
     date_start <- date
     # Expand date window to match temporal resolution
-    date_end <- switch(meta$temporal,
-      daily  = date + 1L,
+    date_end <- switch(
+      meta$temporal,
+      daily = date + 1L,
       "8day" = date + 8L,
       "16day" = date + 16L,
       "5day" = date + 5L,
@@ -594,10 +617,10 @@ NULL
   grid <- .build_grid(bbox = bbox, scale = meta$scale)
 
   .rest_compute_pixels(
-    expression    = img,
-    grid          = grid,
-    bands         = bands,
-    max_tries     = max_tries,
+    expression = img,
+    grid = grid,
+    bands = bands,
+    max_tries = max_tries,
     initial_delay = initial_delay
   )
 }
@@ -618,14 +641,15 @@ NULL
 #'
 #' @returns A data.table with point_id and extracted band values.
 #' @noRd
-.rest_extract_points <- function(meta,
-                                 date = NULL,
-                                 coords,
-                                 bands = NULL,
-                                 reducer = "first",
-                                 max_tries = 3L,
-                                 initial_delay = 1) {
-
+.rest_extract_points <- function(
+  meta,
+  date = NULL,
+  coords,
+  bands = NULL,
+  reducer = "first",
+  max_tries = 3L,
+  initial_delay = 1
+) {
   bands <- bands %||% meta$bands
 
   # Build expression: load → filter → first → select → scale/offset
@@ -633,11 +657,12 @@ NULL
     img <- .ee_load_image(meta$collection)
   } else {
     date_start <- date
-    date_end <- switch(meta$temporal,
-      daily   = date + 1L,
-      "8day"  = date + 8L,
+    date_end <- switch(
+      meta$temporal,
+      daily = date + 1L,
+      "8day" = date + 8L,
       "16day" = date + 16L,
-      "5day"  = date + 5L,
+      "5day" = date + 5L,
       monthly = lubridate::ceiling_date(date, "month"),
       date + 1L
     )
@@ -654,8 +679,8 @@ NULL
   sample_expr <- .ee_sample_regions(img, geojson, meta$scale)
 
   .rest_compute_features(
-    expression    = sample_expr,
-    max_tries     = max_tries,
+    expression = sample_expr,
+    max_tries = max_tries,
     initial_delay = initial_delay
   )
 }

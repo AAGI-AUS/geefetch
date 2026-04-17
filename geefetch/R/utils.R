@@ -3,7 +3,6 @@
 # All internal. Used by the dispatcher, batch extraction, and handlers.
 # Error messages follow nert's pattern: cli::cli_abort() with context.
 
-
 # ---- Date validation & parsing ----
 
 #' Validate and parse a single date
@@ -126,7 +125,11 @@
     cli::cli_abort("{.arg {name}} must be a single non-NA numeric value.")
   }
 
-  limits <- if (name %in% c("lon", "x", "longitude")) c(-180, 180) else c(-90, 90)
+  limits <- if (name %in% c("lon", "x", "longitude")) {
+    c(-180, 180)
+  } else {
+    c(-90, 90)
+  }
 
   if (value < limits[1L] || value > limits[2L]) {
     cli::cli_abort(c(
@@ -152,7 +155,6 @@
 #'
 #' @noRd
 .parse_coordinates <- function(lon = NULL, lat = NULL, xy = NULL) {
-
   # Case 1: sf object
   if (!is.null(xy) && inherits(xy, "sf")) {
     if (!all(sf::st_geometry_type(xy) %in% c("POINT", "MULTIPOINT"))) {
@@ -168,15 +170,17 @@
     coords <- sf::st_coordinates(xy)
     dt <- data.table::data.table(
       point_id = seq_len(nrow(coords)),
-      lon      = coords[, 1L],
-      lat      = coords[, 2L]
+      lon = coords[, 1L],
+      lat = coords[, 2L]
     )
     return(dt)
   }
 
   # Case 2: data.frame or matrix with lon/lat or x/y columns
   if (!is.null(xy)) {
-    if (is.matrix(xy)) xy <- as.data.frame(xy)
+    if (is.matrix(xy)) {
+      xy <- as.data.frame(xy)
+    }
     if (!is.data.frame(xy)) {
       cli::cli_abort("{.arg xy} must be a data.frame, matrix, or sf object.")
     }
@@ -221,8 +225,8 @@
 
   data.table::data.table(
     point_id = seq_along(lon),
-    lon      = as.numeric(lon),
-    lat      = as.numeric(lat)
+    lon = as.numeric(lon),
+    lat = as.numeric(lat)
   )
 }
 
@@ -255,16 +259,21 @@
 #'
 #' @noRd
 .validate_region <- function(region) {
-  if (is.null(region)) return(NULL)
+  if (is.null(region)) {
+    return(NULL)
+  }
 
   if (inherits(region, "SpatExtent")) {
     # Convert terra extent to sf bbox polygon
-    region <- sf::st_as_sfc(sf::st_bbox(c(
-      xmin = terra::xmin(region),
-      ymin = terra::ymin(region),
-      xmax = terra::xmax(region),
-      ymax = terra::ymax(region)
-    ), crs = sf::st_crs(4326)))
+    region <- sf::st_as_sfc(sf::st_bbox(
+      c(
+        xmin = terra::xmin(region),
+        ymin = terra::ymin(region),
+        xmax = terra::xmax(region),
+        ymax = terra::ymax(region)
+      ),
+      crs = sf::st_crs(4326)
+    ))
   }
 
   if (!inherits(region, c("sf", "sfc"))) {
@@ -298,7 +307,9 @@
 #' @noRd
 .gee_validate_args <- function(did, dots) {
   meta <- .gee_combined_meta()[[did]]
-  if (is.null(meta)) return(invisible(NULL))
+  if (is.null(meta)) {
+    return(invisible(NULL))
+  }
 
   # Time-series datasets require a date
 
@@ -315,7 +326,15 @@
   # SLGA-specific: validate depth and stat if provided
   if (startsWith(did, "slga_")) {
     if (!is.null(dots$depth)) {
-      valid_depths <- c("0-5", "5-15", "15-30", "30-60", "60-100", "100-200", "all")
+      valid_depths <- c(
+        "0-5",
+        "5-15",
+        "15-30",
+        "30-60",
+        "60-100",
+        "100-200",
+        "all"
+      )
       if (!dots$depth %in% valid_depths) {
         cli::cli_abort(c(
           "Invalid {.arg depth} = {.val {dots$depth}} for SLGA dataset.",

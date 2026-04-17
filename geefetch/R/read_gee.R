@@ -68,13 +68,14 @@
 #'                         region = terra::ext(138, 140, -36, -34))
 #'
 #' @export
-read_gee <- function(dataset_id,
-                     ...,
-                     backend = c("rest", "rgee"),
-                     cache = TRUE,
-                     max_tries = 3L,
-                     initial_delay = 1) {
-
+read_gee <- function(
+  dataset_id,
+  ...,
+  backend = c("rest", "rgee"),
+  cache = TRUE,
+  max_tries = 3L,
+  initial_delay = 1
+) {
   backend <- match.arg(backend)
 
   # 1. Resolve alias to normalised dataset ID
@@ -98,14 +99,20 @@ read_gee <- function(dataset_id,
   #    Tier 1: dataset-specific handlers with QA masking
   #    Tier 2: dataset-specific handlers (SLGA, computed indices)
   #    Default: generic handler (works for any metadata-only dataset)
-  result <- switch(did,
+  result <- switch(
+    did,
 
     # Tier 1 — specialised handlers
-    modis_ndvi     = .read_gee_modis_ndvi(dots, backend, max_tries, initial_delay),
-    modis_lst      = .read_gee_modis_lst(dots, backend, max_tries, initial_delay),
-    era5_temp      = .read_gee_era5_temp(dots, backend, max_tries, initial_delay),
-    era5_precip    = .read_gee_era5_precip(dots, backend, max_tries, initial_delay),
-    chirps_precip  = .read_gee_chirps(dots, backend, max_tries, initial_delay),
+    modis_ndvi = .read_gee_modis_ndvi(dots, backend, max_tries, initial_delay),
+    modis_lst = .read_gee_modis_lst(dots, backend, max_tries, initial_delay),
+    era5_temp = .read_gee_era5_temp(dots, backend, max_tries, initial_delay),
+    era5_precip = .read_gee_era5_precip(
+      dots,
+      backend,
+      max_tries,
+      initial_delay
+    ),
+    chirps_precip = .read_gee_chirps(dots, backend, max_tries, initial_delay),
     srtm_elevation = .read_gee_srtm(dots, backend, max_tries, initial_delay),
 
     # Tier 2 — SLGA soil (attribute extracted from dataset ID)
@@ -118,8 +125,13 @@ read_gee <- function(dataset_id,
     slga_nto = .read_gee_slga(dots, backend, max_tries, initial_delay, "NTO"),
 
     # Tier 2 — computed indices
-    sentinel2_ndvi = .read_gee_sentinel2(dots, backend, max_tries, initial_delay),
-    landsat_ndvi   = .read_gee_landsat(dots, backend, max_tries, initial_delay),
+    sentinel2_ndvi = .read_gee_sentinel2(
+      dots,
+      backend,
+      max_tries,
+      initial_delay
+    ),
+    landsat_ndvi = .read_gee_landsat(dots, backend, max_tries, initial_delay),
 
     # Default: generic handler (Tier 3 built-ins + user-registered)
     .read_gee_generic(dots, did, backend, max_tries, initial_delay)

@@ -79,7 +79,8 @@ test_that(".parse_coordinates transforms non-WGS84 sf points", {
   skip_if_not_installed("sf")
   pts_utm <- sf::st_as_sf(
     data.frame(x = 500000, y = 6100000),
-    coords = c("x", "y"), crs = 32754
+    coords = c("x", "y"),
+    crs = 32754
   )
   dt <- .parse_coordinates(xy = pts_utm)
   expect_true(dt$lon[1] > 100 && dt$lon[1] < 180)
@@ -126,7 +127,7 @@ test_that("cache uses RDS when fst not available", {
 })
 
 test_that(".cache_set warns on disk write failure", {
-  skip_on_os("windows")  # Path handling differs on Windows
+  skip_on_os("windows") # Path handling differs on Windows
   # Use a non-writable directory
   withr::local_options(list(geefetch.cache_dir = "/nonexistent/path"))
   .geefetch_env$mem_cache <- NULL
@@ -195,7 +196,9 @@ test_that(".read_gee_modis_ndvi builds correct expression", {
 
   result <- .read_gee_modis_ndvi(
     dots = list(date = "2024-06-15", region = terra::ext(138, 140, -36, -34)),
-    backend = "rest", max_tries = 1L, initial_delay = 0
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_s4_class(result, "SpatRaster")
 })
@@ -209,7 +212,9 @@ test_that(".read_gee_era5_temp builds correct expression", {
 
   result <- .read_gee_era5_temp(
     dots = list(date = "2024-06-15", region = terra::ext(138, 140, -36, -34)),
-    backend = "rest", max_tries = 1L, initial_delay = 0
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_s4_class(result, "SpatRaster")
 })
@@ -223,7 +228,9 @@ test_that(".read_gee_srtm builds correct expression", {
 
   result <- .read_gee_srtm(
     dots = list(region = terra::ext(138, 140, -36, -34)),
-    backend = "rest", max_tries = 1L, initial_delay = 0
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_s4_class(result, "SpatRaster")
 })
@@ -238,9 +245,14 @@ test_that(".read_gee_slga builds correct band name", {
   )
 
   result <- .read_gee_slga(
-    dots = list(region = terra::ext(138, 140, -36, -34),
-                depth = "30-60", stat = "ci_upper"),
-    backend = "rest", max_tries = 1L, initial_delay = 0,
+    dots = list(
+      region = terra::ext(138, 140, -36, -34),
+      depth = "30-60",
+      stat = "ci_upper"
+    ),
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0,
     attribute = "PHC"
   )
   expect_s4_class(result, "SpatRaster")
@@ -257,7 +269,9 @@ test_that(".read_gee_sentinel2 applies SCL masking and computes NDVI", {
 
   result <- .read_gee_sentinel2(
     dots = list(date = "2024-06-15", region = terra::ext(138, 139, -35, -34)),
-    backend = "rest", max_tries = 1L, initial_delay = 0
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_s4_class(result, "SpatRaster")
 })
@@ -273,7 +287,9 @@ test_that(".read_gee_landsat applies QA masking and computes NDVI", {
 
   result <- .read_gee_landsat(
     dots = list(date = "2024-06-15", region = terra::ext(138, 140, -36, -34)),
-    backend = "rest", max_tries = 1L, initial_delay = 0
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_s4_class(result, "SpatRaster")
 })
@@ -290,7 +306,9 @@ test_that(".read_gee_generic works for worldclim with variable override", {
   result <- .read_gee_generic(
     dots = list(region = terra::ext(138, 140, -36, -34), variable = "bio12"),
     did = "worldclim_bio",
-    backend = "rest", max_tries = 1L, initial_delay = 0
+    backend = "rest",
+    max_tries = 1L,
+    initial_delay = 0
   )
   expect_s4_class(result, "SpatRaster")
 })
@@ -431,7 +449,8 @@ test_that("collect_gee_data verbose mode prints info table", {
 
   expect_message(
     collect_gee_data(
-      lon = 138.6, lat = -34.9,
+      lon = 138.6,
+      lat = -34.9,
       date_range = c("2024-01-01", "2024-01-01"),
       datasets = "modis_ndvi",
       verbose = TRUE

@@ -53,27 +53,30 @@
 #'                      collection = "SND", stat = "ci_lower")
 #'
 #' @export
-read_slga <- function(region,
-                      collection = c("CLY", "SND", "SLT", "AWC",
-                                     "BDW", "PHC", "NTO"),
-                      depth = "0-5",
-                      stat = c("mean", "ci_lower", "ci_upper"),
-                      backend = c("rest", "rgee"),
-                      cache = TRUE,
-                      max_tries = 3L,
-                      initial_delay = 1) {
-  backend    <- match.arg(backend)
+read_slga <- function(
+  region,
+  collection = c("CLY", "SND", "SLT", "AWC", "BDW", "PHC", "NTO"),
+  depth = "0-5",
+  stat = c("mean", "ci_lower", "ci_upper"),
+  backend = c("rest", "rgee"),
+  cache = TRUE,
+  max_tries = 3L,
+  initial_delay = 1
+) {
+  backend <- match.arg(backend)
   collection <- match.arg(collection)
-  stat       <- match.arg(stat)
+  stat <- match.arg(stat)
 
   did <- paste0("slga_", tolower(collection))
 
-  read_gee(did,
-           region        = region,
-           depth         = depth,
-           stat          = stat,
-           backend       = backend,
-           cache         = cache,
-           max_tries     = max_tries,
-           initial_delay = initial_delay)
+  read_gee(
+    did,
+    region = region,
+    depth = depth,
+    stat = stat,
+    backend = backend,
+    cache = cache,
+    max_tries = max_tries,
+    initial_delay = initial_delay
+  )
 }

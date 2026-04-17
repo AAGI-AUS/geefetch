@@ -40,18 +40,22 @@
 #' terra::plot(ndvi)
 #'
 #' @export
-read_modis_ndvi <- function(date,
-                            region,
-                            backend = c("rest", "rgee"),
-                            cache = TRUE,
-                            max_tries = 3L,
-                            initial_delay = 1) {
+read_modis_ndvi <- function(
+  date,
+  region,
+  backend = c("rest", "rgee"),
+  cache = TRUE,
+  max_tries = 3L,
+  initial_delay = 1
+) {
   backend <- match.arg(backend)
-  read_gee("modis_ndvi",
-           date          = date,
-           region        = region,
-           backend       = backend,
-           cache         = cache,
-           max_tries     = max_tries,
-           initial_delay = initial_delay)
+  read_gee(
+    "modis_ndvi",
+    date = date,
+    region = region,
+    backend = backend,
+    cache = cache,
+    max_tries = max_tries,
+    initial_delay = initial_delay
+  )
 }

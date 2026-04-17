@@ -6,8 +6,11 @@ test_that("read_gee requires authentication", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    read_gee("modis_ndvi", date = "2024-06-15",
-             region = terra::ext(138, 140, -36, -34)),
+    read_gee(
+      "modis_ndvi",
+      date = "2024-06-15",
+      region = terra::ext(138, 140, -36, -34)
+    ),
     "Not authenticated"
   )
 })
@@ -77,10 +80,12 @@ test_that("read_gee routes to cache on repeated call", {
   .cache_set("modis_ndvi", cache_key, fake_result)
   withr::defer(.geefetch_env$mem_cache <- NULL)
 
-  result <- read_gee("modis_ndvi",
-                     date = "2024-06-15",
-                     region = terra::ext(138, 140, -36, -34),
-                     cache = TRUE)
+  result <- read_gee(
+    "modis_ndvi",
+    date = "2024-06-15",
+    region = terra::ext(138, 140, -36, -34),
+    cache = TRUE
+  )
   expect_s4_class(result, "SpatRaster")
 })
 
@@ -93,8 +98,10 @@ test_that("read_modis_ndvi delegates to read_gee", {
 
   # Should hit auth check, proving it goes through read_gee
   expect_error(
-    read_modis_ndvi(date = "2024-06-15",
-                    region = terra::ext(138, 140, -36, -34)),
+    read_modis_ndvi(
+      date = "2024-06-15",
+      region = terra::ext(138, 140, -36, -34)
+    ),
     "Not authenticated"
   )
 })
@@ -105,8 +112,10 @@ test_that("read_modis_lst delegates to read_gee", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    read_modis_lst(date = "2024-06-15",
-                   region = terra::ext(138, 140, -36, -34)),
+    read_modis_lst(
+      date = "2024-06-15",
+      region = terra::ext(138, 140, -36, -34)
+    ),
     "Not authenticated"
   )
 })
@@ -117,16 +126,20 @@ test_that("read_era5 delegates with variable routing", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    read_era5(date = "2024-06-15",
-              region = terra::ext(138, 140, -36, -34),
-              variable = "temperature"),
+    read_era5(
+      date = "2024-06-15",
+      region = terra::ext(138, 140, -36, -34),
+      variable = "temperature"
+    ),
     "Not authenticated"
   )
 
   expect_error(
-    read_era5(date = "2024-06-15",
-              region = terra::ext(138, 140, -36, -34),
-              variable = "precipitation"),
+    read_era5(
+      date = "2024-06-15",
+      region = terra::ext(138, 140, -36, -34),
+      variable = "precipitation"
+    ),
     "Not authenticated"
   )
 })
@@ -137,8 +150,7 @@ test_that("read_chirps delegates to read_gee", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    read_chirps(date = "2024-06-15",
-                region = terra::ext(138, 140, -36, -34)),
+    read_chirps(date = "2024-06-15", region = terra::ext(138, 140, -36, -34)),
     "Not authenticated"
   )
 })
@@ -156,8 +168,10 @@ test_that("read_srtm delegates without date", {
 
 test_that("read_era5 validates variable argument", {
   expect_error(
-    read_era5(date = "2024-06-15",
-              region = terra::ext(138, 140, -36, -34),
-              variable = "wind_speed")
+    read_era5(
+      date = "2024-06-15",
+      region = terra::ext(138, 140, -36, -34),
+      variable = "wind_speed"
+    )
   )
 })

@@ -25,8 +25,14 @@ test_that(".gee_resolve_id rejects invalid inputs", {
 
 test_that(".GEE_META has required fields for all datasets", {
   required_fields <- c(
-    "collection", "bands", "scale", "temporal",
-    "scale_factor", "offset", "domain", "description"
+    "collection",
+    "bands",
+    "scale",
+    "temporal",
+    "scale_factor",
+    "offset",
+    "domain",
+    "description"
   )
   for (nm in names(.GEE_META)) {
     meta <- .GEE_META[[nm]]
@@ -44,7 +50,12 @@ test_that(".GEE_META temporal values are valid", {
   for (nm in names(.GEE_META)) {
     expect_true(
       .GEE_META[[nm]]$temporal %in% valid_temporal,
-      info = paste0("Dataset '", nm, "' has invalid temporal: ", .GEE_META[[nm]]$temporal)
+      info = paste0(
+        "Dataset '",
+        nm,
+        "' has invalid temporal: ",
+        .GEE_META[[nm]]$temporal
+      )
     )
   }
 })
@@ -54,7 +65,13 @@ test_that("all .GEE_ALIASES point to valid dataset IDs", {
     target <- .GEE_ALIASES[[alias_name]]
     expect_true(
       target %in% names(.GEE_META),
-      info = paste0("Alias '", alias_name, "' -> '", target, "' not in .GEE_META")
+      info = paste0(
+        "Alias '",
+        alias_name,
+        "' -> '",
+        target,
+        "' not in .GEE_META"
+      )
     )
   }
 })
@@ -62,8 +79,17 @@ test_that("all .GEE_ALIASES point to valid dataset IDs", {
 test_that("gee_datasets() returns a data.table with expected columns", {
   dt <- gee_datasets()
   expect_s3_class(dt, "data.table")
-  expect_true(all(c("dataset", "collection", "domain", "resolution",
-                     "temporal", "description") %in% names(dt)))
+  expect_true(all(
+    c(
+      "dataset",
+      "collection",
+      "domain",
+      "resolution",
+      "temporal",
+      "description"
+    ) %in%
+      names(dt)
+  ))
   expect_true(nrow(dt) >= length(.GEE_META))
 })
 
@@ -82,11 +108,11 @@ test_that("gee_register_dataset() adds custom dataset to registry", {
 
   expect_message(
     gee_register_dataset(
-      name        = "test_custom",
-      collection  = "TEST/COLLECTION",
-      bands       = "band1",
-      scale       = 100L,
-      temporal    = "daily",
+      name = "test_custom",
+      collection = "TEST/COLLECTION",
+      bands = "band1",
+      scale = 100L,
+      temporal = "daily",
       description = "Test custom dataset"
     ),
     "Registered"
@@ -103,11 +129,11 @@ test_that("gee_register_dataset() adds custom dataset to registry", {
 test_that("gee_register_dataset() rejects built-in name override", {
   expect_error(
     gee_register_dataset(
-      name        = "modis_ndvi",
-      collection  = "FAKE",
-      bands       = "b1",
-      scale       = 10L,
-      temporal    = "daily",
+      name = "modis_ndvi",
+      collection = "FAKE",
+      bands = "b1",
+      scale = 10L,
+      temporal = "daily",
       description = "Fake"
     ),
     "Cannot overwrite built-in"
@@ -117,11 +143,11 @@ test_that("gee_register_dataset() rejects built-in name override", {
 test_that("gee_register_dataset() validates temporal argument", {
   expect_error(
     gee_register_dataset(
-      name        = "bad_temporal",
-      collection  = "FAKE",
-      bands       = "b1",
-      scale       = 10L,
-      temporal    = "weekly",
+      name = "bad_temporal",
+      collection = "FAKE",
+      bands = "b1",
+      scale = 10L,
+      temporal = "weekly",
       description = "Bad"
     ),
     "weekly"
@@ -133,5 +159,7 @@ test_that("SLGA metadata constants are consistent", {
   expect_equal(length(.SLGA_DEPTH_LABELS), 6L)
   expect_equal(names(.SLGA_DEPTH_LABELS), .SLGA_DEPTHS)
   expect_equal(length(.SLGA_STATS), 3L)
-  expect_true(all(.SLGA_ATTRIBUTES %in% c("CLY", "SND", "AWC", "SLT", "BDW", "PHC", "NTO")))
+  expect_true(all(
+    .SLGA_ATTRIBUTES %in% c("CLY", "SND", "AWC", "SLT", "BDW", "PHC", "NTO")
+  ))
 })

@@ -38,23 +38,27 @@
 #'                     variable = "precipitation")
 #'
 #' @export
-read_era5 <- function(date,
-                      region,
-                      variable = c("temperature", "precipitation"),
-                      backend = c("rest", "rgee"),
-                      cache = TRUE,
-                      max_tries = 3L,
-                      initial_delay = 1) {
-  backend  <- match.arg(backend)
+read_era5 <- function(
+  date,
+  region,
+  variable = c("temperature", "precipitation"),
+  backend = c("rest", "rgee"),
+  cache = TRUE,
+  max_tries = 3L,
+  initial_delay = 1
+) {
+  backend <- match.arg(backend)
   variable <- match.arg(variable)
 
   did <- if (variable == "temperature") "era5_temp" else "era5_precip"
 
-  read_gee(did,
-           date          = date,
-           region        = region,
-           backend       = backend,
-           cache         = cache,
-           max_tries     = max_tries,
-           initial_delay = initial_delay)
+  read_gee(
+    did,
+    date = date,
+    region = region,
+    backend = backend,
+    cache = cache,
+    max_tries = max_tries,
+    initial_delay = initial_delay
+  )
 }

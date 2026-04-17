@@ -5,7 +5,6 @@
 
 # GEE OAuth scopes
 .GEE_SCOPES <- c(
-
   "https://www.googleapis.com/auth/earthengine",
   "https://www.googleapis.com/auth/cloud-platform"
 )
@@ -67,12 +66,13 @@
 #' gee_auth(email = "me@@gmail.com", project = "my-gee-project")
 #'
 #' @export
-gee_auth <- function(email = gargle::gargle_oauth_email(),
-                     path = NULL,
-                     project = NULL,
-                     scopes = .GEE_SCOPES,
-                     cache = gargle::gargle_oauth_cache()) {
-
+gee_auth <- function(
+  email = gargle::gargle_oauth_email(),
+  path = NULL,
+  project = NULL,
+  scopes = .GEE_SCOPES,
+  cache = gargle::gargle_oauth_cache()
+) {
   if (!is.null(path)) {
     # Service account flow
     if (!file.exists(path)) {
@@ -83,14 +83,14 @@ gee_auth <- function(email = gargle::gargle_oauth_email(),
     }
     token <- gargle::credentials_service_account(
       scopes = scopes,
-      path   = path
+      path = path
     )
   } else {
     # OAuth flow
     token <- gargle::token_fetch(
       scopes = scopes,
-      email  = email,
-      cache  = cache
+      email = email,
+      cache = cache
     )
   }
 
@@ -236,12 +236,12 @@ gee_status <- function() {
   cli::cli_alert_info("Registered datasets: {.val {n_datasets}}")
 
   invisible(list(
-    authenticated  = authed,
-    project        = .gee_project(),
+    authenticated = authed,
+    project = .gee_project(),
     rgee_available = rgee_avail,
-    cache_dir      = cache_dir,
-    cache_size     = cache_size,
-    n_datasets     = n_datasets
+    cache_dir = cache_dir,
+    cache_size = cache_size,
+    n_datasets = n_datasets
   ))
 }
 
@@ -289,7 +289,6 @@ gee_setup <- function() {
   )
   cli::cli_text("")
 
-
   # Step 3: Enable the Earth Engine API (REQUIRED)
   cli::cli_h2("Step 3: Enable the Earth Engine API (required)")
   cli::cli_text(
@@ -316,7 +315,9 @@ gee_setup <- function() {
   cli::cli_text("Run the following to authenticate:")
   cli::cli_code("gee_auth()")
   cli::cli_text("")
-  cli::cli_text("This opens a browser for Google OAuth (same as googlesheets4).")
+  cli::cli_text(
+    "This opens a browser for Google OAuth (same as googlesheets4)."
+  )
   cli::cli_text("For CI/servers, use a service account JSON key:")
   cli::cli_code('gee_auth(path = "service-account.json")')
 

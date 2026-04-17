@@ -24,8 +24,8 @@ test_that(".slga_stat_to_code rejects invalid stat", {
 
 test_that("SLGA band name construction is correct", {
   depth <- .slga_depth_to_code("15-30")
-  stat  <- .slga_stat_to_code("mean")
-  band  <- paste0("CLY", "_", depth, "_", stat)
+  stat <- .slga_stat_to_code("mean")
+  band <- paste0("CLY", "_", depth, "_", stat)
   expect_equal(band, "CLY_015_030_EV")
 })
 
@@ -35,16 +35,18 @@ test_that("read_slga routes through dispatcher", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    read_slga(region = terra::ext(138, 140, -36, -34),
-              collection = "PHC", depth = "30-60"),
+    read_slga(
+      region = terra::ext(138, 140, -36, -34),
+      collection = "PHC",
+      depth = "30-60"
+    ),
     "Not authenticated"
   )
 })
 
 test_that("read_slga validates collection argument", {
   expect_error(
-    read_slga(region = terra::ext(138, 140, -36, -34),
-              collection = "INVALID")
+    read_slga(region = terra::ext(138, 140, -36, -34), collection = "INVALID")
   )
 })
 
@@ -78,8 +80,10 @@ test_that("read_sentinel2 routes through dispatcher", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    read_sentinel2(date = "2024-06-15",
-                   region = terra::ext(138, 139, -35, -34)),
+    read_sentinel2(
+      date = "2024-06-15",
+      region = terra::ext(138, 139, -35, -34)
+    ),
     "Not authenticated"
   )
 })
@@ -90,8 +94,7 @@ test_that("read_landsat routes through dispatcher", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    read_landsat(date = "2024-06-15",
-                 region = terra::ext(138, 140, -36, -34)),
+    read_landsat(date = "2024-06-15", region = terra::ext(138, 140, -36, -34)),
     "Not authenticated"
   )
 })
@@ -115,8 +118,7 @@ test_that("WorldClim with variable argument doesn't error on validation", {
   withr::defer(.geefetch_env$token <- old_token)
 
   expect_error(
-    read_worldclim(region = terra::ext(138, 140, -36, -34),
-                   variable = "bio12"),
+    read_worldclim(region = terra::ext(138, 140, -36, -34), variable = "bio12"),
     "Not authenticated"
   )
 })
@@ -184,5 +186,5 @@ test_that("gee_datasets() includes Tier 3 datasets", {
   expect_true("worldclim_bio" %in% dt$dataset)
   expect_true("openlandmap_soc" %in% dt$dataset)
   expect_true("openlandmap_clay" %in% dt$dataset)
-  expect_true(nrow(dt) >= 18L)  # 6 T1 + 9 T2 + 4 T3 = 19
+  expect_true(nrow(dt) >= 18L) # 6 T1 + 9 T2 + 4 T3 = 19
 })

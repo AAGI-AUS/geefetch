@@ -77,17 +77,19 @@
 #' )
 #'
 #' @export
-collect_gee_data <- function(lon = NULL, lat = NULL,
-                             xy = NULL,
-                             date_range,
-                             datasets = NULL,
-                             depth = "0-5",
-                             stat = "mean",
-                             backend = c("rest", "rgee"),
-                             cache = TRUE,
-                             verbose = TRUE,
-                             na.rm = FALSE) {
-
+collect_gee_data <- function(
+  lon = NULL,
+  lat = NULL,
+  xy = NULL,
+  date_range,
+  datasets = NULL,
+  depth = "0-5",
+  stat = "mean",
+  backend = c("rest", "rgee"),
+  cache = TRUE,
+  verbose = TRUE,
+  na.rm = FALSE
+) {
   backend <- match.arg(backend)
 
   # 1. Parse and validate coordinates
@@ -103,20 +105,28 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
       "i" = "Use {.code gee_datasets()} to see available datasets."
     ))
   }
-  resolved <- vapply(datasets, .gee_resolve_id, character(1L),
-                     USE.NAMES = FALSE)
+  resolved <- vapply(
+    datasets,
+    .gee_resolve_id,
+    character(1L),
+    USE.NAMES = FALSE
+  )
 
   # 4. Check authentication
   .check_gee_auth(backend)
 
   # 5. Classify datasets: time-series vs static
   combined_meta <- .gee_combined_meta()
-  is_static <- vapply(resolved, function(did) {
-    meta <- combined_meta[[did]]
-    !is.null(meta) && identical(meta$temporal, "static")
-  }, logical(1L))
+  is_static <- vapply(
+    resolved,
+    function(did) {
+      meta <- combined_meta[[did]]
+      !is.null(meta) && identical(meta$temporal, "static")
+    },
+    logical(1L)
+  )
 
-  ts_datasets     <- resolved[!is_static]
+  ts_datasets <- resolved[!is_static]
   static_datasets <- resolved[is_static]
 
   # 6. Print info table (verbose)
@@ -130,9 +140,9 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
 
   dt <- data.table::data.table(
     point_id = rep(coords$point_id, each = n_dates),
-    lon      = rep(coords$lon, each = n_dates),
-    lat      = rep(coords$lat, each = n_dates),
-    date     = rep(dates, times = n_locs)
+    lon = rep(coords$lon, each = n_dates),
+    lat = rep(coords$lat, each = n_dates),
+    date = rep(dates, times = n_locs)
   )
 
   # 8. Extract: per-dataset (batching all points per API call)
@@ -158,9 +168,14 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
       pts_for_date <- coords
 
       vals <- .safe_extract_points_batch(
-        meta = meta, date = date_j, coords = pts_for_date,
-        did = did, backend = backend, cache = cache,
-        max_tries = 3L, initial_delay = 1
+        meta = meta,
+        date = date_j,
+        coords = pts_for_date,
+        did = did,
+        backend = backend,
+        cache = cache,
+        max_tries = 3L,
+        initial_delay = 1
       )
       all_vals[row_idx] <- vals
 
@@ -176,9 +191,14 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
     meta <- combined_meta[[did]]
 
     vals <- .safe_extract_points_batch(
-      meta = meta, date = NULL, coords = coords,
-      did = did, backend = backend, cache = cache,
-      max_tries = 3L, initial_delay = 1
+      meta = meta,
+      date = NULL,
+      coords = coords,
+      did = did,
+      backend = backend,
+      cache = cache,
+      max_tries = 3L,
+      initial_delay = 1
     )
 
     # Replicate static values across all dates for each point
@@ -230,15 +250,22 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
 #'
 #' @returns Numeric vector of length nrow(coords). NAs for failed points.
 #' @noRd
-.safe_extract_points_batch <- function(meta, date, coords, did,
-                                       backend, cache,
-                                       max_tries, initial_delay) {
-
+.safe_extract_points_batch <- function(
+  meta,
+  date,
+  coords,
+  did,
+  backend,
+  cache,
+  max_tries,
+  initial_delay
+) {
   n_pts <- nrow(coords)
 
   # Check batch cache first
   cache_key <- list(
-    type = "batch", did = did,
+    type = "batch",
+    did = did,
     date = as.character(date),
     pts_hash = digest::digest(coords[, .(lon, lat)], algo = "sha256")
   )
@@ -250,20 +277,23 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
     }
   }
 
-  result <- tryCatch({
-    if (backend == "rest") {
-      .rest_extract_batch_points(meta, date, coords, max_tries, initial_delay)
-    } else {
-      .rgee_extract_point(meta, date, coords[1L, ], max_tries, initial_delay)
+  result <- tryCatch(
+    {
+      if (backend == "rest") {
+        .rest_extract_batch_points(meta, date, coords, max_tries, initial_delay)
+      } else {
+        .rgee_extract_point(meta, date, coords[1L, ], max_tries, initial_delay)
+      }
+    },
+    error = function(e) {
+      cli::cli_warn(c(
+        "!" = "Batch extraction failed for {.val {did}}",
+        "!" = if (!is.null(date)) paste0("Date: ", date) else "Static dataset",
+        "i" = conditionMessage(e)
+      ))
+      rep(NA_real_, n_pts)
     }
-  }, error = function(e) {
-    cli::cli_warn(c(
-      "!" = "Batch extraction failed for {.val {did}}",
-      "!" = if (!is.null(date)) paste0("Date: ", date) else "Static dataset",
-      "i" = conditionMessage(e)
-    ))
-    rep(NA_real_, n_pts)
-  })
+  )
 
   if (cache && !all(is.na(result))) {
     .cache_set(did, cache_key, result)
@@ -280,9 +310,13 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
 #'
 #' @returns Numeric vector of length nrow(coords).
 #' @noRd
-.rest_extract_batch_points <- function(meta, date, coords,
-                                       max_tries, initial_delay) {
-
+.rest_extract_batch_points <- function(
+  meta,
+  date,
+  coords,
+  max_tries,
+  initial_delay
+) {
   bands <- meta$bands
   n_pts <- nrow(coords)
 
@@ -290,11 +324,12 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
   if (meta$temporal == "static") {
     img <- .ee_load_image(meta$collection)
   } else {
-    date_end <- switch(meta$temporal,
-      daily   = date + 1L,
-      "8day"  = date + 8L,
+    date_end <- switch(
+      meta$temporal,
+      daily = date + 1L,
+      "8day" = date + 8L,
       "16day" = date + 16L,
-      "5day"  = date + 5L,
+      "5day" = date + 5L,
       monthly = lubridate::ceiling_date(date, "month"),
       date + 1L
     )
@@ -318,8 +353,8 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
   sample_expr <- .ee_sample_regions(img, geojson, meta$scale)
 
   dt <- .rest_compute_features(
-    expression    = sample_expr,
-    max_tries     = max_tries,
+    expression = sample_expr,
+    max_tries = max_tries,
     initial_delay = initial_delay
   )
 
@@ -327,14 +362,17 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
   band_name <- if (length(bands) == 1L) bands else bands[1L]
   values <- rep(NA_real_, n_pts)
 
-  if (nrow(dt) > 0L && "point_id" %in% names(dt) &&
-      band_name %in% names(dt)) {
+  if (nrow(dt) > 0L && "point_id" %in% names(dt) && band_name %in% names(dt)) {
     for (i in seq_len(nrow(dt))) {
       pid <- dt$point_id[i]
       idx <- which(coords$point_id == pid)
       if (length(idx) == 1L) {
         val <- dt[[band_name]][i]
-        values[idx] <- if (is.null(val) || is.na(val)) NA_real_ else as.numeric(val)
+        values[idx] <- if (is.null(val) || is.na(val)) {
+          NA_real_
+        } else {
+          as.numeric(val)
+        }
       }
     }
   } else if (nrow(dt) > 0L && band_name %in% names(dt)) {
@@ -356,20 +394,25 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
 #'
 #' @returns Numeric value or NA_real_.
 #' @noRd
-.rest_extract_single_point <- function(meta, date, pt_coords,
-                                       max_tries, initial_delay) {
-
+.rest_extract_single_point <- function(
+  meta,
+  date,
+  pt_coords,
+  max_tries,
+  initial_delay
+) {
   bands <- meta$bands
 
   # Build image expression
   if (meta$temporal == "static") {
     img <- .ee_load_image(meta$collection)
   } else {
-    date_end <- switch(meta$temporal,
-      daily   = date + 1L,
-      "8day"  = date + 8L,
+    date_end <- switch(
+      meta$temporal,
+      daily = date + 1L,
+      "8day" = date + 8L,
       "16day" = date + 16L,
-      "5day"  = date + 5L,
+      "5day" = date + 5L,
       monthly = lubridate::ceiling_date(date, "month"),
       date + 1L
     )
@@ -393,12 +436,14 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
   sample_expr <- .ee_sample_regions(img, geojson, meta$scale)
 
   dt <- .rest_compute_features(
-    expression    = sample_expr,
-    max_tries     = max_tries,
+    expression = sample_expr,
+    max_tries = max_tries,
     initial_delay = initial_delay
   )
 
-  if (nrow(dt) == 0L) return(NA_real_)
+  if (nrow(dt) == 0L) {
+    return(NA_real_)
+  }
 
   # Extract the first band value
   band_name <- if (length(bands) == 1L) bands else bands[1L]
@@ -413,8 +458,13 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
 
 #' rgee point extraction fallback
 #' @noRd
-.rgee_extract_point <- function(meta, date, pt_coords,
-                                max_tries, initial_delay) {
+.rgee_extract_point <- function(
+  meta,
+  date,
+  pt_coords,
+  max_tries,
+  initial_delay
+) {
   if (!rlang::is_installed("rgee")) {
     cli::cli_abort(c(
       "The {.pkg rgee} package is required for {.code backend = \"rgee\"}.",
@@ -428,8 +478,13 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
 
 #' Print a summary table of what will be collected
 #' @noRd
-.print_collection_info <- function(coords, dates, resolved, is_static,
-                                   combined_meta) {
+.print_collection_info <- function(
+  coords,
+  dates,
+  resolved,
+  is_static,
+  combined_meta
+) {
   n_locs <- nrow(coords)
   n_dates <- length(dates)
   n_ts <- sum(!is_static)
@@ -445,11 +500,15 @@ collect_gee_data <- function(lon = NULL, lat = NULL,
 
   # Dataset table
   info_dt <- data.table::data.table(
-    dataset  = resolved,
-    type     = ifelse(is_static, "static", "time-series"),
-    domain   = vapply(resolved, function(d) {
-      combined_meta[[d]]$domain %||% "?"
-    }, character(1L))
+    dataset = resolved,
+    type = ifelse(is_static, "static", "time-series"),
+    domain = vapply(
+      resolved,
+      function(d) {
+        combined_meta[[d]]$domain %||% "?"
+      },
+      character(1L)
+    )
   )
   cli::cli_text("")
   print(info_dt, topn = 20L)

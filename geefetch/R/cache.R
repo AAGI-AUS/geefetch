@@ -10,7 +10,6 @@
 # Cache keys are SHA256 hashes of (dataset_id, extraction_parameters).
 # TTL: 30 days for dynamic datasets, infinite for static (SRTM, SLGA).
 
-
 #' Get the cache directory path
 #'
 #' Uses `tools::R_user_dir()` which is CRAN-compliant and cross-platform.
@@ -51,7 +50,7 @@
   # Sort parameter names for deterministic hashing
   key_parts <- list(
     dataset = did,
-    params  = params[order(names(params))]
+    params = params[order(names(params))]
   )
   digest::digest(key_parts, algo = "sha256")
 }
@@ -96,14 +95,20 @@
 
   # Layer 1: memory cache
   mem <- .geefetch_env$mem_cache[[hash]]
-  if (!is.null(mem)) return(mem)
+  if (!is.null(mem)) {
+    return(mem)
+  }
 
   # Layer 2: disk cache
   d <- .cache_dir()
-  if (!dir.exists(d)) return(NULL)
+  if (!dir.exists(d)) {
+    return(NULL)
+  }
 
   fpath <- .cache_find_file(d, hash)
-  if (is.null(fpath)) return(NULL)
+  if (is.null(fpath)) {
+    return(NULL)
+  }
 
   # Check TTL for dynamic datasets
   meta <- .gee_combined_meta()[[did]]
@@ -121,22 +126,25 @@
   }
 
   # Read from disk — format-aware
-  result <- tryCatch({
-    if (endsWith(fpath, ".tif")) {
-      terra::rast(fpath)
-    } else if (endsWith(fpath, ".fst") && rlang::is_installed("fst")) {
-      fst::read_fst(fpath, as.data.table = TRUE)
-    } else {
-      readRDS(fpath)
+  result <- tryCatch(
+    {
+      if (endsWith(fpath, ".tif")) {
+        terra::rast(fpath)
+      } else if (endsWith(fpath, ".fst") && rlang::is_installed("fst")) {
+        fst::read_fst(fpath, as.data.table = TRUE)
+      } else {
+        readRDS(fpath)
+      }
+    },
+    error = function(e) {
+      cli::cli_warn(c(
+        "!" = "Corrupt cache file removed: {.path {fpath}}",
+        "i" = "Will re-fetch from GEE."
+      ))
+      unlink(fpath)
+      NULL
     }
-  }, error = function(e) {
-    cli::cli_warn(c(
-      "!" = "Corrupt cache file removed: {.path {fpath}}",
-      "i" = "Will re-fetch from GEE."
-    ))
-    unlink(fpath)
-    NULL
-  })
+  )
 
   # Promote to memory cache
   if (!is.null(result)) {
@@ -177,21 +185,24 @@
   ext <- .cache_ext(result)
   fpath <- file.path(d, paste0(hash, ext))
 
-  tryCatch({
-    if (ext == ".tif") {
-      terra::writeRaster(result, fpath, overwrite = TRUE)
-    } else if (ext == ".fst") {
-      fst::write_fst(result, fpath)
-    } else {
-      saveRDS(result, fpath)
+  tryCatch(
+    {
+      if (ext == ".tif") {
+        terra::writeRaster(result, fpath, overwrite = TRUE)
+      } else if (ext == ".fst") {
+        fst::write_fst(result, fpath)
+      } else {
+        saveRDS(result, fpath)
+      }
+    },
+    error = function(e) {
+      cli::cli_warn(c(
+        "!" = "Failed to write to disk cache.",
+        "i" = "Result is cached in memory only for this session.",
+        "i" = "Error: {conditionMessage(e)}"
+      ))
     }
-  }, error = function(e) {
-    cli::cli_warn(c(
-      "!" = "Failed to write to disk cache.",
-      "i" = "Result is cached in memory only for this session.",
-      "i" = "Error: {conditionMessage(e)}"
-    ))
-  })
+  )
 
   invisible(NULL)
 }
@@ -227,7 +238,9 @@ gee_clear_cache <- function(older_than = NULL) {
   }
 
   files <- list.files(
-    d, pattern = "\\.(fst|rds|tif)$", full.names = TRUE
+    d,
+    pattern = "\\.(fst|rds|tif)$",
+    full.names = TRUE
   )
 
   if (length(files) == 0L) {

@@ -9,7 +9,6 @@
 #
 # Handlers are called by the read_gee() dispatcher via switch().
 
-
 # ---- MODIS NDVI (MOD13A2) ----
 
 #' @noRd
@@ -30,8 +29,14 @@
     img_ndvi <- .ee_select(img_masked, "NDVI")
     img_scaled <- .ee_scale_offset(img_ndvi, meta$scale_factor, meta$offset)
 
-    .rest_extract_raster_expr(img_scaled, region, meta, "NDVI",
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      img_scaled,
+      region,
+      meta,
+      "NDVI",
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
   }
@@ -56,8 +61,14 @@
     img_lst <- .ee_select(img_masked, "LST_Day_1km")
     img_scaled <- .ee_scale_offset(img_lst, meta$scale_factor, meta$offset)
 
-    .rest_extract_raster_expr(img_scaled, region, meta, "LST_Day_1km",
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      img_scaled,
+      region,
+      meta,
+      "LST_Day_1km",
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
   }
@@ -81,8 +92,14 @@
     img_band <- .ee_select(img, meta$bands)
     img_scaled <- .ee_scale_offset(img_band, meta$scale_factor, meta$offset)
 
-    .rest_extract_raster_expr(img_scaled, region, meta, meta$bands,
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      img_scaled,
+      region,
+      meta,
+      meta$bands,
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
   }
@@ -106,8 +123,14 @@
     img_band <- .ee_select(img, meta$bands)
     img_scaled <- .ee_scale_offset(img_band, meta$scale_factor, meta$offset)
 
-    .rest_extract_raster_expr(img_scaled, region, meta, meta$bands,
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      img_scaled,
+      region,
+      meta,
+      meta$bands,
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
   }
@@ -131,8 +154,14 @@
     img_band <- .ee_select(img, meta$bands)
     # No QA masking needed; scale_factor = 1, offset = 0
 
-    .rest_extract_raster_expr(img_band, region, meta, meta$bands,
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      img_band,
+      region,
+      meta,
+      meta$bands,
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
   }
@@ -150,8 +179,14 @@
     img <- .ee_load_image(meta$collection)
     img_band <- .ee_select(img, meta$bands)
 
-    .rest_extract_raster_expr(img_band, region, meta, meta$bands,
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      img_band,
+      region,
+      meta,
+      meta$bands,
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, NULL, region, max_tries, initial_delay)
   }
@@ -162,8 +197,14 @@
 
 #' Internal helper for REST raster extraction
 #' @noRd
-.rest_extract_raster_expr <- function(expr, region, meta, bands,
-                                      max_tries, initial_delay) {
+.rest_extract_raster_expr <- function(
+  expr,
+  region,
+  meta,
+  bands,
+  max_tries,
+  initial_delay
+) {
   if (is.null(region)) {
     cli::cli_abort(c(
       "{.arg region} is required for raster extraction.",
@@ -176,10 +217,10 @@
   grid <- .build_grid(bbox = bbox, scale = meta$scale)
 
   .rest_compute_pixels(
-    expression    = expr,
-    grid          = grid,
-    bands         = if (is.character(bands)) as.list(bands) else NULL,
-    max_tries     = max_tries,
+    expression = expr,
+    grid = grid,
+    bands = if (is.character(bands)) as.list(bands) else NULL,
+    max_tries = max_tries,
     initial_delay = initial_delay
   )
 }
@@ -192,11 +233,16 @@
 # ---- SLGA Soil (Australia, static) ----
 
 #' @noRd
-.read_gee_slga <- function(dots, backend, max_tries, initial_delay,
-                           attribute = "CLY") {
+.read_gee_slga <- function(
+  dots,
+  backend,
+  max_tries,
+  initial_delay,
+  attribute = "CLY"
+) {
   # Resolve depth and stat from user args or defaults
   depth_code <- .slga_depth_to_code(dots$depth %||% "0-5")
-  stat_code  <- .slga_stat_to_code(dots$stat %||% "mean")
+  stat_code <- .slga_stat_to_code(dots$stat %||% "mean")
 
   # Construct band name: e.g., CLY_000_005_EV
   band_name <- paste0(attribute, "_", depth_code, "_", stat_code)
@@ -204,7 +250,9 @@
   # Use the base SLGA meta but override bands
   meta_key <- paste0("slga_", tolower(attribute))
   meta <- .GEE_META[[meta_key]]
-  if (is.null(meta)) meta <- .GEE_META$slga_cly  # fallback
+  if (is.null(meta)) {
+    meta <- .GEE_META$slga_cly
+  } # fallback
 
   region <- .validate_region(dots$region)
 
@@ -213,8 +261,14 @@
     img_band <- .ee_select(img, band_name)
     img_scaled <- .ee_scale_offset(img_band, meta$scale_factor, meta$offset)
 
-    .rest_extract_raster_expr(img_scaled, region, meta, band_name,
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      img_scaled,
+      region,
+      meta,
+      band_name,
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, NULL, region, max_tries, initial_delay)
   }
@@ -224,11 +278,11 @@
 #' @noRd
 .slga_depth_to_code <- function(depth) {
   map <- c(
-    "0-5"     = "000_005",
-    "5-15"    = "005_015",
-    "15-30"   = "015_030",
-    "30-60"   = "030_060",
-    "60-100"  = "060_100",
+    "0-5" = "000_005",
+    "5-15" = "005_015",
+    "15-30" = "015_030",
+    "30-60" = "030_060",
+    "60-100" = "060_100",
     "100-200" = "100_200"
   )
   code <- map[depth]
@@ -276,8 +330,14 @@
     # Compute NDVI from B8 (NIR) and B4 (Red)
     ndvi <- .ee_normalized_difference(img_masked, "B8", "B4")
 
-    .rest_extract_raster_expr(ndvi, region, meta, NULL,
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      ndvi,
+      region,
+      meta,
+      NULL,
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
   }
@@ -308,12 +368,22 @@
     b4_scaled <- .ee_scale_offset(b4, meta$scale_factor, meta$offset)
 
     # NDVI = (NIR - Red) / (NIR + Red)
-    numerator <- .ee_call("Image.subtract", image1 = b5_scaled, image2 = b4_scaled)
+    numerator <- .ee_call(
+      "Image.subtract",
+      image1 = b5_scaled,
+      image2 = b4_scaled
+    )
     denominator <- .ee_call("Image.add", image1 = b5_scaled, image2 = b4_scaled)
     ndvi <- .ee_call("Image.divide", image1 = numerator, image2 = denominator)
 
-    .rest_extract_raster_expr(ndvi, region, meta, NULL,
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      ndvi,
+      region,
+      meta,
+      NULL,
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
   }
@@ -353,11 +423,12 @@
     if (meta$temporal == "static") {
       img <- .ee_load_image(meta$collection)
     } else {
-      date_end <- switch(meta$temporal,
-        daily   = date + 1L,
-        "8day"  = date + 8L,
+      date_end <- switch(
+        meta$temporal,
+        daily = date + 1L,
+        "8day" = date + 8L,
         "16day" = date + 16L,
-        "5day"  = date + 5L,
+        "5day" = date + 5L,
         monthly = lubridate::ceiling_date(date, "month"),
         date + 1L
       )
@@ -371,8 +442,14 @@
     img_band <- .ee_select(img, bands)
     img_scaled <- .ee_scale_offset(img_band, meta$scale_factor, meta$offset)
 
-    .rest_extract_raster_expr(img_scaled, region, meta, bands,
-                              max_tries, initial_delay)
+    .rest_extract_raster_expr(
+      img_scaled,
+      region,
+      meta,
+      bands,
+      max_tries,
+      initial_delay
+    )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
   }
