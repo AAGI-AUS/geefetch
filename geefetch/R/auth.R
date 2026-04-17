@@ -108,7 +108,7 @@ gee_auth <- function(
     getOption("geefetch.project", .GEE_DEFAULT_PROJECT)
 
   cli::cli_inform(c(
-    "v" = "GEE authentication successful.",
+    v = "GEE authentication successful.",
     i = "Project: {.val {(.geefetch_env$project)}}"
   ))
 

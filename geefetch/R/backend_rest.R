@@ -116,7 +116,7 @@ NULL
 #' Convert an R Date to milliseconds since Unix epoch
 #' @noRd
 .date_to_ms <- function(date) {
-  as.numeric(as.POSIXct(date, tz = "UTC")) * 1000
+  as.numeric(as.POSIXct(date, tz = "UTC")) * 1000L
 }
 
 #' Create an EE Date node from an R Date
@@ -308,7 +308,7 @@ NULL
     height <- as.integer(ceiling(height / scale_ratio))
     pixel_size_deg <- pixel_size_deg * scale_ratio
     cli::cli_warn(c(
-      "!" = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
+      ! = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
       i = "Resampling to {width}x{height} pixels."
     ))
   }
@@ -427,7 +427,7 @@ NULL
 
     cli::cli_abort(c(
       "GEE REST API error (HTTP {status}).",
-      "x" = err_msg,
+      x = err_msg,
       hints,
       i = "Endpoint: {.val {url}}"
     ))
