@@ -175,7 +175,7 @@ collect_gee_data <- function(
         backend = backend,
         cache = cache,
         max_tries = 3L,
-        initial_delay = 1
+        initial_delay = 1L
       )
       all_vals[row_idx] <- vals
 
@@ -198,7 +198,7 @@ collect_gee_data <- function(
       backend = backend,
       cache = cache,
       max_tries = 3L,
-      initial_delay = 1
+      initial_delay = 1L
     )
 
     # Replicate static values across all dates for each point

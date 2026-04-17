@@ -346,7 +346,7 @@ NULL
   endpoint,
   body = NULL,
   max_tries = 3L,
-  initial_delay = 1,
+  initial_delay = 1L,
   raw = FALSE
 ) {
   token <- .gee_token()
@@ -456,7 +456,7 @@ NULL
   grid,
   bands = NULL,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 ) {
   body <- list(
     expression = .ee_expression(expression),
@@ -494,7 +494,7 @@ NULL
 .rest_compute_features <- function(
   expression,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 ) {
   body <- list(
     expression = .ee_expression(expression),
@@ -573,7 +573,7 @@ NULL
   region = NULL,
   bands = NULL,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 ) {
   bands <- bands %||% meta$bands
 
@@ -648,7 +648,7 @@ NULL
   bands = NULL,
   reducer = "first",
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 ) {
   bands <- bands %||% meta$bands
 

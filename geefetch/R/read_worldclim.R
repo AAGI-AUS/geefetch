@@ -53,7 +53,7 @@ read_worldclim <- function(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 ) {
   backend <- rlang::arg_match(backend)
 
