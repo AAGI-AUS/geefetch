@@ -11,7 +11,7 @@ read_era5(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 )
 }
 \arguments{
