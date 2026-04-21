@@ -3,6 +3,7 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/AAGI-AUS/geefetch/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/AAGI-AUS/geefetch/actions/workflows/R-CMD-check.yaml)
 [![Codecov](https://codecov.io/gh/AAGI-AUS/geefetch/graph/badge.svg)](https://codecov.io/gh/AAGI-AUS/geefetch)
+[![R-universe](https://aagi-aus.r-universe.dev/badges/geefetch)](https://aagi-aus.r-universe.dev/geefetch)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
@@ -29,10 +30,20 @@ package and authenticate with the same Google OAuth flow as `googlesheets4`.
 
 ## Installation
 
+From R-Universe (binaries — updated within ~1 hour of merge to `main`):
+
 ``` r
-# Install from GitHub (with vignettes)
-remotes::install_github("AAGI-AUS/geefetch", subdir = "geefetch",
-                        build_vignettes = TRUE)
+options(repos = c(
+  "aagi-aus" = "https://aagi-aus.r-universe.dev",
+  CRAN       = "https://cloud.r-project.org"
+))
+install.packages("geefetch")
+```
+
+Development version (latest commit on `main`):
+
+``` r
+pak::pak("AAGI-AUS/geefetch", subdir = "geefetch")
 ```
 
 ## Quick start

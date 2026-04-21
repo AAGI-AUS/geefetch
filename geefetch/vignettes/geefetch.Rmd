@@ -33,9 +33,15 @@ Key features:
 ## Installation
 
 ```{r install, eval = FALSE}
-# From GitHub (development version, with vignettes)
-remotes::install_github("AAGI-AUS/geefetch", subdir = "geefetch",
-                        build_vignettes = TRUE)
+# From R-Universe (binaries, updated ~1 h after merge to main):
+options(repos = c(
+  "aagi-aus" = "https://aagi-aus.r-universe.dev",
+  CRAN       = "https://cloud.r-project.org"
+))
+install.packages("geefetch")
+
+# Development version (latest commit on main):
+pak::pak("AAGI-AUS/geefetch", subdir = "geefetch")
 ```
 
 ## Authentication

@@ -13,3 +13,16 @@
 ^vignettes/!precompile\.R$
 ^[.]?air[.]toml$
 ^\.vscode$
+^codemeta\.json$
+^COPYRIGHT$
+^CITATION\.cff$
+^SECURITY\.md$
+^SUPPORT\.md$
+^CONTRIBUTING\.md$
+^CODE_OF_CONDUCT\.md$
+^API_STABILITY\.md$
+^cran-comments\.md$
+^adr$
+^revdep$
+^\.pre-commit-config\.yaml$
+^\.devcontainer$
