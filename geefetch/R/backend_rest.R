@@ -366,10 +366,17 @@ NULL
   access_token <- .extract_access_token(token)
 
   req <- httr2::request(url)
+  # X-Goog-User-Project overrides the token's default quota project so the
+  # call is billed / quota-counted against the user-specified project, not
+  # whatever project the OAuth client happened to be registered under.
+  # Required whenever the token's quota project differs from the resource
+  # project in the URL (documented at
+  # https://cloud.google.com/docs/authentication/rest#set-quota-project).
   req <- httr2::req_headers(
     req,
     Authorization = paste("Bearer", access_token),
-    `Content-Type` = "application/json"
+    `Content-Type` = "application/json",
+    `X-Goog-User-Project` = project
   )
 
   if (!is.null(body)) {
@@ -474,11 +481,18 @@ NULL
     raw = TRUE
   )
 
-  # Write to temp file and read with terra
+  # Write GeoTIFF bytes to a stable tempfile and materialise the raster
+  # into memory via `* 1` so the returned SpatRaster no longer depends on
+  # the tempfile. Without the in-memory copy, downstream code (disk cache,
+  # writeRaster, plot on long-lived rasters) fails with "file does not exist"
+  # whenever R's tempdir garbage-collects the file, or whenever the caller
+  # tries to serialise / re-open the raster across operations.
   tmp <- tempfile(fileext = ".tif")
-  on.exit(unlink(tmp), add = TRUE)
   writeBin(raw_bytes, tmp)
-  terra::rast(tmp)
+  on.exit(unlink(tmp), add = TRUE)
+  r <- terra::rast(tmp)
+  r <- r * 1
+  r
 }
 
 
