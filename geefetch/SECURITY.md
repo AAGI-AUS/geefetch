@@ -59,9 +59,8 @@ Out of scope:
 - Vulnerabilities in third-party services (Google Earth Engine REST API,
   OAuth endpoints) — report those to Google.
 - Vulnerabilities in Imports-declared dependencies (`httr2`, `gargle`,
-  `sf`, `terra`, `data.table`, `cli`, `rlang`, `jsonlite`, `digest`,
-  `lubridate`) — report upstream; we will coordinate pinning / minimum
-  version bumps.
+  `sf`, `terra`, `data.table`, `cli`, `rlang`, `digest`, `lubridate`)
+  — report upstream; we will coordinate pinning / minimum version bumps.
 - Operational issues on Google Cloud projects owned by users (credential
   scope, project quota, billing).
 

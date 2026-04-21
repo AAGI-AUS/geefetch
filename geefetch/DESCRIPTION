@@ -28,7 +28,6 @@ Imports:
     digest,
     gargle (>= 1.5.0),
     httr2 (>= 1.0.0),
-    jsonlite,
     lubridate,
     rlang (>= 1.1.0),
     sf,

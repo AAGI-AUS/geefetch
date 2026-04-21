@@ -10,7 +10,6 @@
 
 #' @importFrom httr2 request req_headers req_body_json req_perform
 #'   req_retry resp_body_json resp_status resp_body_raw
-#' @importFrom jsonlite fromJSON toJSON
 NULL
 
 

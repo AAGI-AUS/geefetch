@@ -393,9 +393,11 @@ test_that(".rest_extract_single_point returns NA for empty response", {
 test_that(".rest_extract_batch_points applies QA masking for MODIS", {
   local_mocked_bindings(
     .rest_compute_features = function(expression, ...) {
-      # Verify the expression contains updateMask (QA masking)
-      expr_json <- jsonlite::toJSON(expression, auto_unbox = TRUE)
-      expect_true(grepl("updateMask", expr_json))
+      # Verify the expression contains updateMask (QA masking). Flatten
+      # the nested list to a character vector and grep; avoids a
+      # jsonlite dep for this one check.
+      expr_flat <- unlist(expression, use.names = FALSE)
+      expect_true(any(grepl("updateMask", expr_flat, fixed = TRUE)))
       data.table::data.table(point_id = 1L, NDVI = 0.65)
     }
   )
