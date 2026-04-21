@@ -1,0 +1,23 @@
+{
+  "name": "geefetch (R dev)",
+  "build": { "dockerfile": "Dockerfile" },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "REditorSupport.r",
+        "posit.air-vscode",
+        "GitHub.vscode-pull-request-github"
+      ],
+      "settings": {
+        "r.rterm.linux": "/usr/local/bin/R",
+        "r.lsp.enabled": true
+      }
+    }
+  },
+  "postCreateCommand": "cd geefetch && Rscript -e 'pak::local_install_dev_deps()'",
+  "remoteUser": "rstudio"
+}

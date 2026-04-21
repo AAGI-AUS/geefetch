@@ -11,3 +11,9 @@ updates:
         patterns:
           - "r-lib/actions*"
           - "quarto-dev/quarto-actions*"
+
+  - package-ecosystem: "docker"
+    directory: "/.devcontainer"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "devcontainer"]
