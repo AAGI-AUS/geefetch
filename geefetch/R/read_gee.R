@@ -3,6 +3,8 @@
 #' Read data from Google Earth Engine
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Central dispatcher for all GEE dataset reads. Accepts a dataset identifier
 #' (name or alias) and delegates to the appropriate internal handler.
 #' For most use cases, prefer the convenience functions (e.g.,

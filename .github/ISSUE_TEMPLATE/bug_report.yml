@@ -1,0 +1,74 @@
+name: Bug report
+description: Report unexpected behaviour
+title: "[bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please fill every section; an incomplete report costs everyone time.
+
+  - type: textarea
+    id: reprex
+    attributes:
+      label: Minimal reproducible example
+      description: Use `reprex::reprex()`. Paste the output below.
+      render: r
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: session
+    attributes:
+      label: Session info
+      description: Paste `sessioninfo::session_info()` (or `sessionInfo()`).
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: version
+    attributes:
+      label: Package version
+      options:
+        - R-Universe binary (aagi-aus.r-universe.dev)
+        - Development (main)
+        - Custom fork
+    validations:
+      required: true
+
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend in use
+      options:
+        - REST (default)
+        - rgee
+        - Not sure
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have searched existing issues and Discussions
+          required: true
+        - label: I have tried the latest development version
+        - label: This is not a credential or quota issue with my Google Cloud project
+          required: true

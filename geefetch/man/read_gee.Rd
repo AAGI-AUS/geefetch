@@ -37,6 +37,8 @@ Default \code{3L}.}
 A \code{\link[terra:rast]{terra::rast()}} SpatRaster object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Central dispatcher for all GEE dataset reads. Accepts a dataset identifier
 (name or alias) and delegates to the appropriate internal handler.
 For most use cases, prefer the convenience functions (e.g.,

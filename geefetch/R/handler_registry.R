@@ -515,6 +515,8 @@
 #' List available GEE datasets
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Returns a [data.table::data.table] of all datasets available in the
 #' geefetch registry, including their GEE collection ID, domain,
 #' spatial resolution, temporal resolution, and description.
@@ -586,6 +588,8 @@ gee_datasets <- function(domain = NULL) {
 #' Register a custom GEE dataset
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Adds a user-defined GEE collection to the geefetch registry for the
 #' current R session. Once registered, the dataset can be used with
 #' [read_gee()] and [collect_gee_data()] like any built-in dataset.

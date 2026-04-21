@@ -34,6 +34,8 @@ Default: \code{\link[gargle:gargle_options]{gargle::gargle_oauth_cache()}}.}
 Invisibly returns the gargle token. Called for side effects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Authenticates with GEE using Google OAuth via the \link[gargle:gargle-package]{gargle::gargle} package.
 This is the same authentication flow used by
 \href{https://googlesheets4.tidyverse.org/}{googlesheets4},

@@ -11,6 +11,8 @@
 #' Batch-extract GEE data at point locations
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Extracts values from multiple GEE datasets at one or more point
 #' locations across a date range. Returns a single [data.table::data.table]
 #' with one row per location-date combination and one column per dataset.

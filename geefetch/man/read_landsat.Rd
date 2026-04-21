@@ -32,6 +32,8 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values: ND
 (-1 to 1). NA where QA_PIXEL indicates cloud, shadow, or snow.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Computes NDVI from Landsat 9 OLI-2 Collection 2 Level-2 surface
 reflectance (LANDSAT/LC09/C02/T1_L2) on Google Earth Engine.
 Cloud, shadow, and snow pixels are masked using the QA_PIXEL band.

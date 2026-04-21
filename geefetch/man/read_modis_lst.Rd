@@ -32,6 +32,8 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values: LS
 Kelvin. NA where QA indicates cloud or poor quality.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Reads MODIS/061/MOD11A2 (Terra Land Surface Temperature/Emissivity
 8-Day L3 1km) from Google Earth Engine. Returns a \code{\link[terra:rast]{terra::rast()}}
 SpatRaster with QA-masked daytime LST values in Kelvin.

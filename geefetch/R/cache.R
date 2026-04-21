@@ -211,6 +211,8 @@
 #' Clear the geefetch disk cache
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Removes cached extraction results from disk. Optionally filter by
 #' age to keep recent results.
 #'

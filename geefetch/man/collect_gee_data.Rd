@@ -58,6 +58,8 @@ A \link[data.table:data.table]{data.table::data.table} with columns:
 }
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Extracts values from multiple GEE datasets at one or more point
 locations across a date range. Returns a single \link[data.table:data.table]{data.table::data.table}
 with one row per location-date combination and one column per dataset.

@@ -32,6 +32,8 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values: ND
 (-1 to 1). NA where SCL indicates cloud, shadow, or snow.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Computes NDVI from Copernicus Sentinel-2 MSI Level-2A harmonised
 surface reflectance (COPERNICUS/S2_SR_HARMONIZED) on Google Earth
 Engine. Cloud and shadow pixels are masked using the Scene

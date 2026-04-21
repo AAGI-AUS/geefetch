@@ -34,6 +34,8 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values dep
 on the variable (see WorldClim documentation).
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Reads WorldClim V2 bioclimatic variables (WORLDCLIM/V2/BIO) from
 Google Earth Engine. This is a static dataset representing 1970-2000
 climate normals at ~1 km resolution.

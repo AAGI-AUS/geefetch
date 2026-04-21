@@ -32,6 +32,8 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values:
 precipitation in mm/day.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Reads UCSB-CHG/CHIRPS/DAILY (Climate Hazards Group InfraRed
 Precipitation With Station Data) from Google Earth Engine.
 Returns a \code{\link[terra:rast]{terra::rast()}} SpatRaster with precipitation in mm/day.

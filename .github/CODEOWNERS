@@ -1,0 +1,34 @@
+# CODEOWNERS — auto-request reviews for PRs touching these paths.
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Subdir-package layout: the package lives under geefetch/. Repo-root
+# .github/ holds the live CI config (workflows, issue forms, etc.).
+
+*                                       @max578 @adamhsparks
+
+# R sources and tests — both maintainers review.
+/geefetch/R/                            @max578 @adamhsparks
+/geefetch/tests/                        @max578 @adamhsparks
+
+# Auth + cache + backend: Max is primary.
+/geefetch/R/auth.R                      @max578
+/geefetch/R/backend_rest.R              @max578
+/geefetch/R/cache.R                     @max578
+
+# Vignettes and docs — both maintainers review.
+/geefetch/vignettes/                    @max578 @adamhsparks
+/geefetch/README.md                     @max578 @adamhsparks
+
+# Governance / compliance — Max is primary.
+/geefetch/DESCRIPTION                   @max578
+/geefetch/CITATION.cff                  @max578
+/geefetch/codemeta.json                 @max578
+/geefetch/COPYRIGHT                     @max578
+/geefetch/SECURITY.md                   @max578
+/geefetch/SUPPORT.md                    @max578
+/geefetch/API_STABILITY.md              @max578
+
+# Repo-level CI config.
+/.github/workflows/                     @max578 @adamhsparks
+/.github/dependabot.yml                 @max578
+/.github/CODEOWNERS                     @max578

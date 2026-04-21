@@ -1,6 +1,8 @@
 #' Read SRTM elevation data from Google Earth Engine
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reads USGS/SRTMGL1_003 (NASA Shuttle Radar Topography Mission
 #' Digital Elevation Model) from Google Earth Engine. This is a static
 #' dataset — no `date` argument is needed.

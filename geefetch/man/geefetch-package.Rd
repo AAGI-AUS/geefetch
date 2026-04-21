@@ -6,12 +6,13 @@
 \alias{geefetch-package}
 \title{geefetch: Google Earth Engine Fast Easy Terrestrial Covariate Harvester}
 \description{
-Unified interface for extracting spatio-temporal environmental covariates from Google Earth Engine. Provides a central dispatcher ('read_gee()') with convenience aliases for common datasets, batch extraction ('collect_gee_data()') returning 'data.table', and automatic disk caching. Works without Python via the GEE REST API; optionally supports 'rgee' for advanced server-side computations.
+Unified interface for extracting spatio-temporal environmental covariates from Google Earth Engine. Provides a central dispatcher ('read_gee()') with convenience aliases for common datasets, batch extraction ('collect_gee_data()') returning 'data.table', and automatic disk caching. Works without Python via the GEE REST API; optionally supports 'rgee' for advanced server-side computations. This work was supported by Curtin University and the Grains Research and Development Corporation through GRDC Project CUR2210-005OPX.
 }
 \seealso{
 Useful links:
 \itemize{
   \item \url{https://github.com/AAGI-AUS/geefetch}
+  \item \url{https://aagi-aus.github.io/geefetch/}
   \item Report bugs at \url{https://github.com/AAGI-AUS/geefetch/issues}
 }
 

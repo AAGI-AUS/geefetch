@@ -16,6 +16,8 @@
 #' Authenticate with Google Earth Engine
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Authenticates with GEE using Google OAuth via the [gargle] package.
 #' This is the same authentication flow used by
 #' [googlesheets4](https://googlesheets4.tidyverse.org/),
@@ -168,6 +170,8 @@ gee_auth <- function(
 #' Check GEE connection status
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reports the current state of the GEE connection: authentication
 #' status, active backend, project ID, cache directory, and cache
 #' size.
@@ -249,6 +253,8 @@ gee_status <- function() {
 #' Guided first-time setup for GEE access
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Interactive setup wizard that checks prerequisites, guides the user
 #' through Google Earth Engine registration and authentication, and
 #' verifies the connection.

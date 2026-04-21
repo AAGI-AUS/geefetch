@@ -1,6 +1,8 @@
 #' Read SLGA soil data from Google Earth Engine
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reads CSIRO Soil and Landscape Grid of Australia (SLGA) data from
 #' Google Earth Engine. Supports 7 soil attributes, 6 depth layers,
 #' and 3 statistics. This is a static dataset (no date required).

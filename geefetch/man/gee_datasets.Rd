@@ -23,6 +23,8 @@ A \link[data.table:data.table]{data.table::data.table} with columns:
 }
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Returns a \link[data.table:data.table]{data.table::data.table} of all datasets available in the
 geefetch registry, including their GEE collection ID, domain,
 spatial resolution, temporal resolution, and description.

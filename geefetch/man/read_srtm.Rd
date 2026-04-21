@@ -29,6 +29,8 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values:
 elevation in metres above sea level.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Reads USGS/SRTMGL1_003 (NASA Shuttle Radar Topography Mission
 Digital Elevation Model) from Google Earth Engine. This is a static
 dataset — no \code{date} argument is needed.

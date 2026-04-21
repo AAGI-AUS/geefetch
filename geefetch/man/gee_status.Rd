@@ -18,6 +18,8 @@ A list (invisibly) with components:
 }
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Reports the current state of the GEE connection: authentication
 status, active backend, project ID, cache directory, and cache
 size.

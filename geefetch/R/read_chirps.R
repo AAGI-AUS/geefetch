@@ -1,6 +1,8 @@
 #' Read CHIRPS daily precipitation from Google Earth Engine
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reads UCSB-CHG/CHIRPS/DAILY (Climate Hazards Group InfraRed
 #' Precipitation With Station Data) from Google Earth Engine.
 #' Returns a [terra::rast()] SpatRaster with precipitation in mm/day.

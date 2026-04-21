@@ -33,6 +33,8 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values: ND
 (scaled, approximately -0.2 to 1.0). NA where QA indicates poor quality.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Reads MODIS/061/MOD13A2 (Terra Vegetation Indices 16-Day L3 1km)
 from Google Earth Engine for the specified date. Returns a
 \code{\link[terra:rast]{terra::rast()}} SpatRaster with QA-masked, scaled NDVI values

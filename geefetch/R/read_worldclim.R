@@ -1,6 +1,8 @@
 #' Read WorldClim bioclimatic variables from Google Earth Engine
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reads WorldClim V2 bioclimatic variables (WORLDCLIM/V2/BIO) from
 #' Google Earth Engine. This is a static dataset representing 1970-2000
 #' climate normals at ~1 km resolution.

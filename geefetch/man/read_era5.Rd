@@ -38,6 +38,8 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values:
 }
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Reads ERA5-Land Daily Aggregated data (ECMWF/ERA5_LAND/DAILY_AGGR)
 from Google Earth Engine. Supports temperature and precipitation
 variables via the \code{variable} argument.

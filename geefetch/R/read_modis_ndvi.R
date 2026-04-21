@@ -1,6 +1,8 @@
 #' Read MODIS Terra NDVI from Google Earth Engine
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reads MODIS/061/MOD13A2 (Terra Vegetation Indices 16-Day L3 1km)
 #' from Google Earth Engine for the specified date. Returns a
 #' [terra::rast()] SpatRaster with QA-masked, scaled NDVI values

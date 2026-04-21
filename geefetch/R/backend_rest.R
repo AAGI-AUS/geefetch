@@ -307,7 +307,7 @@ NULL
     height <- as.integer(ceiling(height / scale_ratio))
     pixel_size_deg <- pixel_size_deg * scale_ratio
     cli::cli_warn(c(
-      ! = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
+      `!` = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
       i = "Resampling to {width}x{height} pixels."
     ))
   }

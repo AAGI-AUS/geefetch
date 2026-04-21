@@ -51,6 +51,8 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values dep
 on the collection (e.g., percent for clay, pH units for PHC).
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Reads CSIRO Soil and Landscape Grid of Australia (SLGA) data from
 Google Earth Engine. Supports 7 soil attributes, 6 depth layers,
 and 3 statistics. This is a static dataset (no date required).

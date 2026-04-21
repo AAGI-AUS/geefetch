@@ -11,6 +11,8 @@ gee_setup()
 instructions and optionally initiates authentication).
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Interactive setup wizard that checks prerequisites, guides the user
 through Google Earth Engine registration and authentication, and
 verifies the connection.

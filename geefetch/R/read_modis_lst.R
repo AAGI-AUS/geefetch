@@ -1,6 +1,8 @@
 #' Read MODIS Terra Land Surface Temperature from Google Earth Engine
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reads MODIS/061/MOD11A2 (Terra Land Surface Temperature/Emissivity
 #' 8-Day L3 1km) from Google Earth Engine. Returns a [terra::rast()]
 #' SpatRaster with QA-masked daytime LST values in Kelvin.

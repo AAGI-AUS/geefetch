@@ -1,6 +1,8 @@
 #' Read Sentinel-2 NDVI from Google Earth Engine
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Computes NDVI from Copernicus Sentinel-2 MSI Level-2A harmonised
 #' surface reflectance (COPERNICUS/S2_SR_HARMONIZED) on Google Earth
 #' Engine. Cloud and shadow pixels are masked using the Scene

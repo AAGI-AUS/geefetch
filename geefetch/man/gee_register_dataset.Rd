@@ -51,6 +51,8 @@ Default \code{1}.}
 \code{NULL}, invisibly. Called for side effects (registration).
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Adds a user-defined GEE collection to the geefetch registry for the
 current R session. Once registered, the dataset can be used with
 \code{\link[=read_gee]{read_gee()}} and \code{\link[=collect_gee_data]{collect_gee_data()}} like any built-in dataset.
