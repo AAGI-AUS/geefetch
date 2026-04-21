@@ -45,7 +45,8 @@ read_modis_lst <- function(
   max_tries = 3L,
   initial_delay = 1L
 ) {
-  backend <- rlang::arg_match(tolower(backend))
+  backend <- tolower(backend)
+  backend <- rlang::arg_match(backend)
   read_gee(
     "modis_lst",
     date = date,

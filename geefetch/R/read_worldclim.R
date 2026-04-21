@@ -57,7 +57,8 @@ read_worldclim <- function(
   max_tries = 3L,
   initial_delay = 1L
 ) {
-  backend <- rlang::arg_match(tolower(backend))
+  backend <- tolower(backend)
+  backend <- rlang::arg_match(backend)
 
   # Override the band in metadata via dots
   read_gee(
