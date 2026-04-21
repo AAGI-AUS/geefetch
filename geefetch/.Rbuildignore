@@ -26,3 +26,4 @@
 ^revdep$
 ^\.pre-commit-config\.yaml$
 ^\.devcontainer$
+^tests/testthat/README\.md$
