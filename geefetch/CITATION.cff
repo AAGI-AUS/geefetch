@@ -1,0 +1,52 @@
+cff-version: 1.2.0
+message: "If you use geefetch in your research, please cite it as below."
+type: software
+title: "geefetch: Google Earth Engine Fast Easy Terrestrial Covariate Harvester"
+abstract: >-
+  Unified interface for extracting spatio-temporal environmental covariates
+  from Google Earth Engine. Provides a central dispatcher (read_gee()) with
+  convenience aliases for common datasets, batch extraction
+  (collect_gee_data()) returning data.table, and automatic disk caching.
+  Works without Python via the GEE REST API; optionally supports rgee for
+  advanced server-side computations.
+version: 0.0.0.9000
+date-released: "2026-04-21"
+url: "https://aagi-aus.github.io/geefetch/"
+repository-code: "https://github.com/AAGI-AUS/geefetch"
+license: MIT
+keywords:
+  - R
+  - google-earth-engine
+  - gee
+  - remote-sensing
+  - environmental-data
+  - covariate-extraction
+  - earth-engine
+  - rest-api
+authors:
+  - family-names: Moldovan
+    given-names: Max
+    email: max.moldovan@adelaide.edu.au
+    orcid: "https://orcid.org/0000-0001-9680-8474"
+    affiliation: "The University of Adelaide"
+  - family-names: Sparks
+    given-names: Adam H.
+    email: adam.sparks@curtin.edu.au
+    orcid: "https://orcid.org/0000-0002-0061-8359"
+    affiliation: "Curtin University"
+preferred-citation:
+  type: software
+  title: "geefetch: Google Earth Engine Fast Easy Terrestrial Covariate Harvester"
+  authors:
+    - family-names: Moldovan
+      given-names: Max
+      orcid: "https://orcid.org/0000-0001-9680-8474"
+    - family-names: Sparks
+      given-names: Adam H.
+      orcid: "https://orcid.org/0000-0002-0061-8359"
+  year: 2026
+  version: 0.0.0.9000
+  url: "https://github.com/AAGI-AUS/geefetch"
+  notes: >-
+    R package. Supported by Curtin University and the Grains Research and
+    Development Corporation through GRDC Project CUR2210-005OPX.
