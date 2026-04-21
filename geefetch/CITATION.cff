@@ -9,7 +9,7 @@ abstract: >-
   (collect_gee_data()) returning data.table, and automatic disk caching.
   Works without Python via the GEE REST API; optionally supports rgee for
   advanced server-side computations.
-version: 0.0.0.9000
+version: 0.0.0.9001
 date-released: "2026-04-21"
 url: "https://aagi-aus.github.io/geefetch/"
 repository-code: "https://github.com/AAGI-AUS/geefetch"
@@ -45,7 +45,7 @@ preferred-citation:
       given-names: Adam H.
       orcid: "https://orcid.org/0000-0002-0061-8359"
   year: 2026
-  version: 0.0.0.9000
+  version: 0.0.0.9001
   url: "https://github.com/AAGI-AUS/geefetch"
   notes: >-
     R package. Supported by Curtin University and the Grains Research and

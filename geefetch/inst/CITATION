@@ -6,6 +6,6 @@ bibentry(
     person("Adam H.", "Sparks", comment = c(ORCID = "0000-0002-0061-8359"))
   ),
   year     = "2026",
-  note     = "R package version 0.0.0.9000",
+  note     = "R package version 0.0.0.9001",
   url      = "https://github.com/AAGI-AUS/geefetch"
 )

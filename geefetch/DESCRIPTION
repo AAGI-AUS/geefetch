@@ -1,6 +1,6 @@
 Package: geefetch
 Title: Google Earth Engine Fast Easy Terrestrial Covariate Harvester
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(
     person("Max", "Moldovan", , "max.moldovan@adelaide.edu.au", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-9680-8474")),
