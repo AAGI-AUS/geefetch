@@ -36,7 +36,7 @@ Key features:
 # From R-Universe (binaries, updated ~1 h after merge to main):
 options(repos = c(
   "aagi-aus" = "https://aagi-aus.r-universe.dev",
-  CRAN       = "https://cloud.r-project.org"
+  CRAN       = "https://cran.r-project.org"
 ))
 install.packages("geefetch")
 
