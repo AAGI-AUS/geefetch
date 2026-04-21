@@ -13,16 +13,22 @@ gee_auth(
 )
 }
 \arguments{
-\item{email}{Character. Google account email for OAuth. Use \code{NA} to
-force interactive account selection, or \code{""} to suppress
+\item{email}{Character. Google account email for OAuth. Should match
+the account that owns the Google Cloud project passed as \code{project}.
+Use \code{NA} to force interactive account selection, or \code{""} to suppress
 auto-selection. Default uses \code{\link[gargle:gargle_options]{gargle::gargle_oauth_email()}}.}
 
 \item{path}{Character. Path to a service account JSON key file.
 Mutually exclusive with \code{email}.}
 
-\item{project}{Character. Google Cloud project ID with Earth Engine
-API enabled. Default \code{"earthengine-legacy"} (the public project).
-Set to your own project for higher quotas.}
+\item{project}{Character. Google Cloud project to use as the resource
+and quota project. \strong{Pass the 12-digit project number as a string}
+(e.g. \code{"565208131613"}) rather than the project ID -- the number is
+unambiguous across Google accounts and avoids a common class of
+HTTP 403 errors where the OAuth token's implicit quota project
+differs from the intended resource project. The Earth Engine API
+must be enabled on this project. If \code{NULL} (default), falls back
+to \code{getOption("geefetch.project")} or \code{"earthengine-legacy"}.}
 
 \item{scopes}{Character. OAuth scopes. Default includes Earth Engine
 and Cloud Platform scopes.}
@@ -40,34 +46,69 @@ Authenticates with GEE using Google OAuth via the \link[gargle:gargle-package]{g
 This is the same authentication flow used by
 \href{https://googlesheets4.tidyverse.org/}{googlesheets4},
 \href{https://googledrive.tidyverse.org/}{googledrive}, and
-\href{https://bigrquery.r-dbi.org/}{bigrquery} — no Python required.
+\href{https://bigrquery.r-dbi.org/}{bigrquery} -- no Python required.
+
+\strong{Before calling \code{gee_auth()} for the first time}, complete the
+one-time Google Cloud setup described in \code{vignette("geefetch")}
+under "Authentication". In short: create a GCP project under a single
+Google account, register it with Earth Engine for noncommercial use,
+enable the Earth Engine API on that project. Then authenticate in R
+using the project \strong{number} (not the ID string) together with the
+matching email address.
 
 For non-interactive use (CI, servers), use a service account JSON
 key file via \code{gee_auth(path = "service-account.json")}.
 }
+\section{Project number vs ID}{
+
+Google Cloud projects have two identifiers: a string \strong{ID} (e.g.
+\code{geefetch-dev}) and a 12-digit \strong{number} (e.g. \code{565208131613}). IDs
+are not globally unique across accounts in the sense the user
+experiences -- the same string can be registered by different
+accounts and resolved against each account's catalogue at request
+time, which leads to confusing cross-project errors. Numbers are
+unambiguous. \code{geefetch} sends both the number-as-URL-path and an
+\code{X-Goog-User-Project} header so that Google Earth Engine bills the
+correct project regardless of the OAuth token's default binding.
+You can find the number at
+\url{https://console.cloud.google.com/home/dashboard?project=YOUR_ID}.
+}
+
 \section{Service accounts}{
 
 For automated pipelines (CI, HPC), create a service account in
 Google Cloud Console, enable the Earth Engine API, and download
 the JSON key. Then authenticate with:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{gee_auth(path = "path/to/service-account.json")
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{gee_auth(
+  project = "565208131613",
+  path    = "path/to/service-account.json"
+)
+}\if{html}{\out{</div>}}
+}
+
+\section{Persisting the project}{
+
+To avoid typing the project number every session, set it once in
+your \code{.Rprofile}:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{options(geefetch.project = "565208131613")
 }\if{html}{\out{</div>}}
 }
 
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-# Interactive OAuth (opens browser)
-gee_auth()
+# Recommended form -- explicit project number + matching email.
+gee_auth(
+  project = "565208131613",
+  email   = "me@gmail.com"
+)
 
-# Specify account
-gee_auth(email = "me@gmail.com")
+# Interactive OAuth (uses cached account)
+gee_auth(project = "565208131613")
 
 # Service account (CI / non-interactive)
-gee_auth(path = "path/to/service-account.json")
-
-# Use your own GCP project for higher quotas
-gee_auth(email = "me@gmail.com", project = "my-gee-project")
+gee_auth(project = "565208131613", path = "path/to/service-account.json")
 \dontshow{\}) # examplesIf}
 }
 \seealso{

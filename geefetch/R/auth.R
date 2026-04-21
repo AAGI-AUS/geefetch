@@ -1,4 +1,4 @@
-# auth.R — Google Earth Engine authentication via gargle
+# auth.R -- Google Earth Engine authentication via gargle
 #
 # Uses the same OAuth/service-account flow as googlesheets4, bigrquery,
 # and googledrive. No Python, no reticulate.
@@ -22,19 +22,33 @@
 #' This is the same authentication flow used by
 #' [googlesheets4](https://googlesheets4.tidyverse.org/),
 #' [googledrive](https://googledrive.tidyverse.org/), and
-#' [bigrquery](https://bigrquery.r-dbi.org/) — no Python required.
+#' [bigrquery](https://bigrquery.r-dbi.org/) -- no Python required.
+#'
+#' **Before calling `gee_auth()` for the first time**, complete the
+#' one-time Google Cloud setup described in `vignette("geefetch")`
+#' under "Authentication". In short: create a GCP project under a single
+#' Google account, register it with Earth Engine for noncommercial use,
+#' enable the Earth Engine API on that project. Then authenticate in R
+#' using the project **number** (not the ID string) together with the
+#' matching email address.
 #'
 #' For non-interactive use (CI, servers), use a service account JSON
 #' key file via `gee_auth(path = "service-account.json")`.
 #'
-#' @param email Character. Google account email for OAuth. Use `NA` to
-#'   force interactive account selection, or `""` to suppress
+#' @param email Character. Google account email for OAuth. Should match
+#'   the account that owns the Google Cloud project passed as `project`.
+#'   Use `NA` to force interactive account selection, or `""` to suppress
 #'   auto-selection. Default uses [gargle::gargle_oauth_email()].
 #' @param path Character. Path to a service account JSON key file.
 #'   Mutually exclusive with `email`.
-#' @param project Character. Google Cloud project ID with Earth Engine
-#'   API enabled. Default `"earthengine-legacy"` (the public project).
-#'   Set to your own project for higher quotas.
+#' @param project Character. Google Cloud project to use as the resource
+#'   and quota project. **Pass the 12-digit project number as a string**
+#'   (e.g. `"565208131613"`) rather than the project ID -- the number is
+#'   unambiguous across Google accounts and avoids a common class of
+#'   HTTP 403 errors where the OAuth token's implicit quota project
+#'   differs from the intended resource project. The Earth Engine API
+#'   must be enabled on this project. If `NULL` (default), falls back
+#'   to `getOption("geefetch.project")` or `"earthengine-legacy"`.
 #' @param scopes Character. OAuth scopes. Default includes Earth Engine
 #'   and Cloud Platform scopes.
 #' @param cache Character. Directory for OAuth token cache.
@@ -42,12 +56,35 @@
 #'
 #' @returns Invisibly returns the gargle token. Called for side effects.
 #'
+#' @section Project number vs ID:
+#' Google Cloud projects have two identifiers: a string **ID** (e.g.
+#' `geefetch-dev`) and a 12-digit **number** (e.g. `565208131613`). IDs
+#' are not globally unique across accounts in the sense the user
+#' experiences -- the same string can be registered by different
+#' accounts and resolved against each account's catalogue at request
+#' time, which leads to confusing cross-project errors. Numbers are
+#' unambiguous. `geefetch` sends both the number-as-URL-path and an
+#' `X-Goog-User-Project` header so that Google Earth Engine bills the
+#' correct project regardless of the OAuth token's default binding.
+#' You can find the number at
+#' <https://console.cloud.google.com/home/dashboard?project=YOUR_ID>.
+#'
 #' @section Service accounts:
 #' For automated pipelines (CI, HPC), create a service account in
 #' Google Cloud Console, enable the Earth Engine API, and download
 #' the JSON key. Then authenticate with:
 #' ```r
-#' gee_auth(path = "path/to/service-account.json")
+#' gee_auth(
+#'   project = "565208131613",
+#'   path    = "path/to/service-account.json"
+#' )
+#' ```
+#'
+#' @section Persisting the project:
+#' To avoid typing the project number every session, set it once in
+#' your `.Rprofile`:
+#' ```r
+#' options(geefetch.project = "565208131613")
 #' ```
 #'
 #' @family authentication
@@ -55,17 +92,17 @@
 #'   [gee_setup()] for guided first-time setup.
 #'
 #' @examplesIf interactive()
-#' # Interactive OAuth (opens browser)
-#' gee_auth()
+#' # Recommended form -- explicit project number + matching email.
+#' gee_auth(
+#'   project = "565208131613",
+#'   email   = "me@@gmail.com"
+#' )
 #'
-#' # Specify account
-#' gee_auth(email = "me@@gmail.com")
+#' # Interactive OAuth (uses cached account)
+#' gee_auth(project = "565208131613")
 #'
 #' # Service account (CI / non-interactive)
-#' gee_auth(path = "path/to/service-account.json")
-#'
-#' # Use your own GCP project for higher quotas
-#' gee_auth(email = "me@@gmail.com", project = "my-gee-project")
+#' gee_auth(project = "565208131613", path = "path/to/service-account.json")
 #'
 #' @export
 gee_auth <- function(
@@ -272,6 +309,16 @@ gee_status <- function() {
 gee_setup <- function() {
   cli::cli_h1("geefetch setup")
   cli::cli_text("")
+  cli::cli_text(
+    "Full walkthrough: {.code vignette(\"geefetch\")} \u00a7 Authentication."
+  )
+  cli::cli_text(
+    "This wizard lists the same checklist in order; follow it once and you'll"
+  )
+  cli::cli_text(
+    "avoid the common HTTP 403 pitfalls."
+  )
+  cli::cli_text("")
 
   # Step 1: Check R packages
   cli::cli_h2("Step 1: Check R dependencies")
@@ -283,54 +330,102 @@ gee_setup <- function() {
     cli::cli_alert_info("{.pkg rgee}: not installed (optional, not required)")
   }
 
-  # Step 2: GEE registration
-  cli::cli_h2("Step 2: Google Earth Engine registration")
+  # Step 2: Pick one Google account and stick with it
+  cli::cli_h2("Step 2: Pick one Google account")
   cli::cli_text(
-    "If you don't yet have a GEE account, register at:"
+    "Every subsequent step happens under the {.strong same} Google account --"
   )
-  cli::cli_text("{.url https://signup.earthengine.google.com/}")
-  cli::cli_text("")
   cli::cli_text(
-    "You need a Google account with Earth Engine access enabled."
+    "project creation, Earth Engine registration, OAuth consent in R."
+  )
+  cli::cli_text(
+    "Mismatched accounts are the #1 cause of the 403 error new users see."
   )
   cli::cli_text("")
 
-  # Step 3: Enable the Earth Engine API (REQUIRED)
-  cli::cli_h2("Step 3: Enable the Earth Engine API (required)")
+  # Step 3: Create a Google Cloud project
+  cli::cli_h2("Step 3: Create a Google Cloud project")
+  cli::cli_text("Visit:")
+  cli::cli_text("{.url https://console.cloud.google.com/projectcreate}")
   cli::cli_text(
-    "The Earth Engine API must be enabled on your Google Cloud project."
+    "Note both the Project {.strong ID} (string, e.g. {.val my-geefetch-dev})"
   )
   cli::cli_text(
-    "After authenticating (Step 4), if you get a 403 error, visit:"
+    "and the Project {.strong number} (12 digits, e.g. {.val 565208131613})."
   )
   cli::cli_text(
-    "{.url https://console.developers.google.com/apis/api/earthengine.googleapis.com/}"
+    "{.strong Use the number in R} - it is unambiguous across accounts."
   )
-  cli::cli_text("Select your project and click {.strong Enable}.")
-  cli::cli_text("Wait 2-3 minutes, then retry your extraction.")
   cli::cli_text("")
-  cli::cli_text(
-    "For higher quotas, create a dedicated project at:"
-  )
-  cli::cli_text("{.url https://console.cloud.google.com/}")
-  cli::cli_text("Then pass the project ID:")
-  cli::cli_code('gee_auth(project = "my-project-id")')
 
-  # Step 4: Authenticate
-  cli::cli_h2("Step 4: Authenticate")
-  cli::cli_text("Run the following to authenticate:")
-  cli::cli_code("gee_auth()")
+  # Step 4: Register the project with Earth Engine
+  cli::cli_h2("Step 4: Register the project with Earth Engine (noncommercial)")
+  cli::cli_text("Visit:")
+  cli::cli_text("{.url https://code.earthengine.google.com/register}")
+  cli::cli_text(
+    "Select {.strong Academic} or {.strong Research}, pick your new project,"
+  )
+  cli::cli_text("complete the institution form. Approval is typically instant.")
   cli::cli_text("")
-  cli::cli_text(
-    "This opens a browser for Google OAuth (same as googlesheets4)."
-  )
-  cli::cli_text("For CI/servers, use a service account JSON key:")
-  cli::cli_code('gee_auth(path = "service-account.json")')
 
-  # Step 5: Verify
-  cli::cli_h2("Step 5: Verify")
-  cli::cli_text("After authenticating, check your setup with:")
+  # Step 5: Enable the Earth Engine API
+  cli::cli_h2("Step 5: Enable the Earth Engine API")
+  cli::cli_text("Visit:")
+  cli::cli_text(
+    "{.url https://console.cloud.google.com/apis/library/earthengine.googleapis.com}"
+  )
+  cli::cli_text(
+    "Confirm the project picker (top-left) shows your project, click {.strong Enable}."
+  )
+  cli::cli_text(
+    "Wait ~30 seconds for the enablement to propagate."
+  )
+  cli::cli_text("")
+
+  # Step 6: Authenticate in R
+  cli::cli_h2("Step 6: Authenticate in R")
+  cli::cli_text(
+    "Use the project {.strong number} and the matching {.arg email}:"
+  )
+  cli::cli_code(paste0(
+    'gee_auth(\n',
+    '  project = "565208131613",    # <-- your project NUMBER\n',
+    '  email   = "you@gmail.com"    # <-- matching Google account\n',
+    ')'
+  ))
+  cli::cli_text("For non-interactive / CI use, pass a service-account JSON key:")
+  cli::cli_code(paste0(
+    'gee_auth(\n',
+    '  project = "565208131613",\n',
+    '  path    = "path/to/service-account.json"\n',
+    ')'
+  ))
+
+  # Step 7: Verify + persist
+  cli::cli_h2("Step 7: Verify and persist")
   cli::cli_code("gee_status()")
+  cli::cli_text(
+    "The {.field Project} line must show your project {.strong number}."
+  )
+  cli::cli_text("To avoid retyping it each session, add to your {.file .Rprofile}:")
+  cli::cli_code('options(geefetch.project = "565208131613")')
+
+  cli::cli_text("")
+  cli::cli_rule(left = "Troubleshooting HTTP 403")
+  cli::cli_text(
+    "If the 403 error mentions a {.strong different} project number than the"
+  )
+  cli::cli_text(
+    "one you passed, gargle has a cached token whose quota project disagrees"
+  )
+  cli::cli_text(
+    "with your resource project. Restart R, wipe the cache, re-auth:"
+  )
+  cli::cli_code(paste0(
+    'unlink(list.files(gargle::gargle_oauth_cache(), full.names = TRUE))\n',
+    '# restart R, then:\n',
+    'gee_auth(project = "565208131613", email = "you@gmail.com")'
+  ))
 
   invisible(NULL)
 }

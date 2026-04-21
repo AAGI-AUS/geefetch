@@ -3,12 +3,14 @@
 Substantial institutional-compliance and governance uplift. No changes to
 the extraction API. The package now meets all AAGI-canonical MUSTs from the
 `/rpkg` v0.4.1 AAGI preset and all four mandatory-uplift Blockers (B1–B4).
+Also fixes four real bugs in the live-API path that blocked end-to-end
+extraction against a user-owned Google Cloud project.
 
 ## User-visible changes
 
 * **R-Universe-first install.** README and the getting-started vignette now
   lead with the R-Universe install pattern:
-  `install.packages("geefetch", repos = c("aagi-aus" = "https://aagi-aus.r-universe.dev", CRAN = "https://cloud.r-project.org"))`.
+  `install.packages("geefetch", repos = c("aagi-aus" = "https://aagi-aus.r-universe.dev", CRAN = "https://cran.r-project.org"))`.
   The dev-version fallback uses `pak::pak("AAGI-AUS/geefetch", subdir = "geefetch")`
   (replacing the previous `remotes::install_github` pattern).
 * **Lifecycle badges** — every exported function now carries a `lifecycle`
@@ -16,8 +18,37 @@ the extraction API. The package now meets all AAGI-canonical MUSTs from the
   `experimental`; the four re-exports (`rast()`, `ext()`, `st_as_sf()`,
   `st_bbox()`) inherit upstream lifecycle from `terra` / `sf`. See the
   new `API_STABILITY.md` for the per-function catalogue.
+* **`gee_auth()` + `vignette("geefetch")` rewritten around the
+  quota-project model.** The vignette now front-loads a four-step pre-R
+  setup (create GCP project → register with EE → enable EE API → pick one
+  Google account for all steps) plus a decision tree for HTTP 403
+  troubleshooting. `?gee_auth` documents why the project *number* should
+  be passed instead of the ID. `gee_setup()` reprints the same checklist
+  in-console. Together these close the "why did my setup take four
+  hours?" gap that was surfaced during first-time live testing.
 
 ## Bug fixes
+
+* **`X-Goog-User-Project` header now sent on every REST call.** Without
+  this header, Google Earth Engine charges the OAuth token's default
+  quota project (which is usually the project where the OAuth client
+  happened to be registered) rather than the resource project in the
+  URL. Users whose OAuth consent was granted under one project but whose
+  resource project is different received HTTP 403 with a confusing error
+  message naming the wrong project number. Setting
+  `X-Goog-User-Project: <project>` forces the quota project to match the
+  resource project. This was the load-bearing fix to make live extraction
+  work against a user-owned Google Cloud project. Documented at
+  <https://cloud.google.com/docs/authentication/rest#set-quota-project>.
+
+* **`.rest_compute_pixels()` no longer returns a `SpatRaster` pointing at
+  a deleted tempfile.** The function created a tempfile, returned a
+  file-backed raster, then `on.exit(unlink(tmp))` deleted the tempfile
+  before the caller could use the raster. Downstream operations (disk
+  cache write, `plot()`, `terra::values()`) failed with
+  `[writeRaster] file does not exist`. Fixed by materialising the raster
+  into memory via `r * 1` before returning — the returned object no
+  longer depends on the tempfile's lifetime.
 
 * Fixed a syntax error in `R/backend_rest.R` that would have blocked
   `R CMD check` and `devtools::document()`. The `cli::cli_warn()` call in
@@ -27,6 +58,16 @@ the extraction API. The package now meets all AAGI-canonical MUSTs from the
   quoted-key cleanup applied to other files (`cache.R`,
   `collect_gee_data.R`, `handler_registry.R`). Without this fix the
   package could not be loaded or documented.
+
+* Fixed `rlang::arg_match(tolower(x))` pattern across ten files /
+  eleven call sites. `rlang::arg_match()` needs a bare argument symbol
+  to infer allowed values from the caller's formals; wrapping the
+  argument in `tolower()` breaks that lookup with a cryptic
+  `'arg' must be a symbol, not a function call` message, taking out
+  17 tests. Restructured to two-statement form
+  (`x <- tolower(x); x <- rlang::arg_match(x)`) that preserves the
+  input case-normalisation intent. Also corrected a `to_lower` typo in
+  `read_slga.R:70` that would error at runtime.
 
 ## Internal / governance
 
