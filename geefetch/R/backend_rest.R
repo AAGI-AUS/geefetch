@@ -389,7 +389,7 @@ NULL
     error = function(e) {
       cli::cli_abort(c(
         "GEE REST API request failed.",
-        "x" = conditionMessage(e),
+        x = conditionMessage(e),
         i = "Check your authentication with {.code gee_status()}.",
         i = "Endpoint: {.val {url}}"
       ))

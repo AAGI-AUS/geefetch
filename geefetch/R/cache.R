@@ -138,7 +138,7 @@
     },
     error = function(e) {
       cli::cli_warn(c(
-        "!" = "Corrupt cache file removed: {.path {fpath}}",
+        `!` = "Corrupt cache file removed: {.path {fpath}}",
         i = "Will re-fetch from GEE."
       ))
       unlink(fpath)
@@ -197,7 +197,7 @@
     },
     error = function(e) {
       cli::cli_warn(c(
-        "!" = "Failed to write to disk cache.",
+        `!` = "Failed to write to disk cache.",
         i = "Result is cached in memory only for this session.",
         i = "Error: {conditionMessage(e)}"
       ))
@@ -266,7 +266,7 @@ gee_clear_cache <- function(older_than = NULL) {
   .geefetch_env$mem_cache <- list()
 
   cli::cli_inform(c(
-    "v" = "Removed {.val {length(files)}} cached file{?s}."
+    v = "Removed {.val {length(files)}} cached file{?s}."
   ))
 
   invisible(length(files))

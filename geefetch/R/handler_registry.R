@@ -685,7 +685,7 @@ gee_register_dataset <- function(
   .geefetch_env$user_meta[[name]] <- entry
 
   cli::cli_inform(c(
-    "v" = "Registered custom dataset {.val {name}}.",
+    v = "Registered custom dataset {.val {name}}.",
     i = "Collection: {.val {collection}}",
     i = "Available via {.code read_gee({.val {name}})} and {.code collect_gee_data()}."
   ))

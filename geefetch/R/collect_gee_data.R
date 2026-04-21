@@ -287,8 +287,8 @@ collect_gee_data <- function(
     },
     error = function(e) {
       cli::cli_warn(c(
-        "!" = "Batch extraction failed for {.val {did}}",
-        "!" = if (!is.null(date)) paste0("Date: ", date) else "Static dataset",
+        `!` = "Batch extraction failed for {.val {did}}",
+        `!` = if (!is.null(date)) paste0("Date: ", date) else "Static dataset",
         i = conditionMessage(e)
       ))
       rep(NA_real_, n_pts)
