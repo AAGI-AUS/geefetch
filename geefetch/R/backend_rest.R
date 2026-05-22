@@ -295,7 +295,7 @@ NULL
   # Guard against NA/NaN from degenerate inputs
   if (is.na(width) || is.na(height) || width <= 0L || height <= 0L) {
     cli::cli_abort(c(
-      "Cannot compute grid dimensions for the given region and scale.",
+      x = "Cannot compute grid dimensions for the given region and scale.",
       i = "Region: xmin={xmin}, ymin={ymin}, xmax={xmax}, ymax={ymax}",
       i = "Scale: {scale}m, pixel_size: {round(pixel_size_deg, 6)} deg"
     ))
@@ -308,7 +308,7 @@ NULL
     height <- as.integer(ceiling(height / scale_ratio))
     pixel_size_deg <- pixel_size_deg * scale_ratio
     cli::cli_warn(c(
-      ! = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
+      x = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
       i = "Resampling to {width}x{height} pixels."
     ))
   }
