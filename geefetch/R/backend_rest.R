@@ -8,8 +8,7 @@
 #   2. Request functions (.rest_request, .rest_compute_*) — send to REST API
 #   3. Extraction functions (.rest_extract_*) — high-level: build expr + request + parse
 
-#' @importFrom httr2 request req_headers req_body_json req_perform
-#'   req_retry resp_body_json resp_status resp_body_raw
+#' @importFrom httr2 request req_headers req_body_json req_perform req_retry resp_body_json resp_status resp_body_raw
 NULL
 
 
