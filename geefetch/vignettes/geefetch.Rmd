@@ -7,7 +7,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r}
+#| include: false
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -16,34 +18,40 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-**geefetch** provides a unified R interface for extracting environmental
-covariates from Google Earth Engine (GEE). Unlike other GEE R packages,
-geefetch works **without Python** — it uses the GEE REST API directly via
-`httr2` and `gargle`.
+**geefetch** provides a unified R interface for extracting environmental covariates from Google Earth Engine (GEE).
+Unlike other GEE R packages, geefetch works **without Python** --- it uses the GEE REST API directly via `httr2` and `gargle`.
 
 Key features:
 
-- **No Python required** — installs like any normal R package
-- **19+ built-in datasets** — vegetation, climate, soil, topography
-- **Single-function extraction** — `read_gee()` dispatcher + convenience aliases
-- **Batch extraction** — `collect_gee_data()` for multi-location, multi-date, multi-dataset
-- **Automatic caching** — repeated queries are served from disk
-- **User-extensible** — register any GEE collection with `gee_register_dataset()`
+- **No Python required** --- installs like any normal R package
+- **19+ built-in datasets** --- vegetation, climate, soil, topography
+- **Single-function extraction** --- `read_gee()` dispatcher + convenience aliases
+- **Batch extraction** --- `collect_gee_data()` for multi-location, multi-date, multi-dataset
+- **Automatic caching** --- repeated queries are served from disk
+- **User-extensible** --- register any GEE collection with `gee_register_dataset()`
 
 ## Installation
 
-```{r install, eval = FALSE}
+```{r}
+#| label: install
+#| eval: false
+
 # From GitHub (development version, with vignettes)
-remotes::install_github("AAGI-AUS/geefetch", subdir = "geefetch",
-                        build_vignettes = TRUE)
+remotes::install_github(
+  "AAGI-AUS/geefetch",
+  subdir = "geefetch",
+  build_vignettes = TRUE
+)
 ```
 
 ## Authentication
 
-geefetch uses the same Google OAuth flow as `googlesheets4`, `googledrive`,
-and `bigrquery` via the `gargle` package.
+geefetch uses the same Google OAuth flow as `googlesheets4`, `googledrive`, and `bigrquery` via the `gargle` package.
 
-```{r auth, eval = FALSE}
+```{r}
+#| label: auth
+#| eval: false
+
 library(geefetch)
 
 # Interactive OAuth (opens browser)
@@ -64,7 +72,10 @@ gee_status()
 
 For non-interactive use (CI, HPC), use a service account:
 
-```{r auth-sa, eval = FALSE}
+```{r}
+#| label: auth-sa
+#| eval: false
+
 gee_auth(path = "path/to/service-account.json")
 ```
 
@@ -74,7 +85,10 @@ For first-time setup, `gee_setup()` provides step-by-step instructions.
 
 Extract MODIS NDVI for a region in South Australia:
 
-```{r first-extraction, eval = FALSE}
+```{r}
+#| label: first-extraction
+#| eval: false
+
 library(terra)
 
 # Define a region of interest
@@ -87,14 +101,16 @@ ndvi <- read_modis_ndvi(date = "2024-06-15", region = aoi)
 plot(ndvi, main = "MODIS NDVI — 15 June 2024")
 ```
 
-The result is a standard `terra::SpatRaster` — you can use all `terra`
-functions for analysis, cropping, masking, and export.
+The result is a standard `terra::SpatRaster` --- you can use all `terra` functions for analysis, cropping, masking, and export.
 
 ## Point extraction
 
 To extract values at specific coordinates, use `terra::extract()`:
 
-```{r point-extraction, eval = FALSE}
+```{r}
+#| label: point-extraction
+#| eval: false
+
 # Define some sites
 sites <- data.frame(
   lon = c(138.6, 139.5, 140.2),
@@ -118,20 +134,25 @@ print(values)
 
 ## Using the dispatcher
 
-All convenience functions (`read_modis_ndvi()`, `read_era5()`, etc.) are
-thin wrappers around the central `read_gee()` dispatcher. You can use
-either form:
+All convenience functions (`read_modis_ndvi()`, `read_era5()`, etc.) are thin wrappers around the central `read_gee()` dispatcher.
+You can use either form:
 
-```{r dispatcher, eval = FALSE}
+```{r}
+#| label: dispatcher
+#| eval: false
+
 # These are equivalent:
 ndvi <- read_modis_ndvi(date = "2024-06-15", region = aoi)
 ndvi <- read_gee("MODIS_NDVI", date = "2024-06-15", region = aoi)
-ndvi <- read_gee("NDVI", date = "2024-06-15", region = aoi)  # alias
+ndvi <- read_gee("NDVI", date = "2024-06-15", region = aoi) # alias
 ```
 
 ## Browsing available datasets
 
-```{r datasets, eval = FALSE}
+```{r}
+#| label: datasets
+#| eval: false
+
 gee_datasets()
 ```
 
@@ -146,10 +167,13 @@ gee_datasets()
 
 ## Caching
 
-geefetch automatically caches extraction results to disk. Repeated
-identical queries are served instantly:
+geefetch automatically caches extraction results to disk.
+Repeated identical queries are served instantly:
 
-```{r caching, eval = FALSE}
+```{r}
+#| label: caching
+#| eval: false
+
 # First call: hits GEE REST API (~2-5 seconds)
 elev <- read_srtm(region = aoi)
 
@@ -165,7 +189,6 @@ gee_clear_cache()
 
 ## Next steps
 
-- See `vignette("collect_gee_data")` for batch extraction across multiple
-  locations, dates, and datasets
+- See `vignette("collect_gee_data")` for batch extraction across multiple locations, dates, and datasets
 - See `vignette("custom_datasets")` for registering your own GEE collections
 - See `gee_datasets()` for the full list of supported datasets

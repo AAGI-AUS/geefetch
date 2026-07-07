@@ -7,7 +7,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r}
+#| include: false
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -16,13 +18,15 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-geefetch ships with 19 built-in datasets, but Google Earth Engine hosts
-thousands of collections. You can register any GEE collection for use
-with `read_gee()` and `collect_gee_data()` using `gee_register_dataset()`.
+geefetch ships with 19 built-in datasets, but Google Earth Engine hosts thousands of collections.
+You can register any GEE collection for use with `read_gee()` and `collect_gee_data()` using `gee_register_dataset()`.
 
 ## Browsing built-in datasets
 
-```{r browse, eval = FALSE}
+```{r}
+#| label: browse
+#| eval: false
+
 library(geefetch)
 
 # Full catalogue
@@ -37,25 +41,26 @@ gee_datasets(domain = "Soil (Global)")
 
 To add a new GEE collection, you need:
 
-1. The **GEE collection ID** (find it in the
-   [GEE Data Catalog](https://developers.google.com/earth-engine/datasets))
+1. The **GEE collection ID** (find it in the [GEE Data Catalog](https://developers.google.com/earth-engine/datasets))
 2. The **band name(s)** to extract
 3. The **spatial resolution** (scale in metres)
-4. The **temporal resolution** (`"daily"`, `"8day"`, `"16day"`,
-   `"monthly"`, `"5day"`, or `"static"`)
+4. The **temporal resolution** (`"daily"`, `"8day"`, `"16day"`, `"monthly"`, `"5day"`, or `"static"`)
 
 ### Example: Global Surface Water
 
-```{r register, eval = FALSE}
+```{r}
+#| label: register
+#| eval: false
+
 gee_register_dataset(
-  name        = "gsw_occurrence",
-  collection  = "JRC/GSW1_4/GlobalSurfaceWater",
-  bands       = "occurrence",
-  scale       = 30L,
-  temporal    = "static",
+  name = "gsw_occurrence",
+  collection = "JRC/GSW1_4/GlobalSurfaceWater",
+  bands = "occurrence",
+  scale = 30L,
+  temporal = "static",
   description = "JRC Global Surface Water Occurrence 30m",
-  domain      = "Hydrology",
-  citation    = "Pekel et al. (2016). doi:10.1038/nature20584"
+  domain = "Hydrology",
+  citation = "Pekel et al. (2016). doi:10.1038/nature20584"
 )
 ```
 
@@ -67,29 +72,33 @@ gee_register_dataset(
 
 ### Example: MODIS Land Cover
 
-```{r register-lc, eval = FALSE}
+```{r}
+#| label: register-lc
+#| eval: false
+
 gee_register_dataset(
-  name         = "modis_lc",
-  collection   = "MODIS/061/MCD12Q1",
-  bands        = "LC_Type1",
-  scale        = 500L,
-  temporal     = "static",
-  description  = "MODIS Land Cover Type 1 (IGBP) 500m",
-  domain       = "Land cover",
+  name = "modis_lc",
+  collection = "MODIS/061/MCD12Q1",
+  bands = "LC_Type1",
+  scale = 500L,
+  temporal = "static",
+  description = "MODIS Land Cover Type 1 (IGBP) 500m",
+  domain = "Land cover",
   scale_factor = 1,
-  offset       = 0
+  offset = 0
 )
 ```
 
 ## Using registered datasets
 
-Once registered, the dataset works with the dispatcher and batch
-extraction exactly like built-in datasets:
+Once registered, the dataset works with the dispatcher and batch extraction exactly like built-in datasets:
 
-```{r use-registered, eval = FALSE}
+```{r}
+#| label: use-registered
+#| eval: false
+
 # Single extraction
-water <- read_gee("gsw_occurrence",
-                   region = terra::ext(138, 140, -36, -34))
+water <- read_gee("gsw_occurrence", region = terra::ext(138, 140, -36, -34))
 
 # Batch extraction
 dt <- collect_gee_data(
@@ -116,19 +125,16 @@ The generic handler does **not**:
 - Compute derived indices (e.g., NDVI from two bands)
 - Handle complex multi-band logic
 
-If you need QA masking or computed indices, consider opening a GitHub
-issue to request a specialised handler.
+If you need QA masking or computed indices, consider opening a GitHub issue to request a specialised handler.
 
 ## Session scope
 
-Registered datasets persist for the current R session only. To use them
-across sessions, add the `gee_register_dataset()` call to your script
-or `.Rprofile`.
+Registered datasets persist for the current R session only.
+To use them across sessions, add the `gee_register_dataset()` call to your script or `.Rprofile`.
 
 ## Contributing handlers upstream
 
-If your dataset is widely useful, consider contributing a built-in
-handler to geefetch:
+If your dataset is widely useful, consider contributing a built-in handler to geefetch:
 
 1. Fork the repository
 2. Add metadata to `.GEE_META` in `R/handler_registry.R`
