@@ -31,8 +31,8 @@ gee_clear_cache(older_than = 7)
 \seealso{
 \code{\link[=gee_status]{gee_status()}} to check cache size.
 
-Other utilities: 
-\code{\link{gee_datasets}()},
-\code{\link{gee_register_dataset}()}
+Other utilities:
+\code{\link[=gee_datasets]{gee_datasets()}},
+\code{\link[=gee_register_dataset]{gee_register_dataset()}}
 }
 \concept{utilities}

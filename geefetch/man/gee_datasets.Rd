@@ -40,8 +40,8 @@ gee_datasets(domain = "Vegetation")
 \seealso{
 \code{\link[=read_gee]{read_gee()}}, \code{\link[=gee_register_dataset]{gee_register_dataset()}}
 
-Other utilities: 
-\code{\link{gee_clear_cache}()},
-\code{\link{gee_register_dataset}()}
+Other utilities:
+\code{\link[=gee_clear_cache]{gee_clear_cache()}},
+\code{\link[=gee_register_dataset]{gee_register_dataset()}}
 }
 \concept{utilities}

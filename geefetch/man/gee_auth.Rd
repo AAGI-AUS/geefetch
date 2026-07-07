@@ -16,7 +16,7 @@ gee_auth(
 \item{email}{Character. Google account email for OAuth. Should match
 the account that owns the Google Cloud project passed as \code{project}.
 Use \code{NA} to force interactive account selection, or \code{""} to suppress
-auto-selection. Default uses \code{\link[gargle:gargle_options]{gargle::gargle_oauth_email()}}.}
+auto-selection. Default uses \code{\link[gargle:gargle_oauth_email]{gargle::gargle_oauth_email()}}.}
 
 \item{path}{Character. Path to a service account JSON key file.
 Mutually exclusive with \code{email}.}
@@ -34,7 +34,7 @@ to \code{getOption("geefetch.project")} or \code{"earthengine-legacy"}.}
 and Cloud Platform scopes.}
 
 \item{cache}{Character. Directory for OAuth token cache.
-Default: \code{\link[gargle:gargle_options]{gargle::gargle_oauth_cache()}}.}
+Default: \code{\link[gargle:gargle_oauth_cache]{gargle::gargle_oauth_cache()}}.}
 }
 \value{
 Invisibly returns the gargle token. Called for side effects.
@@ -42,7 +42,7 @@ Invisibly returns the gargle token. Called for side effects.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
-Authenticates with GEE using Google OAuth via the \link[gargle:gargle-package]{gargle::gargle} package.
+Authenticates with GEE using Google OAuth via the \link[gargle:gargle]{gargle} package.
 This is the same authentication flow used by
 \href{https://googlesheets4.tidyverse.org/}{googlesheets4},
 \href{https://googledrive.tidyverse.org/}{googledrive}, and
@@ -115,8 +115,8 @@ gee_auth(project = "565208131613", path = "path/to/service-account.json")
 \code{\link[=gee_status]{gee_status()}} to check authentication state,
 \code{\link[=gee_setup]{gee_setup()}} for guided first-time setup.
 
-Other authentication: 
-\code{\link{gee_setup}()},
-\code{\link{gee_status}()}
+Other authentication:
+\code{\link[=gee_setup]{gee_setup()}},
+\code{\link[=gee_status]{gee_status()}}
 }
 \concept{authentication}

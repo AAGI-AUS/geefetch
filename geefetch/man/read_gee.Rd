@@ -97,15 +97,15 @@ ndvi <- read_modis_ndvi(date = "2024-06-15",
 \code{\link[=collect_gee_data]{collect_gee_data()}} for batch point extraction returning a
 \link[data.table:data.table]{data.table::data.table}.
 
-Other GEE readers: 
-\code{\link{read_chirps}()},
-\code{\link{read_era5}()},
-\code{\link{read_landsat}()},
-\code{\link{read_modis_lst}()},
-\code{\link{read_modis_ndvi}()},
-\code{\link{read_sentinel2}()},
-\code{\link{read_slga}()},
-\code{\link{read_srtm}()},
-\code{\link{read_worldclim}()}
+Other GEE readers:
+\code{\link[=read_chirps]{read_chirps()}},
+\code{\link[=read_era5]{read_era5()}},
+\code{\link[=read_landsat]{read_landsat()}},
+\code{\link[=read_modis_lst]{read_modis_lst()}},
+\code{\link[=read_modis_ndvi]{read_modis_ndvi()}},
+\code{\link[=read_sentinel2]{read_sentinel2()}},
+\code{\link[=read_slga]{read_slga()}},
+\code{\link[=read_srtm]{read_srtm()}},
+\code{\link[=read_worldclim]{read_worldclim()}}
 }
 \concept{GEE readers}
