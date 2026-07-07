@@ -393,7 +393,9 @@ gee_setup <- function() {
     '  email   = "you@gmail.com"    # <-- matching Google account\n',
     ')'
   ))
-  cli::cli_text("For non-interactive / CI use, pass a service-account JSON key:")
+  cli::cli_text(
+    "For non-interactive / CI use, pass a service-account JSON key:"
+  )
   cli::cli_code(paste0(
     'gee_auth(\n',
     '  project = "565208131613",\n',
@@ -407,7 +409,9 @@ gee_setup <- function() {
   cli::cli_text(
     "The {.field Project} line must show your project {.strong number}."
   )
-  cli::cli_text("To avoid retyping it each session, add to your {.file .Rprofile}:")
+  cli::cli_text(
+    "To avoid retyping it each session, add to your {.file .Rprofile}:"
+  )
   cli::cli_code('options(geefetch.project = "565208131613")')
 
   cli::cli_text("")

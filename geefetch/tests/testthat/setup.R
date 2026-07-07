@@ -23,8 +23,8 @@ Sys.setenv(NO_INTERNET = "true")
 #    if they want to exercise cache code paths.
 options(
   geefetch.cache.enabled = FALSE,
-  geefetch.cache.dir     = tempfile("geefetch-cache-"),
-  geefetch.cache.ttl     = 0
+  geefetch.cache.dir = tempfile("geefetch-cache-"),
+  geefetch.cache.ttl = 0
 )
 
 # 4. Reproducibility — pin locale so cli snapshot output is stable across
@@ -34,7 +34,9 @@ tryCatch(
   Sys.setlocale("LC_ALL", "en_AU.UTF-8"),
   warning = function(w) {
     # Some CI runners don't have en_AU.UTF-8; fall back to C.UTF-8.
-    tryCatch(Sys.setlocale("LC_ALL", "C.UTF-8"), warning = function(w) invisible())
+    tryCatch(Sys.setlocale("LC_ALL", "C.UTF-8"), warning = function(w) {
+      invisible()
+    })
   }
 )
 
@@ -44,6 +46,6 @@ tryCatch(
 if (requireNamespace("httptest2", quietly = TRUE)) {
   options(
     httptest2.verbose = FALSE,
-    httptest2.debug   = FALSE
+    httptest2.debug = FALSE
   )
 }

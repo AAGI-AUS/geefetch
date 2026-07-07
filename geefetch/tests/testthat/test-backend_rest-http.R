@@ -19,8 +19,16 @@ local_fake_auth <- function(.local_envir = parent.frame()) {
     },
     envir = .local_envir
   )
-  assign("token", "fake-access-token", envir = asNamespace("geefetch")$.geefetch_env)
-  assign("project", "geefetch-test-project", envir = asNamespace("geefetch")$.geefetch_env)
+  assign(
+    "token",
+    "fake-access-token",
+    envir = asNamespace("geefetch")$.geefetch_env
+  )
+  assign(
+    "project",
+    "geefetch-test-project",
+    envir = asNamespace("geefetch")$.geefetch_env
+  )
 }
 
 test_that(".rest_request() parses a successful computeFeatures response", {
@@ -35,7 +43,10 @@ test_that(".rest_request() parses a successful computeFeatures response", {
     resp <- geefetch:::.rest_request(
       endpoint = "table:computeFeatures",
       body = list(
-        expression = list(result = "0", values = list("0" = list(constantValue = 42))),
+        expression = list(
+          result = "0",
+          values = list("0" = list(constantValue = 42))
+        ),
         pageSize = 5000L
       )
     )
