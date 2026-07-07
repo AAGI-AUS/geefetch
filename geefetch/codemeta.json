@@ -4,6 +4,7 @@
   "identifier": "geefetch",
   "description": "Unified interface for extracting spatio-temporal environmental covariates from Google Earth Engine. Provides a central dispatcher ('read_gee()') with convenience aliases for common datasets, batch extraction ('collect_gee_data()') returning 'data.table', and automatic disk caching. Works without Python via the GEE REST API; optionally supports 'rgee' for advanced server-side computations. This work was supported by Curtin University and the Grains Research and Development Corporation through GRDC Project CUR2210-005OPX.",
   "name": "geefetch: Google Earth Engine Fast Easy Terrestrial Covariate Harvester",
+  "relatedLink": "https://aagi-aus.github.io/geefetch/",
   "codeRepository": "https://github.com/AAGI-AUS/geefetch",
   "issueTracker": "https://github.com/AAGI-AUS/geefetch/issues",
   "license": "https://spdx.org/licenses/MIT",
@@ -13,13 +14,7 @@
     "name": "R",
     "url": "https://r-project.org"
   },
-  "runtimePlatform": "R (>= 4.1.0)",
-  "provider": {
-    "@id": "https://cran.r-project.org",
-    "@type": "Organization",
-    "name": "Comprehensive R Archive Network (CRAN)",
-    "url": "https://cran.r-project.org"
-  },
+  "runtimePlatform": "R version 4.6.1 (2026-06-24)",
   "author": [
     {
       "@type": "Person",
@@ -43,18 +38,6 @@
       "familyName": "Moldovan",
       "email": "max.moldovan@adelaide.edu.au",
       "@id": "https://orcid.org/0000-0001-9680-8474"
-    }
-  ],
-  "funding": "GRDC Project CUR2210-005OPX",
-  "funder": [
-    {
-      "@type": "Organization",
-      "name": "Grains Research and Development Corporation",
-      "alternateName": "GRDC"
-    },
-    {
-      "@type": "Organization",
-      "name": "Curtin University"
     }
   ],
   "softwareSuggestions": [
@@ -172,6 +155,12 @@
   "softwareRequirements": {
     "1": {
       "@type": "SoftwareApplication",
+      "identifier": "R",
+      "name": "R",
+      "version": ">= 4.1.0"
+    },
+    "2": {
+      "@type": "SoftwareApplication",
       "identifier": "cli",
       "name": "cli",
       "provider": {
@@ -182,7 +171,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=cli"
     },
-    "2": {
+    "3": {
       "@type": "SoftwareApplication",
       "identifier": "data.table",
       "name": "data.table",
@@ -194,7 +183,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=data.table"
     },
-    "3": {
+    "4": {
       "@type": "SoftwareApplication",
       "identifier": "digest",
       "name": "digest",
@@ -206,7 +195,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=digest"
     },
-    "4": {
+    "5": {
       "@type": "SoftwareApplication",
       "identifier": "gargle",
       "name": "gargle",
@@ -219,7 +208,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=gargle"
     },
-    "5": {
+    "6": {
       "@type": "SoftwareApplication",
       "identifier": "httr2",
       "name": "httr2",
@@ -232,7 +221,19 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=httr2"
     },
-    "6": {
+    "7": {
+      "@type": "SoftwareApplication",
+      "identifier": "lifecycle",
+      "name": "lifecycle",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=lifecycle"
+    },
+    "8": {
       "@type": "SoftwareApplication",
       "identifier": "lubridate",
       "name": "lubridate",
@@ -244,7 +245,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=lubridate"
     },
-    "7": {
+    "9": {
       "@type": "SoftwareApplication",
       "identifier": "rlang",
       "name": "rlang",
@@ -257,7 +258,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=rlang"
     },
-    "8": {
+    "10": {
       "@type": "SoftwareApplication",
       "identifier": "sf",
       "name": "sf",
@@ -269,7 +270,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=sf"
     },
-    "9": {
+    "11": {
       "@type": "SoftwareApplication",
       "identifier": "terra",
       "name": "terra",
@@ -281,11 +282,39 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=terra"
     },
+    "12": {
+      "@type": "SoftwareApplication",
+      "identifier": "utils",
+      "name": "utils"
+    },
     "SystemRequirements": null
   },
-  "releaseNotes": "https://github.com/AAGI-AUS/geefetch/blob/main/geefetch/NEWS.md",
-  "readme": "https://github.com/AAGI-AUS/geefetch/blob/main/geefetch/README.md",
-  "contIntegration": "https://github.com/AAGI-AUS/geefetch/actions",
-  "developmentStatus": "https://www.repostatus.org/#wip",
-  "keywords": ["r", "google-earth-engine", "gee", "remote-sensing", "environmental-data", "covariate-extraction", "r-package", "earth-engine", "rest-api"]
+  "fileSize": "280.055KB",
+  "citation": [
+    {
+      "@type": "SoftwareSourceCode",
+      "datePublished": "2026",
+      "author": [
+        {
+          "@type": "Person",
+          "givenName": "Max",
+          "familyName": "Moldovan",
+          "@id": "https://orcid.org/0000-0001-9680-8474"
+        },
+        {
+          "@type": "Person",
+          "givenName": "Adam H.",
+          "familyName": "Sparks",
+          "@id": "https://orcid.org/0000-0002-0061-8359"
+        }
+      ],
+      "name": "geefetch: Google Earth Engine Fast Easy Terrestrial Covariate Harvester",
+      "url": "https://github.com/AAGI-AUS/geefetch",
+      "description": "R package version 0.0.0.9001"
+    }
+  ],
+  "releaseNotes": "https://github.com/AAGI-AUS/geefetch/blob/main/NEWS.md",
+  "readme": "https://github.com/AAGI-AUS/geefetch/blob/main/README.md",
+  "contIntegration": ["https://github.com/AAGI-AUS/geefetch/actions/workflows/R-CMD-check.yaml", "https://app.codecov.io/gh/AAGI-AUS/geefetch"],
+  "developmentStatus": "https://lifecycle.r-lib.org/articles/stages.html#experimental"
 }
