@@ -77,6 +77,7 @@ test_that("read_gee routes to cache on repeated call", {
     region = terra::ext(138, 140, -36, -34)
   )
   fake_result <- terra::rast(nrows = 10, ncols = 10)
+  terra::values(fake_result) <- 1:100
   .cache_set("modis_ndvi", cache_key, fake_result)
   withr::defer(.geefetch_env$mem_cache <- NULL)
 
