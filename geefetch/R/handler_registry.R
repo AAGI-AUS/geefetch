@@ -270,7 +270,7 @@
 
   slga_phc = list(
     collection = "CSIRO/SLGA",
-    bands = "PHC_000_005_EV",
+    bands = "pHc_000_005_EV",
     scale = 90L,
     temporal = "static",
     qa_band = NA_character_,
@@ -346,7 +346,7 @@
   # -- Tier 3: GEE-hosted global datasets --
 
   worldclim_bio = list(
-    collection = "WORLDCLIM/V2/BIO",
+    collection = "WORLDCLIM/V1/BIO",
     bands = "bio01",
     scale = 927L,
     temporal = "static",
@@ -453,6 +453,17 @@
 )
 
 .SLGA_ATTRIBUTES <- c("CLY", "SND", "AWC", "SLT", "BDW", "PHC", "NTO")
+
+# Map the user-facing attribute code to the GEE band-name prefix. GEE band names
+# are case-sensitive: the CSIRO/SLGA pH band is `pHc_*`, not `PHC_*` (grounded
+# 2026-06-09 against the GEE STAC band list for CSIRO/SLGA). The others match
+# their codes verbatim. Keep the user-facing code uppercase ("PHC") and resolve
+# the real prefix here so a `select()` hits the band the authority actually
+# advertises.
+.SLGA_BAND_PREFIX <- c(
+  CLY = "CLY", SND = "SND", AWC = "AWC", SLT = "SLT",
+  BDW = "BDW", PHC = "pHc", NTO = "NTO"
+)
 
 
 # ---- Alias resolution ----

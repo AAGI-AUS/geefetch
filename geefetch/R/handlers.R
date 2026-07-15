@@ -244,8 +244,11 @@
   depth_code <- .slga_depth_to_code(dots$depth %||% "0-5")
   stat_code <- .slga_stat_to_code(dots$stat %||% "mean")
 
-  # Construct band name: e.g., CLY_000_005_EV
-  band_name <- paste0(attribute, "_", depth_code, "_", stat_code)
+  # Construct band name: e.g., CLY_000_005_EV. The GEE band prefix is resolved
+  # from .SLGA_BAND_PREFIX (case-sensitive: pH is `pHc`, not `PHC`).
+  band_prefix <- unname(.SLGA_BAND_PREFIX[attribute])
+  if (is.na(band_prefix)) band_prefix <- attribute
+  band_name <- paste0(band_prefix, "_", depth_code, "_", stat_code)
 
   # Use the base SLGA meta but override bands
   meta_key <- paste0("slga_", tolower(attribute))

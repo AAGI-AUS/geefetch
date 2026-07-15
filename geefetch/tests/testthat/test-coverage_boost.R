@@ -238,8 +238,11 @@ test_that(".read_gee_srtm builds correct expression", {
 test_that(".read_gee_slga builds correct band name", {
   local_mocked_bindings(
     .rest_extract_raster_expr = function(expr, region, meta, bands, ...) {
-      # Verify the band name is correctly constructed
-      expect_equal(bands, "PHC_030_060_95")
+      # Verify the band name is correctly constructed. The GEE pH band is
+      # `pHc_*` (case-sensitive), grounded 2026-06-09 against the CSIRO/SLGA STAC
+      # band list -- not the `PHC_*` this test previously asserted from the
+      # code's own (wrong) convention.
+      expect_equal(bands, "pHc_030_060_95")
       terra::rast(nrows = 10, ncols = 10, vals = runif(100, 4, 9))
     }
   )
