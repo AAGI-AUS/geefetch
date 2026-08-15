@@ -33,6 +33,7 @@ gee_clear_cache(older_than = 7)
 
 Other utilities: 
 \code{\link{gee_datasets}()},
+\code{\link{gee_external_facts}()},
 \code{\link{gee_register_dataset}()}
 }
 \concept{utilities}

@@ -42,6 +42,7 @@ gee_datasets(domain = "Vegetation")
 
 Other utilities: 
 \code{\link{gee_clear_cache}()},
+\code{\link{gee_external_facts}()},
 \code{\link{gee_register_dataset}()}
 }
 \concept{utilities}
