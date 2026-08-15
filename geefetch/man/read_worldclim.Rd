@@ -36,13 +36,15 @@ on the variable (see WorldClim documentation).
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
-Reads WorldClim V2 bioclimatic variables (WORLDCLIM/V2/BIO) from
-Google Earth Engine. This is a static dataset representing 1970-2000
-climate normals at ~1 km resolution.
+Reads WorldClim V1 bioclimatic variables (WORLDCLIM/V1/BIO) from
+Google Earth Engine. This is a static dataset representing 1960-1990
+climate normals at ~1 km resolution. Note that Google Earth Engine hosts
+WorldClim version 1, not version 2; the two differ in both their
+normal period and their source publication.
 }
 \section{Data availability}{
 
-Static (1970-2000 normals). Global land. ~1 km spatial resolution.
+Static (1960-1990 normals). Global land. ~1 km spatial resolution.
 }
 
 \section{Variables}{
@@ -69,9 +71,10 @@ precip <- read_worldclim(region = terra::ext(138, 140, -36, -34),
 \dontshow{\}) # examplesIf}
 }
 \references{
-Fick, S.E. & Hijmans, R.J. (2017). WorldClim 2: new 1km spatial
-resolution climate surfaces for global land areas. International
-Journal of Climatology, 37(12), 4302-4315. \doi{10.1002/joc.5086}
+Hijmans, R.J., Cameron, S.E., Parra, J.L., Jones, P.G. & Jarvis, A.
+(2005). Very High Resolution Interpolated Climate Surfaces for Global
+Land Areas. International Journal of Climatology, 25(15), 1965-1978.
+\doi{10.1002/joc.1276}
 }
 \seealso{
 \code{\link[=read_gee]{read_gee()}}, \code{\link[=collect_gee_data]{collect_gee_data()}}

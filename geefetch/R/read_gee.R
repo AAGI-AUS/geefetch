@@ -45,7 +45,7 @@
 #' - `landsat_ndvi` — Landsat 9 NDVI 30m (computed, cloud-masked)
 #'
 #' **Tier 3 — Generic handler (global datasets):**
-#' - `worldclim_bio` — WorldClim V2 bioclimatic variables ~1km (static)
+#' - `worldclim_bio` — WorldClim V1 bioclimatic variables ~1km (static)
 #' - `openlandmap_soc` — OpenLandMap soil organic carbon 250m (static)
 #' - `openlandmap_clay` — OpenLandMap clay content 250m (static)
 #' - `openlandmap_ph` — OpenLandMap soil pH 250m (static)

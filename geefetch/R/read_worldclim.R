@@ -3,9 +3,11 @@
 #' @description
 #' `r lifecycle::badge("experimental")`
 #'
-#' Reads WorldClim V2 bioclimatic variables (WORLDCLIM/V2/BIO) from
-#' Google Earth Engine. This is a static dataset representing 1970-2000
-#' climate normals at ~1 km resolution.
+#' Reads WorldClim V1 bioclimatic variables (WORLDCLIM/V1/BIO) from
+#' Google Earth Engine. This is a static dataset representing 1960-1990
+#' climate normals at ~1 km resolution. Note that Google Earth Engine hosts
+#' WorldClim version 1, not version 2; the two differ in both their
+#' normal period and their source publication.
 #'
 #' @param region An [sf::sf], [sf::st_sfc()], or [terra::ext()] object
 #'   defining the spatial extent. Required.
@@ -21,7 +23,7 @@
 #'   on the variable (see WorldClim documentation).
 #'
 #' @section Data availability:
-#' Static (1970-2000 normals). Global land. ~1 km spatial resolution.
+#' Static (1960-1990 normals). Global land. ~1 km spatial resolution.
 #'
 #' @section Variables:
 #' - bio01: Annual Mean Temperature (deg C x 10)
@@ -33,9 +35,10 @@
 #' - bio13-bio19: Various precipitation metrics
 #'
 #' @references
-#' Fick, S.E. & Hijmans, R.J. (2017). WorldClim 2: new 1km spatial
-#' resolution climate surfaces for global land areas. International
-#' Journal of Climatology, 37(12), 4302-4315. \doi{10.1002/joc.5086}
+#' Hijmans, R.J., Cameron, S.E., Parra, J.L., Jones, P.G. & Jarvis, A.
+#' (2005). Very High Resolution Interpolated Climate Surfaces for Global
+#' Land Areas. International Journal of Climatology, 25(15), 1965-1978.
+#' \doi{10.1002/joc.1276}
 #'
 #' @family GEE readers
 #' @seealso [read_gee()], [collect_gee_data()]

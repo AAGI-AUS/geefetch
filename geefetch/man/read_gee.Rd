@@ -69,7 +69,7 @@ Use \code{\link[=gee_datasets]{gee_datasets()}} to list all available datasets w
 
 \strong{Tier 3 — Generic handler (global datasets):}
 \itemize{
-\item \code{worldclim_bio} — WorldClim V2 bioclimatic variables ~1km (static)
+\item \code{worldclim_bio} — WorldClim V1 bioclimatic variables ~1km (static)
 \item \code{openlandmap_soc} — OpenLandMap soil organic carbon 250m (static)
 \item \code{openlandmap_clay} — OpenLandMap clay content 250m (static)
 \item \code{openlandmap_ph} — OpenLandMap soil pH 250m (static)

@@ -356,13 +356,18 @@
     valid_range = c(NA_real_, NA_real_),
     unit = "varies by variable (bio01 = annual mean temp, deg C x 10)",
     domain = "Bioclimatic",
-    description = "WorldClim V2 Bioclimatic Variables ~1km",
+    description = "WorldClim V1 Bioclimatic Variables ~1km",
     date_start = NA_character_,
     date_end = NA_character_,
+    # Citation is the authority's own `sci:citation` for WORLDCLIM/V1/BIO
+    # (GEE STAC, diffed 2026-08-15). The asset GEE hosts is WorldClim
+    # version 1, so Fick & Hijmans (2017) -- the WorldClim 2 paper -- is the
+    # wrong reference for these values.
     citation = paste0(
-      "Fick, S.E. & Hijmans, R.J. (2017). WorldClim 2: new 1km spatial ",
-      "resolution climate surfaces for global land areas. International ",
-      "Journal of Climatology, 37(12), 4302-4315. doi:10.1002/joc.5086"
+      "Hijmans, R.J., S.E. Cameron, J.L. Parra, P.G. Jones and A. Jarvis ",
+      "(2005). Very High Resolution Interpolated Climate Surfaces for ",
+      "Global Land Areas. International Journal of Climatology, 25(15), ",
+      "1965-1978. doi:10.1002/joc.1276"
     )
   ),
 
