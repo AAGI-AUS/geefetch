@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Getting Started with geefetch • geefetch</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting Started with geefetch">
 </head>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">geefetch</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -102,41 +102,191 @@ from disk</li>
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># From GitHub (development version, with vignettes)</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"AAGI-AUS/geefetch"</span>, subdir <span class="op">=</span> <span class="st">"geefetch"</span>,</span>
-<span>                        build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># From R-Universe (binaries, updated ~1 h after merge to main):</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"aagi-aus"</span> <span class="op">=</span> <span class="st">"https://aagi-aus.r-universe.dev"</span>,</span>
+<span>  CRAN       <span class="op">=</span> <span class="st">"https://cran.r-project.org"</span></span>
+<span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"geefetch"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Development version (latest commit on main):</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"AAGI-AUS/geefetch"</span>, subdir <span class="op">=</span> <span class="st">"geefetch"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="authentication">Authentication<a class="anchor" aria-label="anchor" href="#authentication"></a>
 </h2>
-<p>geefetch uses the same Google OAuth flow as
-<code>googlesheets4</code>, <code>googledrive</code>, and
-<code>bigrquery</code> via the <code>gargle</code> package.</p>
+<p><strong>Read this section fully before running
+<code><a href="../reference/gee_auth.html">gee_auth()</a></code>.</strong> Skipping ahead is the fastest way to
+spend an afternoon debugging HTTP 403s.</p>
+<p>Authentication to Google Earth Engine has two independent concepts
+that <code>geefetch</code> exposes together:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Concept</th>
+<th>What it is</th>
+<th>Where it lives</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>Identity</strong></td>
+<td>Which Google account you’re signing in as</td>
+<td>OAuth token</td>
+</tr>
+<tr class="even">
+<td><strong>Resource project</strong></td>
+<td>Which Google Cloud project owns your EE calls, quotas, and
+billing</td>
+<td>
+<code>project =</code> argument to <code><a href="../reference/gee_auth.html">gee_auth()</a></code> and
+<code>X-Goog-User-Project</code> header</td>
+</tr>
+</tbody>
+</table>
+<p>If the identity is signed into account A but the resource project was
+created under account B, you’ll get HTTP 403. The rest of this section
+is about making both match.</p>
+<div class="section level3">
+<h3 id="step-1-create-a-google-cloud-project-and-register-it-with-earth-engine">Step 1 — Create a Google Cloud project and register it with Earth
+Engine<a class="anchor" aria-label="anchor" href="#step-1-create-a-google-cloud-project-and-register-it-with-earth-engine"></a>
+</h3>
+<p>You only do this once, before you ever touch R.</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Choose one Google account.</strong> The rest of this
+setup — the Cloud project, the EE registration, the OAuth consent — must
+all happen under the <em>same</em> Google account. Using your
+institutional account (<code>*.edu.au</code>, <code>*.gov</code>, etc.)
+is typical for academic / research work. A personal Gmail account works
+too. Decide now and stick with it.</p></li>
+<li><p><strong>Create a dedicated Google Cloud project</strong> at <a href="https://console.cloud.google.com/projectcreate" class="external-link uri">https://console.cloud.google.com/projectcreate</a>. Give it
+a memorable name (e.g. <code>my-geefetch-dev</code>). Google will assign
+a short <strong>Project ID</strong> (the string you type,
+e.g. <code>my-geefetch-dev</code>) and a long <strong>Project
+number</strong> (a 12-digit integer, e.g. <code>123456789012</code>).
+Copy both. You’ll use the <strong>project number</strong> in R — it’s
+unambiguous across accounts.</p></li>
+<li><p><strong>Register the project for Earth Engine noncommercial
+use</strong> at <a href="https://code.earthengine.google.com/register" class="external-link uri">https://code.earthengine.google.com/register</a>. Choose
+<em>Academic</em> or <em>Research</em>, select your new project from the
+dropdown, fill in the institution details, submit. Academic approval is
+usually instant.</p></li>
+<li><p><strong>Enable the Earth Engine API</strong> on the project at <a href="https://console.cloud.google.com/apis/library/earthengine.googleapis.com" class="external-link uri">https://console.cloud.google.com/apis/library/earthengine.googleapis.com</a>
+— make sure the project picker top-left shows your project, then click
+<strong>Enable</strong>.</p></li>
+<li><p><strong>Verify</strong> at <a href="https://console.cloud.google.com/apis/dashboard" class="external-link uri">https://console.cloud.google.com/apis/dashboard</a> that
+“Earth Engine API” appears in the enabled APIs list for your
+project.</p></li>
+</ol>
+</div>
+<div class="section level3">
+<h3 id="step-2-authenticate-in-r">Step 2 — Authenticate in R<a class="anchor" aria-label="anchor" href="#step-2-authenticate-in-r"></a>
+</h3>
+<p>Use the <strong>project number</strong>, not the project ID string.
+This is the single most common cause of the 403 “Earth Engine API has
+not been used” error — passing the ID can silently resolve to a
+different project number under a different identity.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/AAGI-AUS/geefetch" class="external-link">geefetch</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Interactive OAuth (opens browser)</span></span>
-<span><span class="fu"><a href="../reference/gee_auth.html">gee_auth</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Check your connection</span></span>
-<span><span class="fu"><a href="../reference/gee_status.html">gee_status</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/gee_auth.html">gee_auth</a></span><span class="op">(</span></span>
+<span>  project <span class="op">=</span> <span class="st">"123456789012"</span>,              <span class="co"># &lt;-- YOUR project number as a string</span></span>
+<span>  email   <span class="op">=</span> <span class="st">"max.moldovan@gmail.com"</span>     <span class="co"># &lt;-- the exact Google account</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>A browser window will open for Google OAuth (same flow as
+<code>googlesheets4</code>). Sign in as the account matching
+<code>email</code>, grant consent for Earth Engine and Cloud Platform
+scopes, close the tab.</p>
+</div>
+<div class="section level3">
+<h3 id="step-3-verify">Step 3 — Verify<a class="anchor" aria-label="anchor" href="#step-3-verify"></a>
+</h3>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/gee_status.html">gee_status</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## -- geefetch status --</span></span>
 <span><span class="co">## v Authenticated: yes</span></span>
-<span><span class="co">## i Project: "earthengine-legacy"</span></span>
+<span><span class="co">## i Project: "123456789012"</span></span>
 <span><span class="co">## i Backend: REST API (httr2 + gargle)</span></span>
 <span><span class="co">## i Cache dir: '~/Library/Caches/.../geefetch'</span></span>
 <span><span class="co">## i Registered datasets: 19</span></span></code></pre>
-<p>For non-interactive use (CI, HPC), use a service account:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/gee_auth.html">gee_auth</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"path/to/service-account.json"</span><span class="op">)</span></span></code></pre></div>
-<p>For first-time setup, <code><a href="../reference/gee_setup.html">gee_setup()</a></code> provides step-by-step
-instructions.</p>
+<p>The <code>Project:</code> line must show your project
+<strong>number</strong>. If it shows an ID string like
+<code>"earthengine-legacy"</code> or a different number, stop and re-run
+<code><a href="../reference/gee_auth.html">gee_auth()</a></code> with the correct arguments.</p>
+</div>
+<div class="section level3">
+<h3 id="step-4-persist-across-sessions">Step 4 — Persist across sessions<a class="anchor" aria-label="anchor" href="#step-4-persist-across-sessions"></a>
+</h3>
+<p>Add to your <code>.Rprofile</code> (or the top of each analysis
+script) so you don’t need to re-type the project number:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>geefetch.project <span class="op">=</span> <span class="st">"123456789012"</span><span class="op">)</span></span>
+<span><span class="co"># Then gee_auth() picks it up without explicit project arg.</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="non-interactive-authentication">Non-interactive authentication<a class="anchor" aria-label="anchor" href="#non-interactive-authentication"></a>
+</h3>
+<p>For CI, HPC, or any unattended context, use a service-account key
+file. Create the key on the same Cloud project used above (<a href="https://console.cloud.google.com/iam-admin/serviceaccounts" class="external-link uri">https://console.cloud.google.com/iam-admin/serviceaccounts</a>),
+grant it the <strong>Earth Engine Resource Writer</strong> role,
+download the JSON, then:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/gee_auth.html">gee_auth</a></span><span class="op">(</span></span>
+<span>  project <span class="op">=</span> <span class="st">"123456789012"</span>,</span>
+<span>  path    <span class="op">=</span> <span class="st">"path/to/service-account.json"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Store the key file outside your repository. Never commit it.</p>
+</div>
+<div class="section level3">
+<h3 id="troubleshooting-http-403-decision-tree">Troubleshooting — HTTP 403 decision tree<a class="anchor" aria-label="anchor" href="#troubleshooting-http-403-decision-tree"></a>
+</h3>
+<p>If <code><a href="../reference/read_modis_ndvi.html">read_modis_ndvi()</a></code> or any <code>read_*()</code> call
+returns a 403 after authentication appeared to succeed, the error
+message contains a project number. Match that number against what you
+expect:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Error’s project number</th>
+<th>Meaning</th>
+<th>Fix</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Matches your <code>project =</code>
+</td>
+<td>Earth Engine API not actually enabled, or registration not yet
+propagated</td>
+<td>Re-verify Step 1 items 3 + 4; wait 2-3 minutes and retry</td>
+</tr>
+<tr class="even">
+<td>
+<strong>Different</strong> number</td>
+<td>OAuth token’s quota project disagrees with your resource
+project</td>
+<td>Restart R; wipe gargle’s token cache
+(<code>unlink(list.files(gargle::gargle_oauth_cache(), full.names = TRUE))</code>);
+re-run <code><a href="../reference/gee_auth.html">gee_auth()</a></code> with the project <strong>number</strong>,
+not the ID</td>
+</tr>
+</tbody>
+</table>
+<p>If neither helps, <code><a href="../reference/gee_setup.html">gee_setup()</a></code> prints the full check-list
+and links to the three Google Cloud Console pages involved.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="your-first-extraction">Your first extraction<a class="anchor" aria-label="anchor" href="#your-first-extraction"></a>
 </h2>
 <p>Extract MODIS NDVI for a region in South Australia:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Define a region of interest</span></span>
@@ -156,7 +306,7 @@ export.</p>
 </h2>
 <p>To extract values at specific coordinates, use
 <code><a href="https://rspatial.github.io/terra/reference/extract.html" class="external-link">terra::extract()</a></code>:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Define some sites</span></span>
 <span><span class="va">sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  lon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">138.6</span>, <span class="fl">139.5</span>, <span class="fl">140.2</span><span class="op">)</span>,</span>
@@ -180,7 +330,7 @@ export.</p>
 <p>All convenience functions (<code><a href="../reference/read_modis_ndvi.html">read_modis_ndvi()</a></code>,
 <code><a href="../reference/read_era5.html">read_era5()</a></code>, etc.) are thin wrappers around the central
 <code><a href="../reference/read_gee.html">read_gee()</a></code> dispatcher. You can use either form:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># These are equivalent:</span></span>
 <span><span class="va">ndvi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_modis_ndvi.html">read_modis_ndvi</a></span><span class="op">(</span>date <span class="op">=</span> <span class="st">"2024-06-15"</span>, region <span class="op">=</span> <span class="va">aoi</span><span class="op">)</span></span>
 <span><span class="va">ndvi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_gee.html">read_gee</a></span><span class="op">(</span><span class="st">"MODIS_NDVI"</span>, date <span class="op">=</span> <span class="st">"2024-06-15"</span>, region <span class="op">=</span> <span class="va">aoi</span><span class="op">)</span></span>
@@ -189,7 +339,7 @@ export.</p>
 <div class="section level2">
 <h2 id="browsing-available-datasets">Browsing available datasets<a class="anchor" aria-label="anchor" href="#browsing-available-datasets"></a>
 </h2>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gee_datasets.html">gee_datasets</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##            dataset                          collection       domain resolution temporal</span></span>
 <span><span class="co">##  1:     modis_ndvi                  MODIS/061/MOD13A2   Vegetation     1000m    16day</span></span>
@@ -203,7 +353,7 @@ export.</p>
 </h2>
 <p>geefetch automatically caches extraction results to disk. Repeated
 identical queries are served instantly:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># First call: hits GEE REST API (~2-5 seconds)</span></span>
 <span><span class="va">elev</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_srtm.html">read_srtm</a></span><span class="op">(</span>region <span class="op">=</span> <span class="va">aoi</span><span class="op">)</span></span>
 <span></span>
@@ -239,7 +389,7 @@ datasets</li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

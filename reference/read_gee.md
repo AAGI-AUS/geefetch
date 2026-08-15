@@ -1,5 +1,7 @@
 # Read data from Google Earth Engine
 
+**\[experimental\]**
+
 Central dispatcher for all GEE dataset reads. Accepts a dataset
 identifier (name or alias) and delegates to the appropriate internal
 handler. For most use cases, prefer the convenience functions (e.g.,
@@ -16,7 +18,7 @@ read_gee(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 )
 ```
 
@@ -90,7 +92,7 @@ to list all available datasets with metadata.
 
 **Tier 3 — Generic handler (global datasets):**
 
-- `worldclim_bio` — WorldClim V2 bioclimatic variables ~1km (static)
+- `worldclim_bio` — WorldClim V1 bioclimatic variables ~1km (static)
 
 - `openlandmap_soc` — OpenLandMap soil organic carbon 250m (static)
 

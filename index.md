@@ -25,10 +25,20 @@ R package and authenticate with the same Google OAuth flow as
 
 ## Installation
 
+From R-Universe (binaries — updated within ~1 hour of merge to `main`):
+
 ``` r
-# Install from GitHub (with vignettes)
-remotes::install_github("AAGI-AUS/geefetch", subdir = "geefetch",
-                        build_vignettes = TRUE)
+options(repos = c(
+  "aagi-aus" = "https://aagi-aus.r-universe.dev",
+  CRAN       = "https://cran.r-project.org"
+))
+install.packages("geefetch")
+```
+
+Development version (latest commit on `main`):
+
+``` r
+pak::pak("AAGI-AUS/geefetch", subdir = "geefetch")
 ```
 
 ## Quick start

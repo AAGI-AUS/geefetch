@@ -5,13 +5,17 @@ covariates from Google Earth Engine. Provides a central dispatcher
 ('read_gee()') with convenience aliases for common datasets, batch
 extraction ('collect_gee_data()') returning 'data.table', and automatic
 disk caching. Works without Python via the GEE REST API; optionally
-supports 'rgee' for advanced server-side computations.
+supports 'rgee' for advanced server-side computations. This work was
+supported by Curtin University and the Grains Research and Development
+Corporation through GRDC Project CUR2210-005OPX.
 
 ## See also
 
 Useful links:
 
 - <https://github.com/AAGI-AUS/geefetch>
+
+- <https://aagi-aus.github.io/geefetch/>
 
 - Report bugs at <https://github.com/AAGI-AUS/geefetch/issues>
 
@@ -22,5 +26,5 @@ Useful links:
 
 Authors:
 
-- Adam H. Sparks <adam.sparks@dpird.wa.gov.au>
+- Adam H. Sparks <adam.sparks@curtin.edu.au>
   ([ORCID](https://orcid.org/0000-0002-0061-8359))

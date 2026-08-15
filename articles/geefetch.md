@@ -24,42 +24,150 @@ Key features:
 ## Installation
 
 ``` r
-# From GitHub (development version, with vignettes)
-remotes::install_github("AAGI-AUS/geefetch", subdir = "geefetch",
-                        build_vignettes = TRUE)
+# From R-Universe (binaries, updated ~1 h after merge to main):
+options(repos = c(
+  "aagi-aus" = "https://aagi-aus.r-universe.dev",
+  CRAN       = "https://cran.r-project.org"
+))
+install.packages("geefetch")
+
+# Development version (latest commit on main):
+pak::pak("AAGI-AUS/geefetch", subdir = "geefetch")
 ```
 
 ## Authentication
 
-geefetch uses the same Google OAuth flow as `googlesheets4`,
-`googledrive`, and `bigrquery` via the `gargle` package.
+**Read this section fully before running
+[`gee_auth()`](https://aagi-aus.github.io/geefetch/reference/gee_auth.md).**
+Skipping ahead is the fastest way to spend an afternoon debugging HTTP
+403s.
+
+Authentication to Google Earth Engine has two independent concepts that
+`geefetch` exposes together:
+
+| Concept              | What it is                                                         | Where it lives                                                                                                                     |
+|----------------------|--------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| **Identity**         | Which Google account you’re signing in as                          | OAuth token                                                                                                                        |
+| **Resource project** | Which Google Cloud project owns your EE calls, quotas, and billing | `project =` argument to [`gee_auth()`](https://aagi-aus.github.io/geefetch/reference/gee_auth.md) and `X-Goog-User-Project` header |
+
+If the identity is signed into account A but the resource project was
+created under account B, you’ll get HTTP 403. The rest of this section
+is about making both match.
+
+### Step 1 — Create a Google Cloud project and register it with Earth Engine
+
+You only do this once, before you ever touch R.
+
+1.  **Choose one Google account.** The rest of this setup — the Cloud
+    project, the EE registration, the OAuth consent — must all happen
+    under the *same* Google account. Using your institutional account
+    (`*.edu.au`, `*.gov`, etc.) is typical for academic / research work.
+    A personal Gmail account works too. Decide now and stick with it.
+
+2.  **Create a dedicated Google Cloud project** at
+    <https://console.cloud.google.com/projectcreate>. Give it a
+    memorable name (e.g. `my-geefetch-dev`). Google will assign a short
+    **Project ID** (the string you type, e.g. `my-geefetch-dev`) and a
+    long **Project number** (a 12-digit integer, e.g. `123456789012`).
+    Copy both. You’ll use the **project number** in R — it’s unambiguous
+    across accounts.
+
+3.  **Register the project for Earth Engine noncommercial use** at
+    <https://code.earthengine.google.com/register>. Choose *Academic* or
+    *Research*, select your new project from the dropdown, fill in the
+    institution details, submit. Academic approval is usually instant.
+
+4.  **Enable the Earth Engine API** on the project at
+    <https://console.cloud.google.com/apis/library/earthengine.googleapis.com>
+    — make sure the project picker top-left shows your project, then
+    click **Enable**.
+
+5.  **Verify** at <https://console.cloud.google.com/apis/dashboard> that
+    “Earth Engine API” appears in the enabled APIs list for your
+    project.
+
+### Step 2 — Authenticate in R
+
+Use the **project number**, not the project ID string. This is the
+single most common cause of the 403 “Earth Engine API has not been used”
+error — passing the ID can silently resolve to a different project
+number under a different identity.
 
 ``` r
 library(geefetch)
 
-# Interactive OAuth (opens browser)
-gee_auth()
+gee_auth(
+  project = "123456789012",              # <-- YOUR project number as a string
+  email   = "max.moldovan@gmail.com"     # <-- the exact Google account
+)
+```
 
-# Check your connection
+A browser window will open for Google OAuth (same flow as
+`googlesheets4`). Sign in as the account matching `email`, grant consent
+for Earth Engine and Cloud Platform scopes, close the tab.
+
+### Step 3 — Verify
+
+``` r
 gee_status()
 ```
 
     ## -- geefetch status --
     ## v Authenticated: yes
-    ## i Project: "earthengine-legacy"
+    ## i Project: "123456789012"
     ## i Backend: REST API (httr2 + gargle)
     ## i Cache dir: '~/Library/Caches/.../geefetch'
     ## i Registered datasets: 19
 
-For non-interactive use (CI, HPC), use a service account:
+The `Project:` line must show your project **number**. If it shows an ID
+string like `"earthengine-legacy"` or a different number, stop and
+re-run
+[`gee_auth()`](https://aagi-aus.github.io/geefetch/reference/gee_auth.md)
+with the correct arguments.
+
+### Step 4 — Persist across sessions
+
+Add to your `.Rprofile` (or the top of each analysis script) so you
+don’t need to re-type the project number:
 
 ``` r
-gee_auth(path = "path/to/service-account.json")
+options(geefetch.project = "123456789012")
+# Then gee_auth() picks it up without explicit project arg.
 ```
 
-For first-time setup,
+### Non-interactive authentication
+
+For CI, HPC, or any unattended context, use a service-account key file.
+Create the key on the same Cloud project used above
+(<https://console.cloud.google.com/iam-admin/serviceaccounts>), grant it
+the **Earth Engine Resource Writer** role, download the JSON, then:
+
+``` r
+gee_auth(
+  project = "123456789012",
+  path    = "path/to/service-account.json"
+)
+```
+
+Store the key file outside your repository. Never commit it.
+
+### Troubleshooting — HTTP 403 decision tree
+
+If
+[`read_modis_ndvi()`](https://aagi-aus.github.io/geefetch/reference/read_modis_ndvi.md)
+or any `read_*()` call returns a 403 after authentication appeared to
+succeed, the error message contains a project number. Match that number
+against what you expect:
+
+| Error’s project number   | Meaning                                                                   | Fix                                                                                                                                                                                                                                    |
+|--------------------------|---------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Matches your `project =` | Earth Engine API not actually enabled, or registration not yet propagated | Re-verify Step 1 items 3 + 4; wait 2-3 minutes and retry                                                                                                                                                                               |
+| **Different** number     | OAuth token’s quota project disagrees with your resource project          | Restart R; wipe gargle’s token cache (`unlink(list.files(gargle::gargle_oauth_cache(), full.names = TRUE))`); re-run [`gee_auth()`](https://aagi-aus.github.io/geefetch/reference/gee_auth.md) with the project **number**, not the ID |
+
+If neither helps,
 [`gee_setup()`](https://aagi-aus.github.io/geefetch/reference/gee_setup.md)
-provides step-by-step instructions.
+prints the full check-list and links to the three Google Cloud Console
+pages involved.
 
 ## Your first extraction
 

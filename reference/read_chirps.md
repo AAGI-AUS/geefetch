@@ -1,5 +1,7 @@
 # Read CHIRPS daily precipitation from Google Earth Engine
 
+**\[experimental\]**
+
 Reads UCSB-CHG/CHIRPS/DAILY (Climate Hazards Group InfraRed
 Precipitation With Station Data) from Google Earth Engine. Returns a
 [`terra::rast()`](https://rspatial.github.io/terra/reference/rast.html)
@@ -14,7 +16,7 @@ read_chirps(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 )
 ```
 

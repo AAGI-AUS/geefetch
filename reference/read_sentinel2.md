@@ -1,5 +1,7 @@
 # Read Sentinel-2 NDVI from Google Earth Engine
 
+**\[experimental\]**
+
 Computes NDVI from Copernicus Sentinel-2 MSI Level-2A harmonised surface
 reflectance (COPERNICUS/S2_SR_HARMONIZED) on Google Earth Engine. Cloud
 and shadow pixels are masked using the Scene Classification Layer (SCL).
@@ -13,7 +15,7 @@ read_sentinel2(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 )
 ```
 

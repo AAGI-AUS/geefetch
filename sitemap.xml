@@ -1,7 +1,12 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://aagi-aus.github.io/geefetch/404.html</loc></url>
+<url><loc>https://aagi-aus.github.io/geefetch/API_STABILITY.html</loc></url>
+<url><loc>https://aagi-aus.github.io/geefetch/CODE_OF_CONDUCT.html</loc></url>
+<url><loc>https://aagi-aus.github.io/geefetch/CONTRIBUTING.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/LICENSE-text.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/LICENSE.html</loc></url>
+<url><loc>https://aagi-aus.github.io/geefetch/SECURITY.html</loc></url>
+<url><loc>https://aagi-aus.github.io/geefetch/SUPPORT.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/articles/collect_gee_data.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/articles/custom_datasets.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/articles/geefetch.html</loc></url>
@@ -13,6 +18,7 @@
 <url><loc>https://aagi-aus.github.io/geefetch/reference/gee_auth.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/reference/gee_clear_cache.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/reference/gee_datasets.html</loc></url>
+<url><loc>https://aagi-aus.github.io/geefetch/reference/gee_external_facts.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/reference/gee_register_dataset.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/reference/gee_setup.html</loc></url>
 <url><loc>https://aagi-aus.github.io/geefetch/reference/gee_status.html</loc></url>

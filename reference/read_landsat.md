@@ -1,5 +1,7 @@
 # Read Landsat 9 NDVI from Google Earth Engine
 
+**\[experimental\]**
+
 Computes NDVI from Landsat 9 OLI-2 Collection 2 Level-2 surface
 reflectance (LANDSAT/LC09/C02/T1_L2) on Google Earth Engine. Cloud,
 shadow, and snow pixels are masked using the QA_PIXEL band.
@@ -13,7 +15,7 @@ read_landsat(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 )
 ```
 

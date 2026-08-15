@@ -1,5 +1,7 @@
 # Clear the geefetch disk cache
 
+**\[experimental\]**
+
 Removes cached extraction results from disk. Optionally filter by age to
 keep recent results.
 
@@ -27,6 +29,7 @@ to check cache size.
 
 Other utilities:
 [`gee_datasets()`](https://aagi-aus.github.io/geefetch/reference/gee_datasets.md),
+[`gee_external_facts()`](https://aagi-aus.github.io/geefetch/reference/gee_external_facts.md),
 [`gee_register_dataset()`](https://aagi-aus.github.io/geefetch/reference/gee_register_dataset.md)
 
 ## Examples

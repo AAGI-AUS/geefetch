@@ -1,5 +1,7 @@
 # List available GEE datasets
 
+**\[experimental\]**
+
 Returns a
 [data.table::data.table](https://rdrr.io/pkg/data.table/man/data.table.html)
 of all datasets available in the geefetch registry, including their GEE
@@ -65,6 +67,7 @@ with columns:
 
 Other utilities:
 [`gee_clear_cache()`](https://aagi-aus.github.io/geefetch/reference/gee_clear_cache.md),
+[`gee_external_facts()`](https://aagi-aus.github.io/geefetch/reference/gee_external_facts.md),
 [`gee_register_dataset()`](https://aagi-aus.github.io/geefetch/reference/gee_register_dataset.md)
 
 ## Examples

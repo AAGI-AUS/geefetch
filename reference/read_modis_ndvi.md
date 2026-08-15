@@ -1,5 +1,7 @@
 # Read MODIS Terra NDVI from Google Earth Engine
 
+**\[experimental\]**
+
 Reads MODIS/061/MOD13A2 (Terra Vegetation Indices 16-Day L3 1km) from
 Google Earth Engine for the specified date. Returns a
 [`terra::rast()`](https://rspatial.github.io/terra/reference/rast.html)
@@ -15,7 +17,7 @@ read_modis_ndvi(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 )
 ```
 

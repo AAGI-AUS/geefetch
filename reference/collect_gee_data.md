@@ -1,5 +1,7 @@
 # Batch-extract GEE data at point locations
 
+**\[experimental\]**
+
 Extracts values from multiple GEE datasets at one or more point
 locations across a date range. Returns a single
 [data.table::data.table](https://rdrr.io/pkg/data.table/man/data.table.html)

@@ -1,5 +1,7 @@
 # Check GEE connection status
 
+**\[experimental\]**
+
 Reports the current state of the GEE connection: authentication status,
 active backend, project ID, cache directory, and cache size.
 

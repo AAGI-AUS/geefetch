@@ -1,5 +1,7 @@
 # Read ERA5-Land climate data from Google Earth Engine
 
+**\[experimental\]**
+
 Reads ERA5-Land Daily Aggregated data (ECMWF/ERA5_LAND/DAILY_AGGR) from
 Google Earth Engine. Supports temperature and precipitation variables
 via the `variable` argument.
@@ -14,7 +16,7 @@ read_era5(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 )
 ```
 

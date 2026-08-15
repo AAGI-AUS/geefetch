@@ -1,5 +1,7 @@
 # Read SLGA soil data from Google Earth Engine
 
+**\[experimental\]**
+
 Reads CSIRO Soil and Landscape Grid of Australia (SLGA) data from Google
 Earth Engine. Supports 7 soil attributes, 6 depth layers, and 3
 statistics. This is a static dataset (no date required).
@@ -15,7 +17,7 @@ read_slga(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 )
 ```
 
@@ -89,9 +91,10 @@ Static dataset. Australia only. 90 m spatial resolution. 6 depth layers:
 
 ## References
 
-Viscarra Rossel, R.A. et al. (2015). A digital soil map of Australia.
-Soil Research, 53(7), 745-757.
-[doi:10.1071/SR15158](https://doi.org/10.1071/SR15158)
+Viscarra Rossel, R.A., Chen, C., Grundy, M.J., Searle, R., Clifford, D.
+& Campbell, P.H. (2015). The Australian three-dimensional soil grid:
+Australia's contribution to the GlobalSoilMap project. Soil Research,
+53(8), 845-864. [doi:10.1071/SR14366](https://doi.org/10.1071/SR14366)
 
 ## See also
 

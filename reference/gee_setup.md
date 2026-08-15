@@ -1,5 +1,7 @@
 # Guided first-time setup for GEE access
 
+**\[experimental\]**
+
 Interactive setup wizard that checks prerequisites, guides the user
 through Google Earth Engine registration and authentication, and
 verifies the connection.

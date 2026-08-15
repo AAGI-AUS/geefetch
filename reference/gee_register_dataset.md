@@ -1,5 +1,7 @@
 # Register a custom GEE dataset
 
+**\[experimental\]**
+
 Adds a user-defined GEE collection to the geefetch registry for the
 current R session. Once registered, the dataset can be used with
 [`read_gee()`](https://aagi-aus.github.io/geefetch/reference/read_gee.md)
@@ -86,7 +88,8 @@ gee_register_dataset(
 
 Other utilities:
 [`gee_clear_cache()`](https://aagi-aus.github.io/geefetch/reference/gee_clear_cache.md),
-[`gee_datasets()`](https://aagi-aus.github.io/geefetch/reference/gee_datasets.md)
+[`gee_datasets()`](https://aagi-aus.github.io/geefetch/reference/gee_datasets.md),
+[`gee_external_facts()`](https://aagi-aus.github.io/geefetch/reference/gee_external_facts.md)
 
 ## Examples
 

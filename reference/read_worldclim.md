@@ -1,8 +1,12 @@
 # Read WorldClim bioclimatic variables from Google Earth Engine
 
-Reads WorldClim V2 bioclimatic variables (WORLDCLIM/V2/BIO) from Google
-Earth Engine. This is a static dataset representing 1970-2000 climate
-normals at ~1 km resolution.
+**\[experimental\]**
+
+Reads WorldClim V1 bioclimatic variables (WORLDCLIM/V1/BIO) from Google
+Earth Engine. This is a static dataset representing 1960-1990 climate
+normals at ~1 km resolution. Note that Google Earth Engine hosts
+WorldClim version 1, not version 2; the two differ in both their normal
+period and their source publication.
 
 ## Usage
 
@@ -13,7 +17,7 @@ read_worldclim(
   backend = c("rest", "rgee"),
   cache = TRUE,
   max_tries = 3L,
-  initial_delay = 1
+  initial_delay = 1L
 )
 ```
 
@@ -58,7 +62,7 @@ documentation).
 
 ## Data availability
 
-Static (1970-2000 normals). Global land. ~1 km spatial resolution.
+Static (1960-1990 normals). Global land. ~1 km spatial resolution.
 
 ## Variables
 
@@ -78,10 +82,10 @@ Static (1970-2000 normals). Global land. ~1 km spatial resolution.
 
 ## References
 
-Fick, S.E. & Hijmans, R.J. (2017). WorldClim 2: new 1km spatial
-resolution climate surfaces for global land areas. International Journal
-of Climatology, 37(12), 4302-4315.
-[doi:10.1002/joc.5086](https://doi.org/10.1002/joc.5086)
+Hijmans, R.J., Cameron, S.E., Parra, J.L., Jones, P.G. & Jarvis, A.
+(2005). Very High Resolution Interpolated Climate Surfaces for Global
+Land Areas. International Journal of Climatology, 25(15), 1965-1978.
+[doi:10.1002/joc.1276](https://doi.org/10.1002/joc.1276)
 
 ## See also
 
