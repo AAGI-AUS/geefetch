@@ -39,7 +39,7 @@ extraction against a user-owned Google Cloud project.
   `X-Goog-User-Project: <project>` forces the quota project to match the
   resource project. This was the load-bearing fix to make live extraction
   work against a user-owned Google Cloud project. Documented at
-  <https://cloud.google.com/docs/authentication/rest#set-quota-project>.
+  <https://docs.cloud.google.com/docs/authentication/rest#set-quota-project>.
 
 * **`.rest_compute_pixels()` no longer returns a `SpatRaster` pointing at
   a deleted tempfile.** The function created a tempfile, returned a
