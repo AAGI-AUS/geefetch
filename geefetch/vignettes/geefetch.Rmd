@@ -75,7 +75,7 @@ You only do this once, before you ever touch R.
    <https://console.cloud.google.com/projectcreate>. Give it a memorable
    name (e.g. `my-geefetch-dev`). Google will assign a short **Project ID**
    (the string you type, e.g. `my-geefetch-dev`) and a long **Project
-   number** (a 12-digit integer, e.g. `565208131613`). Copy both. You'll
+   number** (a 12-digit integer, e.g. `123456789012`). Copy both. You'll
    use the **project number** in R — it's unambiguous across accounts.
 
 3. **Register the project for Earth Engine noncommercial use** at
@@ -102,7 +102,7 @@ number under a different identity.
 library(geefetch)
 
 gee_auth(
-  project = "565208131613",              # <-- YOUR project number as a string
+  project = "123456789012",              # <-- YOUR project number as a string
   email   = "max.moldovan@gmail.com"     # <-- the exact Google account
 )
 ```
@@ -120,7 +120,7 @@ gee_status()
 ```
 ## -- geefetch status --
 ## v Authenticated: yes
-## i Project: "565208131613"
+## i Project: "123456789012"
 ## i Backend: REST API (httr2 + gargle)
 ## i Cache dir: '~/Library/Caches/.../geefetch'
 ## i Registered datasets: 19
@@ -136,7 +136,7 @@ Add to your `.Rprofile` (or the top of each analysis script) so you don't
 need to re-type the project number:
 
 ```{r rprofile, eval = FALSE}
-options(geefetch.project = "565208131613")
+options(geefetch.project = "123456789012")
 # Then gee_auth() picks it up without explicit project arg.
 ```
 
@@ -149,7 +149,7 @@ the **Earth Engine Resource Writer** role, download the JSON, then:
 
 ```{r auth-sa, eval = FALSE}
 gee_auth(
-  project = "565208131613",
+  project = "123456789012",
   path    = "path/to/service-account.json"
 )
 ```

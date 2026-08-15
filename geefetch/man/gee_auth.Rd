@@ -23,7 +23,7 @@ Mutually exclusive with \code{email}.}
 
 \item{project}{Character. Google Cloud project to use as the resource
 and quota project. \strong{Pass the 12-digit project number as a string}
-(e.g. \code{"565208131613"}) rather than the project ID -- the number is
+(e.g. \code{"123456789012"}) rather than the project ID -- the number is
 unambiguous across Google accounts and avoids a common class of
 HTTP 403 errors where the OAuth token's implicit quota project
 differs from the intended resource project. The Earth Engine API
@@ -62,7 +62,7 @@ key file via \code{gee_auth(path = "service-account.json")}.
 \section{Project number vs ID}{
 
 Google Cloud projects have two identifiers: a string \strong{ID} (e.g.
-\code{geefetch-dev}) and a 12-digit \strong{number} (e.g. \code{565208131613}). IDs
+\code{geefetch-dev}) and a 12-digit \strong{number} (e.g. \code{123456789012}). IDs
 are not globally unique across accounts in the sense the user
 experiences -- the same string can be registered by different
 accounts and resolved against each account's catalogue at request
@@ -81,7 +81,7 @@ Google Cloud Console, enable the Earth Engine API, and download
 the JSON key. Then authenticate with:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{gee_auth(
-  project = "565208131613",
+  project = "123456789012",
   path    = "path/to/service-account.json"
 )
 }\if{html}{\out{</div>}}
@@ -92,7 +92,7 @@ the JSON key. Then authenticate with:
 To avoid typing the project number every session, set it once in
 your \code{.Rprofile}:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{options(geefetch.project = "565208131613")
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{options(geefetch.project = "123456789012")
 }\if{html}{\out{</div>}}
 }
 
@@ -100,15 +100,15 @@ your \code{.Rprofile}:
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # Recommended form -- explicit project number + matching email.
 gee_auth(
-  project = "565208131613",
+  project = "123456789012",
   email   = "me@gmail.com"
 )
 
 # Interactive OAuth (uses cached account)
-gee_auth(project = "565208131613")
+gee_auth(project = "123456789012")
 
 # Service account (CI / non-interactive)
-gee_auth(project = "565208131613", path = "path/to/service-account.json")
+gee_auth(project = "123456789012", path = "path/to/service-account.json")
 \dontshow{\}) # examplesIf}
 }
 \seealso{

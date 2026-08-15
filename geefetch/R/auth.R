@@ -43,7 +43,7 @@
 #'   Mutually exclusive with `email`.
 #' @param project Character. Google Cloud project to use as the resource
 #'   and quota project. **Pass the 12-digit project number as a string**
-#'   (e.g. `"565208131613"`) rather than the project ID -- the number is
+#'   (e.g. `"123456789012"`) rather than the project ID -- the number is
 #'   unambiguous across Google accounts and avoids a common class of
 #'   HTTP 403 errors where the OAuth token's implicit quota project
 #'   differs from the intended resource project. The Earth Engine API
@@ -58,7 +58,7 @@
 #'
 #' @section Project number vs ID:
 #' Google Cloud projects have two identifiers: a string **ID** (e.g.
-#' `geefetch-dev`) and a 12-digit **number** (e.g. `565208131613`). IDs
+#' `geefetch-dev`) and a 12-digit **number** (e.g. `123456789012`). IDs
 #' are not globally unique across accounts in the sense the user
 #' experiences -- the same string can be registered by different
 #' accounts and resolved against each account's catalogue at request
@@ -75,7 +75,7 @@
 #' the JSON key. Then authenticate with:
 #' ```r
 #' gee_auth(
-#'   project = "565208131613",
+#'   project = "123456789012",
 #'   path    = "path/to/service-account.json"
 #' )
 #' ```
@@ -84,7 +84,7 @@
 #' To avoid typing the project number every session, set it once in
 #' your `.Rprofile`:
 #' ```r
-#' options(geefetch.project = "565208131613")
+#' options(geefetch.project = "123456789012")
 #' ```
 #'
 #' @family authentication
@@ -94,15 +94,15 @@
 #' @examplesIf interactive()
 #' # Recommended form -- explicit project number + matching email.
 #' gee_auth(
-#'   project = "565208131613",
+#'   project = "123456789012",
 #'   email   = "me@@gmail.com"
 #' )
 #'
 #' # Interactive OAuth (uses cached account)
-#' gee_auth(project = "565208131613")
+#' gee_auth(project = "123456789012")
 #'
 #' # Service account (CI / non-interactive)
-#' gee_auth(project = "565208131613", path = "path/to/service-account.json")
+#' gee_auth(project = "123456789012", path = "path/to/service-account.json")
 #'
 #' @export
 gee_auth <- function(
@@ -351,7 +351,7 @@ gee_setup <- function() {
     "Note both the Project {.strong ID} (string, e.g. {.val my-geefetch-dev})"
   )
   cli::cli_text(
-    "and the Project {.strong number} (12 digits, e.g. {.val 565208131613})."
+    "and the Project {.strong number} (12 digits, e.g. {.val 123456789012})."
   )
   cli::cli_text(
     "{.strong Use the number in R} - it is unambiguous across accounts."
@@ -389,14 +389,16 @@ gee_setup <- function() {
   )
   cli::cli_code(paste0(
     'gee_auth(\n',
-    '  project = "565208131613",    # <-- your project NUMBER\n',
+    '  project = "123456789012",    # <-- your project NUMBER\n',
     '  email   = "you@gmail.com"    # <-- matching Google account\n',
     ')'
   ))
-  cli::cli_text("For non-interactive / CI use, pass a service-account JSON key:")
+  cli::cli_text(
+    "For non-interactive / CI use, pass a service-account JSON key:"
+  )
   cli::cli_code(paste0(
     'gee_auth(\n',
-    '  project = "565208131613",\n',
+    '  project = "123456789012",\n',
     '  path    = "path/to/service-account.json"\n',
     ')'
   ))
@@ -407,8 +409,10 @@ gee_setup <- function() {
   cli::cli_text(
     "The {.field Project} line must show your project {.strong number}."
   )
-  cli::cli_text("To avoid retyping it each session, add to your {.file .Rprofile}:")
-  cli::cli_code('options(geefetch.project = "565208131613")')
+  cli::cli_text(
+    "To avoid retyping it each session, add to your {.file .Rprofile}:"
+  )
+  cli::cli_code('options(geefetch.project = "123456789012")')
 
   cli::cli_text("")
   cli::cli_rule(left = "Troubleshooting HTTP 403")
@@ -424,7 +428,7 @@ gee_setup <- function() {
   cli::cli_code(paste0(
     'unlink(list.files(gargle::gargle_oauth_cache(), full.names = TRUE))\n',
     '# restart R, then:\n',
-    'gee_auth(project = "565208131613", email = "you@gmail.com")'
+    'gee_auth(project = "123456789012", email = "you@gmail.com")'
   ))
 
   invisible(NULL)
