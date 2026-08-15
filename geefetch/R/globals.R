@@ -10,5 +10,6 @@ utils::globalVariables(c(
   "lat",
   "lon",
   "resolution",
-  "temporal"
+  "temporal",
+  "verified_on"
 ))

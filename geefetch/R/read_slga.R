@@ -36,8 +36,10 @@
 #' 6 depth layers: 0-5, 5-15, 15-30, 30-60, 60-100, 100-200 cm.
 #'
 #' @references
-#' Viscarra Rossel, R.A. et al. (2015). A digital soil map of Australia.
-#' Soil Research, 53(7), 745-757. \doi{10.1071/SR15158}
+#' Viscarra Rossel, R.A., Chen, C., Grundy, M.J., Searle, R., Clifford, D.
+#' & Campbell, P.H. (2015). The Australian three-dimensional soil grid:
+#' Australia's contribution to the GlobalSoilMap project. Soil Research,
+#' 53(8), 845-864. \doi{10.1071/SR14366}
 #'
 #' @family GEE readers
 #' @seealso [read_gee()], [collect_gee_data()]

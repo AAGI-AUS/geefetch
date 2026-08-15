@@ -194,9 +194,14 @@
     description = "SLGA Clay Content 0-5cm (Australia)",
     date_start = NA_character_,
     date_end = NA_character_,
+    # Citation matches the authority's own `sci:citation` for CSIRO/SLGA
+    # (GEE STAC) and the Crossref record for the DOI (both diffed 2026-08-15).
     citation = paste0(
-      "Viscarra Rossel, R.A. et al. (2015). A digital soil map of Australia. ",
-      "Soil Research, 53(7), 745-757. doi:10.1071/SR15158"
+      "Viscarra Rossel, R.A., Chen, C., Grundy, M.J., Searle, R., ",
+      "Clifford, D. & Campbell, P.H. (2015). The Australian ",
+      "three-dimensional soil grid: Australia's contribution to the ",
+      "GlobalSoilMap project. Soil Research, 53(8), 845-864. ",
+      "doi:10.1071/SR14366"
     )
   ),
 
@@ -214,7 +219,7 @@
     description = "SLGA Sand Content 0-5cm (Australia)",
     date_start = NA_character_,
     date_end = NA_character_,
-    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR15158"
+    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR14366"
   ),
 
   slga_awc = list(
@@ -231,7 +236,7 @@
     description = "SLGA Available Water Capacity 0-5cm (Australia)",
     date_start = NA_character_,
     date_end = NA_character_,
-    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR15158"
+    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR14366"
   ),
 
   slga_slt = list(
@@ -248,7 +253,7 @@
     description = "SLGA Silt Content 0-5cm (Australia)",
     date_start = NA_character_,
     date_end = NA_character_,
-    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR15158"
+    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR14366"
   ),
 
   slga_bdw = list(
@@ -265,7 +270,7 @@
     description = "SLGA Bulk Density 0-5cm (Australia)",
     date_start = NA_character_,
     date_end = NA_character_,
-    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR15158"
+    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR14366"
   ),
 
   slga_phc = list(
@@ -282,7 +287,7 @@
     description = "SLGA pH (CaCl2) 0-5cm (Australia)",
     date_start = NA_character_,
     date_end = NA_character_,
-    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR15158"
+    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR14366"
   ),
 
   slga_nto = list(
@@ -299,7 +304,7 @@
     description = "SLGA Total Nitrogen 0-5cm (Australia)",
     date_start = NA_character_,
     date_end = NA_character_,
-    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR15158"
+    citation = "Viscarra Rossel, R.A. et al. (2015). doi:10.1071/SR14366"
   ),
 
   sentinel2_ndvi = list(
