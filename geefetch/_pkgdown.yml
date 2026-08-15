@@ -66,6 +66,7 @@ reference:
     contents:
       - gee_datasets
       - gee_register_dataset
+      - gee_external_facts
       - gee_clear_cache
 
 articles:
