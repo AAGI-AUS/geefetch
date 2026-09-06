@@ -54,7 +54,7 @@ A \link[data.table:data.table]{data.table::data.table} with columns:
 \item{date}{Date of extraction}
 \item{lon, lat}{Coordinates (always included)}
 \item{point_id}{Integer point identifier}
-\item{\if{html}{\out{<dataset columns>}}}{One column per requested dataset}
+\item{\verb{<dataset columns>}}{One column per requested dataset}
 }
 }
 \description{

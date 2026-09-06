@@ -45,7 +45,7 @@
 #'   \item{date}{Date of extraction}
 #'   \item{lon, lat}{Coordinates (always included)}
 #'   \item{point_id}{Integer point identifier}
-#'   \item{<dataset columns>}{One column per requested dataset}
+#'   \item{`<dataset columns>`}{One column per requested dataset}
 #' }
 #'
 #' @section Column naming:
