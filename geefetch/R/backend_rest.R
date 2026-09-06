@@ -23,10 +23,8 @@ NULL
 
 #' Base URL of the Earth Engine REST API
 #'
-#' `options(geefetch.rest_base = )` overrides it. The test suite sets a short
-#' host so that recorded cassette paths stay under the 100-byte limit CRAN
-#' enforces on file names in a source tarball; the option is never needed
-#' in normal use.
+#' `options(geefetch.rest_base = )` overrides it; the test suite uses a
+#' short host so recorded cassette paths stay under 100 bytes.
 #' @noRd
 .gee_rest_base <- function() {
   getOption("geefetch.rest_base", .GEE_REST_BASE)
@@ -251,16 +249,11 @@ NULL
 
 #' Build a FeatureCollection node from a table of points
 #'
-#' The Expression grammar reads a constant object as a Dictionary, so a
-#' GeoJSON FeatureCollection passed as `constantValue` is rejected by
-#' `Image.sampleRegions` (HTTP 400, "Expected type: FeatureCollection.
-#' Actual type: Dictionary<Object>"). The service accepts the invocation
-#' form the Python client serialises: `Collection` over an array of
-#' `Feature` invocations. `arrayValue$values` stays a JSON array for a
-#' single point because it is a list of objects.
+#' A constant object is read by the Expression grammar as a Dictionary, so
+#' a FeatureCollection literal is built as `Collection` over `Feature`
+#' invocations, each carrying a `point_id` property.
 #'
 #' @param coords data.table with point_id, lon, lat columns.
-#' @returns An expression node evaluating to a FeatureCollection.
 #' @noRd
 .ee_feature_collection <- function(coords) {
   features <- lapply(seq_len(nrow(coords)), function(i) {
@@ -274,9 +267,8 @@ NULL
 
 #' Build Image.sampleRegions expression for point extraction
 #'
-#' `sampleRegions` drops a feature whose pixel is masked, so the reply can
-#' be shorter than the request; callers match rows by `point_id`, never
-#' by position.
+#' Masked pixels are dropped from the reply, so callers match rows by
+#' `point_id`.
 #' @noRd
 .ee_sample_regions <- function(image_node, coords, scale) {
   .ee_call(
@@ -492,8 +484,7 @@ NULL
       )
     }
 
-    # Service text is data, never a cli template: it can carry braces and
-    # backticks that would otherwise abort inside cli's own parser.
+    # Service text is interpolated as data, not as a cli template.
     cli::cli_abort(c(
       "GEE REST API error (HTTP {status}).",
       x = "{err_msg}",

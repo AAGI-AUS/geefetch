@@ -1,12 +1,7 @@
-# expression_dataset.R -- one builder for the image every dataset is sampled
-# from, shared by the raster route (read_gee) and the point route
-# (collect_gee_data). Before this file existed each route rebuilt the
-# load / filter / first / select / scale chain separately, so the point route
-# never applied per-dataset masking, depth or stat, and never computed the
-# vegetation indices that the raster handlers did.
-#
-# Every algorithm name used here was checked against the live
-# `algorithms` listing of the Earth Engine REST API on 2026-09-06.
+# expression_dataset.R -- builds the single-band image a dataset is sampled
+# from. Shared by the raster route (read_gee) and the point route
+# (collect_gee_data) so that date windows, spatial filtering, compositing,
+# QA masks, band selection, scaling and indices are defined once.
 
 #' Length of the acquisition window for a temporal resolution
 #' @noRd
@@ -39,14 +34,14 @@
 #' @param coords data.table with lon, lat columns.
 #' @noRd
 .ee_multipoint <- function(coords) {
-  pts <- lapply(seq_len(nrow(coords)), function(i) list(coords$lon[i], coords$lat[i]))
+  pts <- lapply(seq_len(nrow(coords)), function(i) {
+    list(coords$lon[i], coords$lat[i])
+  })
   .ee_call("GeometryConstructors.MultiPoint", coordinates = .ee_const(pts))
 }
 
 #' Keep only the images of a collection that intersect a geometry
-#'
-#' The Python client's `filterBounds()` is `Filter.intersects` with
-#' `leftField = ".all"` and the geometry wrapped in a Feature.
+#' (the `filterBounds()` of the official clients)
 #' @noRd
 .ee_filter_bounds <- function(collection_node, geometry_node) {
   .ee_call(
@@ -63,7 +58,11 @@
 #' Rename the bands of an image
 #' @noRd
 .ee_rename <- function(image_node, names) {
-  .ee_call("Image.rename", input = image_node, names = .ee_const(as.list(names)))
+  .ee_call(
+    "Image.rename",
+    input = image_node,
+    names = .ee_const(as.list(names))
+  )
 }
 
 #' Apply the dataset's QA mask, chosen by collection ID
@@ -113,7 +112,13 @@
 #' @returns List with `node` (the image expression) and `band` (the name of
 #'   the band it carries, used to read values back).
 #' @noRd
-.ee_dataset_image <- function(meta, did, date = NULL, bounds = NULL, dots = list()) {
+.ee_dataset_image <- function(
+  meta,
+  did,
+  date = NULL,
+  bounds = NULL,
+  dots = list()
+) {
   bands <- .ee_dataset_bands(meta, did, dots)
   index <- meta$index %||% NA_character_
 
@@ -125,17 +130,22 @@
     if (!is.null(bounds)) {
       col <- .ee_filter_bounds(col, bounds)
     }
-    img <- if (identical(meta$composite, "mosaic")) .ee_mosaic(col) else .ee_first(col)
+    img <- if (identical(meta$composite, "mosaic")) {
+      .ee_mosaic(col)
+    } else {
+      .ee_first(col)
+    }
     img <- .ee_apply_qa(img, meta$collection)
   }
 
   if (identical(index, "ndvi")) {
-    # Scale and offset the reflectances first (Landsat's offset does not
-    # cancel in the ratio), then take the normalised difference.
-    nir <- .ee_scale_offset(.ee_select(img, bands[1L]), meta$scale_factor, meta$offset)
-    red <- .ee_scale_offset(.ee_select(img, bands[2L]), meta$scale_factor, meta$offset)
-    # Fill pixels carry a raw 0, which the offset turns into a negative
-    # reflectance and the ratio into values far outside [-1, 1]. Keep only
+    # Landsat's additive offset does not cancel in the ratio, so scale
+    # and offset both bands before the difference.
+    nir <- .ee_select(img, bands[1L])
+    red <- .ee_select(img, bands[2L])
+    nir <- .ee_scale_offset(nir, meta$scale_factor, meta$offset)
+    red <- .ee_scale_offset(red, meta$scale_factor, meta$offset)
+    # Fill pixels (raw 0) become negative after the offset; keep only
     # pixels where both reflectances are positive.
     zero <- .ee_call("Image.constant", value = .ee_const(0))
     valid <- .ee_call(

@@ -136,7 +136,7 @@ collect_gee_data <- function(
     .print_collection_info(coords, dates, resolved, is_static, combined_meta)
   }
 
-  # Per-dataset options forwarded to the expression builder (SLGA depth/stat)
+  # Per-dataset options for the expression builder (SLGA depth and stat)
   dots <- list(depth = depth, stat = stat)
 
   # 7. Build scaffold: one row per (location x date)
@@ -345,9 +345,7 @@ collect_gee_data <- function(
     initial_delay = initial_delay
   )
 
-  # Match returned rows to coords by point_id. The service drops features
-  # whose pixel is masked, so the reply is often shorter than the request
-  # and positional alignment would silently misplace values.
+  # Masked points are absent from the reply; align by point_id.
   values <- rep(NA_real_, n_pts)
 
   if (nrow(dt) == 0L) {
@@ -366,7 +364,11 @@ collect_gee_data <- function(
     idx <- which(coords$point_id == dt$point_id[i])
     if (length(idx) == 1L) {
       val <- dt[[band_name]][i]
-      values[idx] <- if (is.null(val) || is.na(val)) NA_real_ else as.numeric(val)
+      values[idx] <- if (is.null(val) || is.na(val)) {
+        NA_real_
+      } else {
+        as.numeric(val)
+      }
     }
   }
 
