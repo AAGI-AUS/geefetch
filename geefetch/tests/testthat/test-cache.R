@@ -110,3 +110,24 @@ test_that("cache handles corrupt files gracefully", {
   expect_null(result)
   expect_false(file.exists(file.path(tmp, paste0(hash, ".rds"))))
 })
+
+test_that(".cache_set falls back to memory-only when the disk write fails", {
+  withr::local_options(list(geefetch.cache_dir = withr::local_tempdir()))
+  .geefetch_env$mem_cache <- NULL
+
+  did <- "test_valueless_raster"
+  params <- list(date = "2024-01-01")
+
+  # A SpatRaster template with no cell values: terra::writeRaster() cannot
+  # write it to disk, so .cache_set() should warn and keep the result in
+  # the memory cache only.
+  result <- terra::rast(nrows = 10, ncols = 10)
+
+  expect_warning(
+    .cache_set(did, params, result),
+    "Failed to write to disk cache"
+  )
+
+  cached <- .cache_get(did, params)
+  expect_s4_class(cached, "SpatRaster")
+})

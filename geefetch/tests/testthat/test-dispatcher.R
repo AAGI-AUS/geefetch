@@ -43,10 +43,15 @@ test_that("read_gee does not require date for static datasets", {
   .geefetch_env$token <- "fake"
   withr::defer(.geefetch_env$token <- old_token)
 
+  # This region exceeds 2048x2048 pixels at SRTM's native 30m scale, so
+  # .build_grid() warns about resampling before the REST pipeline fails.
   # Should fail somewhere in the REST pipeline, but NOT on "requires a date"
-  err <- tryCatch(
-    read_gee("srtm_elevation", region = terra::ext(138, 140, -36, -34)),
-    error = function(e) conditionMessage(e)
+  expect_warning(
+    err <- tryCatch(
+      read_gee("srtm_elevation", region = terra::ext(138, 140, -36, -34)),
+      error = function(e) conditionMessage(e)
+    ),
+    regexp = "exceeds 2048x2048 pixels"
   )
   expect_true(is.character(err))
   expect_false(grepl("requires a.*date", err))
@@ -76,7 +81,10 @@ test_that("read_gee routes to cache on repeated call", {
     date = "2024-06-15",
     region = terra::ext(138, 140, -36, -34)
   )
-  fake_result <- terra::rast(nrows = 10, ncols = 10)
+  # A raster with real cell values, so the disk cache write succeeds and
+  # this test exercises the cache-read path only (not the write-failure
+  # fallback, which is covered in test-cache.R).
+  fake_result <- terra::rast(nrows = 10, ncols = 10, vals = seq_len(100))
   .cache_set("modis_ndvi", cache_key, fake_result)
   withr::defer(.geefetch_env$mem_cache <- NULL)
 
