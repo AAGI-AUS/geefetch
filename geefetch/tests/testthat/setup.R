@@ -5,18 +5,25 @@
 # access expectation, (c) the disk cache is off so tests don't poison or rely
 # on a user cache directory.
 
-# 1. Clear any GEE-related credentials that might leak from a developer's shell.
-Sys.unsetenv(c(
-  "GOOGLE_APPLICATION_CREDENTIALS",
-  "GEE_PROJECT_ID",
-  "GEEFETCH_TOKEN",
-  "GEEFETCH_PROJECT"
-))
+# 1. Clear any GEE-related credentials that might leak from a developer's shell,
+#    unless a maintainer has explicitly opted into the live integration suite
+#    (test-live.R) via GEEFETCH_LIVE=1 — that suite needs GEEFETCH_PROJECT to
+#    survive into the test file, and authenticates with its own guarded helper.
+if (!identical(Sys.getenv("GEEFETCH_LIVE"), "1")) {
+  Sys.unsetenv(c(
+    "GOOGLE_APPLICATION_CREDENTIALS",
+    "GEE_PROJECT_ID",
+    "GEEFETCH_TOKEN",
+    "GEEFETCH_PROJECT"
+  ))
+}
 
 # 2. Declare "no internet" by default. Tests that intentionally hit the
 #    live GEE API must unset this and guard with skip_if(Sys.getenv("GEE_LIVE")
-#    != "1") or equivalent.
-Sys.setenv(NO_INTERNET = "true")
+#    != "1") or equivalent. GEEFETCH_LIVE=1 (test-live.R) is the same opt-in.
+if (!identical(Sys.getenv("GEEFETCH_LIVE"), "1")) {
+  Sys.setenv(NO_INTERNET = "true")
+}
 
 # 3. Cache off for the duration of the test run. Individual tests may
 #    re-enable it via withr::local_options(geefetch.cache.enabled = TRUE)

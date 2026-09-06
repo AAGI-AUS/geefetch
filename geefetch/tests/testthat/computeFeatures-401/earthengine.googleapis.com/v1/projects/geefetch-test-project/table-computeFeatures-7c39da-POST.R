@@ -1,0 +1,10 @@
+structure(list(method = "POST", url = "https://earthengine.googleapis.com/v1/projects/geefetch-test-project/table:computeFeatures", 
+    status_code = 401L, headers = structure(list(`www-authenticate` = "Bearer realm=\"https://accounts.google.com/\", error=\"invalid_token\"", 
+        vary = "Origin", vary = "X-Origin", vary = "Referer", 
+        `content-type` = "application/json; charset=UTF-8", `content-encoding` = "gzip", 
+        date = "Sun, 06 Sep 2026 01:41:37 GMT", server = "ESF", 
+        `content-length` = "226", `x-xss-protection` = "0", `x-frame-options` = "SAMEORIGIN", 
+        `x-content-type-options` = "nosniff", `alt-svc` = "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"), class = "httr2_headers"), 
+    body = charToRaw("{\n  \"error\": {\n    \"code\": 401,\n    \"message\": \"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.\",\n    \"status\": \"UNAUTHENTICATED\"\n  }\n}\n"), 
+    timing = c(redirect = 0, namelookup = 0, connect = 0, pretransfer = 0.000117, 
+    starttransfer = 0.408303, total = 0.409381), cache = new.env(parent = emptyenv())), class = "httr2_response")
