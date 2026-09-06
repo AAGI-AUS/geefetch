@@ -21,6 +21,17 @@ NULL
 #' @noRd
 .GEE_REST_BASE <- "https://earthengine.googleapis.com/v1"
 
+#' Base URL of the Earth Engine REST API
+#'
+#' `options(geefetch.rest_base = )` overrides it. The test suite sets a short
+#' host so that recorded cassette paths stay under the 100-byte limit CRAN
+#' enforces on file names in a source tarball; the option is never needed
+#' in normal use.
+#' @noRd
+.gee_rest_base <- function() {
+  getOption("geefetch.rest_base", .GEE_REST_BASE)
+}
+
 
 # ===========================================================================
 # Section 1b: Token management helpers
@@ -406,7 +417,7 @@ NULL
       i = "See {.code gee_setup()} for how to create and register a project."
     ))
   }
-  url <- paste0(.GEE_REST_BASE, "/projects/", project, "/", endpoint)
+  url <- paste0(.gee_rest_base(), "/projects/", project, "/", endpoint)
 
   # Extract access token string (handles both gargle and raw string tokens)
   access_token <- .extract_access_token(token)

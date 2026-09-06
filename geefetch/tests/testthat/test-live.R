@@ -98,3 +98,36 @@ test_that("a raster read returns a SpatRaster with cells", {
   expect_s4_class(r, "SpatRaster")
   expect_gt(terra::ncell(r), 0L)
 })
+
+test_that("SLGA point extraction honours depth and stat", {
+  .live_auth()
+  xy <- data.frame(lon = c(138.6, 145.0), lat = c(-34.6, -30.0))
+  top <- collect_gee_data(
+    xy = xy, date_range = c("2022-06-01", "2022-06-01"),
+    datasets = "slga_cly", cache = FALSE, verbose = FALSE
+  )
+  deep <- collect_gee_data(
+    xy = xy, date_range = c("2022-06-01", "2022-06-01"),
+    datasets = "slga_cly", depth = "30-60", stat = "ci_upper",
+    cache = FALSE, verbose = FALSE
+  )
+  expect_true(all(is.finite(top$slga_cly)))
+  expect_true(all(deep$slga_cly > top$slga_cly))
+})
+
+test_that("Sentinel-2 NDVI is computed on both routes and bounded", {
+  .live_auth()
+  r <- read_gee(
+    "sentinel2_ndvi", date = "2023-01-05",
+    region = terra::ext(138.55, 138.6, -34.6, -34.55), cache = FALSE, verbose = FALSE
+  )
+  v <- terra::values(r)
+  expect_gt(sum(!is.na(v)), 0L)
+  expect_true(all(v[!is.na(v)] >= -1 & v[!is.na(v)] <= 1))
+  pts <- collect_gee_data(
+    xy = data.frame(lon = 145, lat = -30), date_range = c("2023-01-05", "2023-01-05"),
+    datasets = "sentinel2_ndvi", cache = FALSE, verbose = FALSE
+  )
+  expect_true(is.finite(pts$sentinel2_ndvi))
+  expect_true(abs(pts$sentinel2_ndvi) <= 1)
+})

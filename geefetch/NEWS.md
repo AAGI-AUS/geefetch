@@ -2,6 +2,24 @@
 
 ## Bug fixes
 
+* The seven SLGA soil datasets failed on both routes because
+  `CSIRO/SLGA` is an image collection, not an image; each dataset now
+  reads its attribute image (`CSIRO/SLGA/CLY` and so on).
+* Sentinel-2 extraction failed with "Unknown function: Image.Or"; the
+  cloud mask now calls `Image.or`.
+* Scene-based collections (Sentinel-2, Landsat) returned an arbitrary
+  scene because no spatial filter preceded `Collection.first`. Every
+  time-series request now filters the collection to images intersecting
+  the requested region or points, and scene collections are mosaicked.
+* `collect_gee_data()` now applies the same QA masks, `depth`/`stat`
+  selection and NDVI computation as `read_gee()`. Previously the point
+  route ignored `depth` and `stat` and returned raw reflectance for the
+  NDVI datasets. The cache key now includes `depth` and `stat`.
+* NDVI values outside [-1, 1] no longer appear at Landsat fill pixels;
+  non-positive reflectances are masked before the ratio.
+* `jsonlite` is back in Imports: httr2 (>= 1.3.0) no longer imports it,
+  yet every JSON response parse needs it.
+
 * `collect_gee_data()` no longer fails live point extraction with
   HTTP 400. The point set was sent to `Image.sampleRegions()` as a
   GeoJSON object inside `constantValue`, which the Earth Engine

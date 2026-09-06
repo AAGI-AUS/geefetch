@@ -1,4 +1,4 @@
-structure(list(method = "POST", url = "https://earthengine.googleapis.com/v1/projects/geefetch-test-project/table:computeFeatures", 
+structure(list(method = "POST", url = "https://ee/projects/ee-test/table:computeFeatures", 
     status_code = 401L, headers = structure(list(`www-authenticate` = "Bearer realm=\"https://accounts.google.com/\", error=\"invalid_token\"", 
         vary = "Origin", vary = "X-Origin", vary = "Referer", 
         `content-type` = "application/json; charset=UTF-8", `content-encoding` = "gzip", 

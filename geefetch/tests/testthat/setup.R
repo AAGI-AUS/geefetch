@@ -54,3 +54,13 @@ if (requireNamespace("httptest2", quietly = TRUE)) {
     httptest2.debug   = FALSE
   )
 }
+
+# 6. Short cassette paths. httptest2 names a mock file after the full
+#    request URL, which for Earth Engine pushes tarball paths past the
+#    100-byte limit CRAN enforces. Point the package at a short host while
+#    replaying; recording (RPKG_RECAPTURE=1) keeps the real host and the
+#    helper renames the files afterwards.
+if (!nzchar(Sys.getenv("RPKG_RECAPTURE")) &&
+    !identical(Sys.getenv("GEEFETCH_LIVE"), "1")) {
+  options(geefetch.rest_base = "https://ee")
+}

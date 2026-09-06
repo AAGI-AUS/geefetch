@@ -22,6 +22,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Max Moldovan \email{max.moldovan@adelaide.edu.au} (\href{https://orcid.org/0000-0001-9680-8474}{ORCID})
   \item Adam H. Sparks \email{adam.sparks@curtin.edu.au} (\href{https://orcid.org/0000-0002-0061-8359}{ORCID})
 }
 

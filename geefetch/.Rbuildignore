@@ -27,3 +27,5 @@
 ^\.pre-commit-config\.yaml$
 ^\.devcontainer$
 ^tests/testthat/README\.md$
+^\.DS_Store$
+\.DS_Store$

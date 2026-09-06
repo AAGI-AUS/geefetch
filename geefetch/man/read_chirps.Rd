@@ -16,7 +16,7 @@ read_chirps(
 \arguments{
 \item{date}{Character or Date. Date in \code{"YYYY-MM-DD"} format.}
 
-\item{region}{An \link[sf:sf]{sf::sf}, \code{\link[sf:sfc]{sf::st_sfc()}}, or \code{\link[terra:ext]{terra::ext()}} object
+\item{region}{An \link[sf:sf]{sf::sf}, \code{\link[sf:st_sfc]{sf::st_sfc()}}, or \code{\link[terra:ext]{terra::ext()}} object
 defining the spatial extent. Required.}
 
 \item{backend}{Character. \code{"rest"} (default) or \code{"rgee"}.}
@@ -58,15 +58,15 @@ Scientific Data, 2, 150066. \doi{10.1038/sdata.2015.66}
 \seealso{
 \code{\link[=read_gee]{read_gee()}}, \code{\link[=collect_gee_data]{collect_gee_data()}}
 
-Other GEE readers: 
-\code{\link{read_era5}()},
-\code{\link{read_gee}()},
-\code{\link{read_landsat}()},
-\code{\link{read_modis_lst}()},
-\code{\link{read_modis_ndvi}()},
-\code{\link{read_sentinel2}()},
-\code{\link{read_slga}()},
-\code{\link{read_srtm}()},
-\code{\link{read_worldclim}()}
+Other GEE readers:
+\code{\link[=read_era5]{read_era5()}},
+\code{\link[=read_gee]{read_gee()}},
+\code{\link[=read_landsat]{read_landsat()}},
+\code{\link[=read_modis_lst]{read_modis_lst()}},
+\code{\link[=read_modis_ndvi]{read_modis_ndvi()}},
+\code{\link[=read_sentinel2]{read_sentinel2()}},
+\code{\link[=read_slga]{read_slga()}},
+\code{\link[=read_srtm]{read_srtm()}},
+\code{\link[=read_worldclim]{read_worldclim()}}
 }
 \concept{GEE readers}

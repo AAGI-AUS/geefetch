@@ -25,7 +25,7 @@ if (nzchar(Sys.getenv("RPKG_RECAPTURE")) &&
     response <- httptest2::gsub_response(
       response,
       Sys.getenv("GEEFETCH_RECAPTURE_PROJECT", "REDACTED"),
-      "geefetch-test-project"
+      "ee-test"
     )
     response
   })

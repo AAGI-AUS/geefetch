@@ -5,6 +5,7 @@
 #' @importFrom data.table data.table setDT rbindlist setnames setcolorder
 #'   setattr is.data.table as.data.table
 #' @importFrom lifecycle deprecated
+#' @importFrom jsonlite fromJSON
 #' @importFrom rlang abort warn inform is_installed arg_match check_required
 #'   caller_env `%||%`
 #' @importFrom utils packageVersion

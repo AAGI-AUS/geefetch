@@ -57,7 +57,7 @@ once per endpoint behaviour change, not on every test run.
 4. Inspect the new cassettes under `tests/testthat/computeFeatures-*/`.
    The redactor in `helper-recapture.R` strips `Authorization` headers
    and replaces your real project ID with the placeholder
-   `geefetch-test-project`. Grep each cassette for any remaining
+   `ee-test`. Grep each cassette for any remaining
    personally-identifiable material before committing:
 
     ```bash

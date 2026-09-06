@@ -20,18 +20,18 @@ local_fake_auth <- function(.local_envir = parent.frame()) {
     envir = .local_envir
   )
   assign("token", "fake-access-token", envir = asNamespace("geefetch")$.geefetch_env)
-  assign("project", "geefetch-test-project", envir = asNamespace("geefetch")$.geefetch_env)
+  assign("project", "ee-test", envir = asNamespace("geefetch")$.geefetch_env)
 }
 
 test_that(".rest_request() parses a successful computeFeatures response", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-success")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
+    dir.exists(test_path("cf-ok")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()
 
-  httptest2::with_mock_dir("computeFeatures-success", {
+  httptest2::with_mock_dir("cf-ok", {
     # A bare `constantValue` expression is rejected live with "Expression does
     # not compute to a table" (HTTP 400) -- computeFeatures requires the
     # expression to actually evaluate to a FeatureCollection. Use the same
@@ -56,12 +56,12 @@ test_that(".rest_request() parses a successful computeFeatures response", {
 test_that(".rest_request() surfaces 401 auth errors helpfully", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-401")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
+    dir.exists(test_path("cf-401")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()
 
-  httptest2::with_mock_dir("computeFeatures-401", {
+  httptest2::with_mock_dir("cf-401", {
     expect_error(
       geefetch:::.rest_request(
         endpoint = "table:computeFeatures",
@@ -76,12 +76,12 @@ test_that(".rest_request() surfaces 401 auth errors helpfully", {
 test_that(".rest_request() surfaces 429 rate-limit errors helpfully", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-429")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
+    dir.exists(test_path("cf-429")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()
 
-  httptest2::with_mock_dir("computeFeatures-429", {
+  httptest2::with_mock_dir("cf-429", {
     expect_error(
       geefetch:::.rest_request(
         endpoint = "table:computeFeatures",
@@ -97,12 +97,12 @@ test_that(".rest_request() surfaces 429 rate-limit errors helpfully", {
 test_that(".rest_request() surfaces 403 API-not-enabled with setup guidance", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-403")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
+    dir.exists(test_path("cf-403")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()
 
-  httptest2::with_mock_dir("computeFeatures-403", {
+  httptest2::with_mock_dir("cf-403", {
     # Full message pattern is snapshot-tested separately; here just confirm
     # the error mentions the Earth Engine API being un-enabled.
     expect_error(
@@ -118,7 +118,7 @@ test_that(".rest_request() surfaces 403 API-not-enabled with setup guidance", {
 test_that(".rest_extract_batch_points() aligns values by point_id when the service drops masked points", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-masked-point")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
+    dir.exists(test_path("cf-masked")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()
@@ -143,7 +143,7 @@ test_that(".rest_extract_batch_points() aligns values by point_id when the servi
     lat = c(-34.5, -30.0, -32.0)
   )
 
-  httptest2::with_mock_dir("computeFeatures-masked-point", {
+  httptest2::with_mock_dir("cf-masked", {
     vals <- geefetch:::.rest_extract_batch_points(
       meta = smap_meta,
       date = as.Date("2022-06-01"),
