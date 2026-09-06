@@ -161,6 +161,7 @@
     return(list(node = .ee_rename(node, "NDVI"), band = "NDVI"))
   }
 
-  node <- .ee_scale_offset(.ee_select(img, bands), meta$scale_factor, meta$offset)
+  node <- .ee_select(img, bands)
+  node <- .ee_scale_offset(node, meta$scale_factor, meta$offset)
   list(node = node, band = bands[1L])
 }
