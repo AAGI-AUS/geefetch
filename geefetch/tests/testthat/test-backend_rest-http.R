@@ -26,7 +26,7 @@ local_fake_auth <- function(.local_envir = parent.frame()) {
 test_that(".rest_request() parses a successful computeFeatures response", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-success")),
+    dir.exists(test_path("computeFeatures-success")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()
@@ -56,7 +56,7 @@ test_that(".rest_request() parses a successful computeFeatures response", {
 test_that(".rest_request() surfaces 401 auth errors helpfully", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-401")),
+    dir.exists(test_path("computeFeatures-401")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()
@@ -76,7 +76,7 @@ test_that(".rest_request() surfaces 401 auth errors helpfully", {
 test_that(".rest_request() surfaces 429 rate-limit errors helpfully", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-429")),
+    dir.exists(test_path("computeFeatures-429")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()
@@ -97,7 +97,7 @@ test_that(".rest_request() surfaces 429 rate-limit errors helpfully", {
 test_that(".rest_request() surfaces 403 API-not-enabled with setup guidance", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-403")),
+    dir.exists(test_path("computeFeatures-403")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()
@@ -118,7 +118,7 @@ test_that(".rest_request() surfaces 403 API-not-enabled with setup guidance", {
 test_that(".rest_extract_batch_points() aligns values by point_id when the service drops masked points", {
   skip_if_no_httptest2()
   skip_if_not(
-    dir.exists(test_path("computeFeatures-masked-point")),
+    dir.exists(test_path("computeFeatures-masked-point")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
     "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
   )
   local_fake_auth()

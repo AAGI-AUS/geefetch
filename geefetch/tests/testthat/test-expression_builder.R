@@ -250,3 +250,40 @@ test_that(".parse_features_to_dt handles NULL properties gracefully", {
   expect_equal(nrow(dt), 2L)
   expect_true(is.na(dt$b[1L]))
 })
+
+test_that(".ee_dataset_image filters by bounds and mosaics scene collections", {
+  coords <- data.table::data.table(point_id = 1:2, lon = c(138, 145), lat = c(-34, -30))
+  built <- .ee_dataset_image(
+    .GEE_META$sentinel2_ndvi, "sentinel2_ndvi", as.Date("2023-01-05"),
+    .ee_multipoint(coords)
+  )
+  expect_equal(built$band, "NDVI")
+  flat <- unlist(built$node, use.names = FALSE)
+  expect_true("ImageCollection.mosaic" %in% flat)
+  expect_true("Filter.intersects" %in% flat)
+  expect_true("GeometryConstructors.MultiPoint" %in% flat)
+  expect_true("Image.updateMask" %in% flat)
+  expect_false("Collection.first" %in% flat)
+})
+
+test_that(".ee_dataset_image takes the first image for global products", {
+  built <- .ee_dataset_image(
+    .GEE_META$era5_temp, "era5_temp", as.Date("2023-01-05"),
+    .ee_bbox(c(xmin = 138, ymin = -35, xmax = 139, ymax = -34))
+  )
+  flat <- unlist(built$node, use.names = FALSE)
+  expect_true("Collection.first" %in% flat)
+  expect_true("GeometryConstructors.BBox" %in% flat)
+  expect_equal(built$band, "temperature_2m")
+})
+
+test_that(".ee_dataset_image derives SLGA bands from depth and stat", {
+  built <- .ee_dataset_image(
+    .GEE_META$slga_phc, "slga_phc", NULL, NULL,
+    list(depth = "30-60", stat = "ci_upper")
+  )
+  expect_equal(built$band, "pHc_030_060_95")
+  flat <- unlist(built$node, use.names = FALSE)
+  expect_true("CSIRO/SLGA/pHc" %in% flat)
+  expect_false("Collection.filter" %in% flat)
+})

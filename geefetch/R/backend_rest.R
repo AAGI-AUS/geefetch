@@ -637,36 +637,7 @@ NULL
   max_tries = 3L,
   initial_delay = 1L
 ) {
-  bands <- bands %||% meta$bands
-
-  # Build expression: load → filter → first → select → scale/offset
-  if (meta$temporal == "static") {
-    # Static dataset: load image directly (no date filter)
-    img <- .ee_load_image(meta$collection)
-  } else {
-    # Time-series: filter collection by date window, take first
-    date_start <- date
-    # Expand date window to match temporal resolution
-    date_end <- switch(
-      meta$temporal,
-      daily = date + 1L,
-      "8day" = date + 8L,
-      "16day" = date + 16L,
-      "5day" = date + 5L,
-      monthly = lubridate::ceiling_date(date, "month"),
-      date + 1L
-    )
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date_start, date_end)
-    img <- .ee_first(col_filtered)
-  }
-
-  img <- .ee_select(img, bands)
-  img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
-
-  # Determine grid from region
   if (is.null(region)) {
-    # Default: small region for safety (won't request the whole globe)
     cli::cli_abort(c(
       "{.arg region} is required for raster extraction via REST API.",
       i = "Provide an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
@@ -677,11 +648,15 @@ NULL
   region <- .validate_region(region)
   bbox <- sf::st_bbox(region)
   grid <- .build_grid(bbox = bbox, scale = meta$scale)
+  bounds <- if (identical(meta$temporal, "static")) NULL else .ee_bbox(bbox)
+  built <- .ee_dataset_image(
+    meta, "", date, bounds, list(variable = bands)
+  )
 
   .rest_compute_pixels(
-    expression = img,
+    expression = built$node,
     grid = grid,
-    bands = bands,
+    bands = built$band,
     max_tries = max_tries,
     initial_delay = initial_delay
   )
@@ -712,31 +687,10 @@ NULL
   max_tries = 3L,
   initial_delay = 1L
 ) {
-  bands <- bands %||% meta$bands
-
-  # Build expression: load → filter → first → select → scale/offset
-  if (meta$temporal == "static") {
-    img <- .ee_load_image(meta$collection)
-  } else {
-    date_start <- date
-    date_end <- switch(
-      meta$temporal,
-      daily = date + 1L,
-      "8day" = date + 8L,
-      "16day" = date + 16L,
-      "5day" = date + 5L,
-      monthly = lubridate::ceiling_date(date, "month"),
-      date + 1L
-    )
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date_start, date_end)
-    img <- .ee_first(col_filtered)
-  }
-
-  img <- .ee_select(img, bands)
-  img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
-
-  sample_expr <- .ee_sample_regions(img, coords, meta$scale)
+  built <- .ee_dataset_image(
+    meta, "", date, .ee_multipoint(coords), list(variable = bands)
+  )
+  sample_expr <- .ee_sample_regions(built$node, coords, meta$scale)
 
   .rest_compute_features(
     expression = sample_expr,

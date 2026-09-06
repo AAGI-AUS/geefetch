@@ -18,24 +18,11 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    # Build expression with QA masking
-    date_end <- date + 16L
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date, date_end)
-    img <- .ee_first(col_filtered)
-
-    # Apply QA mask before band selection
-    img_masked <- .ee_mask_modis_vi(img)
-    img_ndvi <- .ee_select(img_masked, "NDVI")
-    img_scaled <- .ee_scale_offset(img_ndvi, meta$scale_factor, meta$offset)
-
+    built <- .ee_dataset_image(
+      meta, "modis_ndvi", date, .ee_bbox(sf::st_bbox(region)), dots
+    )
     .rest_extract_raster_expr(
-      img_scaled,
-      region,
-      meta,
-      "NDVI",
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
@@ -52,22 +39,11 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    date_end <- date + 8L
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date, date_end)
-    img <- .ee_first(col_filtered)
-
-    img_masked <- .ee_mask_modis_lst(img)
-    img_lst <- .ee_select(img_masked, "LST_Day_1km")
-    img_scaled <- .ee_scale_offset(img_lst, meta$scale_factor, meta$offset)
-
+    built <- .ee_dataset_image(
+      meta, "modis_lst", date, .ee_bbox(sf::st_bbox(region)), dots
+    )
     .rest_extract_raster_expr(
-      img_scaled,
-      region,
-      meta,
-      "LST_Day_1km",
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
@@ -84,21 +60,11 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    date_end <- date + 1L
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date, date_end)
-    img <- .ee_first(col_filtered)
-
-    img_band <- .ee_select(img, meta$bands)
-    img_scaled <- .ee_scale_offset(img_band, meta$scale_factor, meta$offset)
-
+    built <- .ee_dataset_image(
+      meta, "era5_temp", date, .ee_bbox(sf::st_bbox(region)), dots
+    )
     .rest_extract_raster_expr(
-      img_scaled,
-      region,
-      meta,
-      meta$bands,
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
@@ -115,21 +81,11 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    date_end <- date + 1L
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date, date_end)
-    img <- .ee_first(col_filtered)
-
-    img_band <- .ee_select(img, meta$bands)
-    img_scaled <- .ee_scale_offset(img_band, meta$scale_factor, meta$offset)
-
+    built <- .ee_dataset_image(
+      meta, "era5_precip", date, .ee_bbox(sf::st_bbox(region)), dots
+    )
     .rest_extract_raster_expr(
-      img_scaled,
-      region,
-      meta,
-      meta$bands,
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
@@ -146,21 +102,11 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    date_end <- date + 1L
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date, date_end)
-    img <- .ee_first(col_filtered)
-
-    img_band <- .ee_select(img, meta$bands)
-    # No QA masking needed; scale_factor = 1, offset = 0
-
+    built <- .ee_dataset_image(
+      meta, "chirps_precip", date, .ee_bbox(sf::st_bbox(region)), dots
+    )
     .rest_extract_raster_expr(
-      img_band,
-      region,
-      meta,
-      meta$bands,
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
@@ -176,16 +122,11 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    img <- .ee_load_image(meta$collection)
-    img_band <- .ee_select(img, meta$bands)
-
+    built <- .ee_dataset_image(
+      meta, "srtm_elevation", NULL, .ee_bbox(sf::st_bbox(region)), dots
+    )
     .rest_extract_raster_expr(
-      img_band,
-      region,
-      meta,
-      meta$bands,
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, NULL, region, max_tries, initial_delay)
@@ -240,37 +181,17 @@
   initial_delay,
   attribute = "CLY"
 ) {
-  # Resolve depth and stat from user args or defaults
-  depth_code <- .slga_depth_to_code(dots$depth %||% "0-5")
-  stat_code <- .slga_stat_to_code(dots$stat %||% "mean")
-
-  # Construct band name: e.g., CLY_000_005_EV. The GEE band prefix is resolved
-  # from .SLGA_BAND_PREFIX (case-sensitive: pH is `pHc`, not `PHC`).
-  band_prefix <- unname(.SLGA_BAND_PREFIX[attribute])
-  if (is.na(band_prefix)) band_prefix <- attribute
-  band_name <- paste0(band_prefix, "_", depth_code, "_", stat_code)
-
-  # Use the base SLGA meta but override bands
-  meta_key <- paste0("slga_", tolower(attribute))
-  meta <- .GEE_META[[meta_key]]
+  did <- paste0("slga_", tolower(attribute))
+  meta <- .GEE_META[[did]]
   if (is.null(meta)) {
-    meta <- .GEE_META$slga_cly
-  } # fallback
-
+    cli::cli_abort("Unknown SLGA attribute {.val {attribute}}.")
+  }
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    img <- .ee_load_image(meta$collection)
-    img_band <- .ee_select(img, band_name)
-    img_scaled <- .ee_scale_offset(img_band, meta$scale_factor, meta$offset)
-
+    built <- .ee_dataset_image(meta, did, NULL, NULL, dots)
     .rest_extract_raster_expr(
-      img_scaled,
-      region,
-      meta,
-      band_name,
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, NULL, region, max_tries, initial_delay)
@@ -322,24 +243,11 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    date_end <- date + 5L
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date, date_end)
-    img <- .ee_first(col_filtered)
-
-    # Apply SCL cloud masking
-    img_masked <- .ee_mask_s2_scl(img)
-
-    # Compute NDVI from B8 (NIR) and B4 (Red)
-    ndvi <- .ee_normalized_difference(img_masked, "B8", "B4")
-
+    built <- .ee_dataset_image(
+      meta, "sentinel2_ndvi", date, .ee_bbox(sf::st_bbox(region)), dots
+    )
     .rest_extract_raster_expr(
-      ndvi,
-      region,
-      meta,
-      NULL,
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
@@ -356,36 +264,11 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    date_end <- date + 16L
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date, date_end)
-    img <- .ee_first(col_filtered)
-
-    # Apply QA_PIXEL cloud masking
-    img_masked <- .ee_mask_landsat_qa(img)
-
-    # Scale reflectance bands first, then compute NDVI
-    b5 <- .ee_select(img_masked, "SR_B5")
-    b5_scaled <- .ee_scale_offset(b5, meta$scale_factor, meta$offset)
-    b4 <- .ee_select(img_masked, "SR_B4")
-    b4_scaled <- .ee_scale_offset(b4, meta$scale_factor, meta$offset)
-
-    # NDVI = (NIR - Red) / (NIR + Red)
-    numerator <- .ee_call(
-      "Image.subtract",
-      image1 = b5_scaled,
-      image2 = b4_scaled
+    built <- .ee_dataset_image(
+      meta, "landsat_ndvi", date, .ee_bbox(sf::st_bbox(region)), dots
     )
-    denominator <- .ee_call("Image.add", image1 = b5_scaled, image2 = b4_scaled)
-    ndvi <- .ee_call("Image.divide", image1 = numerator, image2 = denominator)
-
     .rest_extract_raster_expr(
-      ndvi,
-      region,
-      meta,
-      NULL,
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)
@@ -423,35 +306,10 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    if (meta$temporal == "static") {
-      img <- .ee_load_image(meta$collection)
-    } else {
-      date_end <- switch(
-        meta$temporal,
-        daily = date + 1L,
-        "8day" = date + 8L,
-        "16day" = date + 16L,
-        "5day" = date + 5L,
-        monthly = lubridate::ceiling_date(date, "month"),
-        date + 1L
-      )
-      col <- .ee_load_collection(meta$collection)
-      col_filtered <- .ee_filter_date(col, date, date_end)
-      img <- .ee_first(col_filtered)
-    }
-
-    # Allow user to override bands via variable arg (e.g., WorldClim bio01-bio19)
-    bands <- dots$variable %||% meta$bands
-    img_band <- .ee_select(img, bands)
-    img_scaled <- .ee_scale_offset(img_band, meta$scale_factor, meta$offset)
-
+    bounds <- if (meta$temporal == "static") NULL else .ee_bbox(sf::st_bbox(region))
+    built <- .ee_dataset_image(meta, did, date, bounds, dots)
     .rest_extract_raster_expr(
-      img_scaled,
-      region,
-      meta,
-      bands,
-      max_tries,
-      initial_delay
+      built$node, region, meta, built$band, max_tries, initial_delay
     )
   } else {
     .rgee_extract(meta, date, region, max_tries, initial_delay)

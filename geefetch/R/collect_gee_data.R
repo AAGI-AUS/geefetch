@@ -136,6 +136,9 @@ collect_gee_data <- function(
     .print_collection_info(coords, dates, resolved, is_static, combined_meta)
   }
 
+  # Per-dataset options forwarded to the expression builder (SLGA depth/stat)
+  dots <- list(depth = depth, stat = stat)
+
   # 7. Build scaffold: one row per (location x date)
   n_locs <- nrow(coords)
   n_dates <- length(dates)
@@ -177,7 +180,8 @@ collect_gee_data <- function(
         backend = backend,
         cache = cache,
         max_tries = 3L,
-        initial_delay = 1L
+        initial_delay = 1L,
+        dots = dots
       )
       all_vals[row_idx] <- vals
 
@@ -200,7 +204,8 @@ collect_gee_data <- function(
       backend = backend,
       cache = cache,
       max_tries = 3L,
-      initial_delay = 1L
+      initial_delay = 1L,
+      dots = dots
     )
 
     # Replicate static values across all dates for each point
@@ -260,7 +265,8 @@ collect_gee_data <- function(
   backend,
   cache,
   max_tries,
-  initial_delay
+  initial_delay,
+  dots = list()
 ) {
   n_pts <- nrow(coords)
 
@@ -269,6 +275,8 @@ collect_gee_data <- function(
     type = "batch",
     did = did,
     date = as.character(date),
+    depth = dots$depth %||% NA_character_,
+    stat = dots$stat %||% NA_character_,
     pts_hash = digest::digest(coords[, .(lon, lat)], algo = "sha256")
   )
 
@@ -282,7 +290,9 @@ collect_gee_data <- function(
   result <- tryCatch(
     {
       if (backend == "rest") {
-        .rest_extract_batch_points(meta, date, coords, max_tries, initial_delay)
+        .rest_extract_batch_points(
+          meta, date, coords, max_tries, initial_delay, did = did, dots = dots
+        )
       } else {
         .rgee_extract_point(meta, date, coords[1L, ], max_tries, initial_delay)
       }
@@ -318,40 +328,16 @@ collect_gee_data <- function(
   date,
   coords,
   max_tries,
-  initial_delay
+  initial_delay,
+  did = NULL,
+  dots = list()
 ) {
-  bands <- meta$bands
   n_pts <- nrow(coords)
-
-  # Build image expression
-  if (meta$temporal == "static") {
-    img <- .ee_load_image(meta$collection)
-  } else {
-    date_end <- switch(
-      meta$temporal,
-      daily = date + 1L,
-      "8day" = date + 8L,
-      "16day" = date + 16L,
-      "5day" = date + 5L,
-      monthly = lubridate::ceiling_date(date, "month"),
-      date + 1L
-    )
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date, date_end)
-    img <- .ee_first(col_filtered)
-  }
-
-  # Apply QA masking for known datasets
-  if (grepl("^MODIS/061/MOD13", meta$collection)) {
-    img <- .ee_mask_modis_vi(img)
-  } else if (grepl("^MODIS/061/MOD11", meta$collection)) {
-    img <- .ee_mask_modis_lst(img)
-  }
-
-  img <- .ee_select(img, bands)
-  img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
-
-  sample_expr <- .ee_sample_regions(img, coords, meta$scale)
+  built <- .ee_dataset_image(
+    meta, did %||% "", date, .ee_multipoint(coords), dots
+  )
+  band_name <- built$band
+  sample_expr <- .ee_sample_regions(built$node, coords, meta$scale)
 
   dt <- .rest_compute_features(
     expression = sample_expr,
@@ -362,7 +348,6 @@ collect_gee_data <- function(
   # Match returned rows to coords by point_id. The service drops features
   # whose pixel is masked, so the reply is often shorter than the request
   # and positional alignment would silently misplace values.
-  band_name <- if (length(bands) == 1L) bands else bands[1L]
   values <- rep(NA_real_, n_pts)
 
   if (nrow(dt) == 0L) {
@@ -400,39 +385,25 @@ collect_gee_data <- function(
   date,
   pt_coords,
   max_tries,
-  initial_delay
+  initial_delay,
+  did = NULL,
+  dots = list()
 ) {
-  bands <- meta$bands
+  built <- .ee_dataset_image(
+    meta, did %||% "", date, .ee_multipoint(pt_coords), dots
+  )
+  band_name <- built$band
+  sample_expr <- .ee_sample_regions(built$node, pt_coords, meta$scale)
 
-  # Build image expression
-  if (meta$temporal == "static") {
-    img <- .ee_load_image(meta$collection)
-  } else {
-    date_end <- switch(
-      meta$temporal,
-      daily = date + 1L,
-      "8day" = date + 8L,
-      "16day" = date + 16L,
-      "5day" = date + 5L,
-      monthly = lubridate::ceiling_date(date, "month"),
-      date + 1L
-    )
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date, date_end)
-    img <- .ee_first(col_filtered)
+  dt <- .rest_compute_features(
+    expression = sample_expr,
+    max_tries = max_tries,
+    initial_delay = initial_delay
+  )
+
+  if (nrow(dt) == 0L) {
+    return(NA_real_)
   }
-
-  # Apply QA masking for MODIS datasets
-  if (grepl("^MODIS/061/MOD13", meta$collection)) {
-    img <- .ee_mask_modis_vi(img)
-  } else if (grepl("^MODIS/061/MOD11", meta$collection)) {
-    img <- .ee_mask_modis_lst(img)
-  }
-
-  img <- .ee_select(img, bands)
-  img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
-
-  sample_expr <- .ee_sample_regions(img, pt_coords, meta$scale)
 
   dt <- .rest_compute_features(
     expression = sample_expr,
@@ -445,7 +416,6 @@ collect_gee_data <- function(
   }
 
   # Extract the first band value
-  band_name <- if (length(bands) == 1L) bands else bands[1L]
   if (band_name %in% names(dt)) {
     val <- dt[[band_name]][1L]
     if (is.null(val) || is.na(val)) NA_real_ else as.numeric(val)

@@ -181,7 +181,7 @@
   # -- Tier 2: Extended datasets (handlers to be implemented in Phase 4) --
 
   slga_cly = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/CLY",
     bands = "CLY_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -206,7 +206,7 @@
   ),
 
   slga_snd = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/SND",
     bands = "SND_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -223,7 +223,7 @@
   ),
 
   slga_awc = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/AWC",
     bands = "AWC_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -240,7 +240,7 @@
   ),
 
   slga_slt = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/SLT",
     bands = "SLT_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -257,7 +257,7 @@
   ),
 
   slga_bdw = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/BDW",
     bands = "BDW_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -274,7 +274,7 @@
   ),
 
   slga_phc = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/pHc",
     bands = "pHc_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -291,7 +291,7 @@
   ),
 
   slga_nto = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/NTO",
     bands = "NTO_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -310,6 +310,8 @@
   sentinel2_ndvi = list(
     collection = "COPERNICUS/S2_SR_HARMONIZED",
     bands = c("B8", "B4"),
+    composite = "mosaic",
+    index = "ndvi",
     scale = 10L,
     temporal = "5day",
     qa_band = "SCL",
@@ -331,6 +333,8 @@
   landsat_ndvi = list(
     collection = "LANDSAT/LC09/C02/T1_L2",
     bands = c("SR_B5", "SR_B4"),
+    composite = "mosaic",
+    index = "ndvi",
     scale = 30L,
     temporal = "16day",
     qa_band = "QA_PIXEL",

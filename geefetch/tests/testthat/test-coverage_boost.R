@@ -177,7 +177,7 @@ test_that(".ee_mask_s2_scl builds correct OR chain", {
   expect_equal(inv$functionName, "Image.updateMask")
   # The mask should be an OR chain
   mask_inv <- inv$arguments$mask$functionInvocationValue
-  expect_equal(mask_inv$functionName, "Image.Or")
+  expect_equal(mask_inv$functionName, "Image.or")
 })
 
 # ---- handlers.R coverage (mocked) ----
@@ -264,8 +264,14 @@ test_that(".read_gee_slga builds correct band name", {
 test_that(".read_gee_sentinel2 applies SCL masking and computes NDVI", {
   local_mocked_bindings(
     .rest_extract_raster_expr = function(expr, ...) {
-      # The expression should be a divide (NDVI computation)
-      expect_equal(expr$functionInvocationValue$functionName, "Image.divide")
+      # The expression is the NDVI ratio renamed to a single NDVI band
+      inv <- expr$functionInvocationValue
+      expect_equal(inv$functionName, "Image.rename")
+      expect_equal(inv$arguments$names$constantValue, list("NDVI"))
+      expect_equal(
+        inv$arguments$input$functionInvocationValue$functionName,
+        "Image.divide"
+      )
       terra::rast(nrows = 10, ncols = 10, vals = runif(100, -1, 1))
     }
   )
@@ -282,8 +288,12 @@ test_that(".read_gee_sentinel2 applies SCL masking and computes NDVI", {
 test_that(".read_gee_landsat applies QA masking and computes NDVI", {
   local_mocked_bindings(
     .rest_extract_raster_expr = function(expr, ...) {
-      # Should be divide (NDVI)
-      expect_equal(expr$functionInvocationValue$functionName, "Image.divide")
+      inv <- expr$functionInvocationValue
+      expect_equal(inv$functionName, "Image.rename")
+      expect_equal(
+        inv$arguments$input$functionInvocationValue$functionName,
+        "Image.divide"
+      )
       terra::rast(nrows = 10, ncols = 10, vals = runif(100, -1, 1))
     }
   )

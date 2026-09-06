@@ -88,9 +88,9 @@
     image2 = .ee_call("Image.constant", value = .ee_const(7L))
   )
   # OR them together
-  mask <- .ee_call("Image.Or", image1 = mask_4, image2 = mask_5)
-  mask <- .ee_call("Image.Or", image1 = mask, image2 = mask_6)
-  mask <- .ee_call("Image.Or", image1 = mask, image2 = mask_7)
+  mask <- .ee_call("Image.or", image1 = mask_4, image2 = mask_5)
+  mask <- .ee_call("Image.or", image1 = mask, image2 = mask_6)
+  mask <- .ee_call("Image.or", image1 = mask, image2 = mask_7)
 
   .ee_call("Image.updateMask", image = image_node, mask = mask)
 }
