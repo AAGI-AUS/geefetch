@@ -405,16 +405,6 @@ collect_gee_data <- function(
     return(NA_real_)
   }
 
-  dt <- .rest_compute_features(
-    expression = sample_expr,
-    max_tries = max_tries,
-    initial_delay = initial_delay
-  )
-
-  if (nrow(dt) == 0L) {
-    return(NA_real_)
-  }
-
   # Extract the first band value
   if (band_name %in% names(dt)) {
     val <- dt[[band_name]][1L]

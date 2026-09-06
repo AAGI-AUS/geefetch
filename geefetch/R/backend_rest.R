@@ -413,7 +413,10 @@ NULL
       is.na(project)) {
     cli::cli_abort(c(
       "No Google Cloud project is set for Earth Engine requests.",
-      i = "Pass {.code gee_auth(project = \"<your-project>\")} or set {.code options(geefetch.project = \"<your-project>\")}.",
+      i = paste0(
+        "Pass {.code gee_auth(project = \"<your-project>\")} or set ",
+        "{.code options(geefetch.project = \"<your-project>\")}."
+      ),
       i = "See {.code gee_setup()} for how to create and register a project."
     ))
   }

@@ -306,7 +306,11 @@
   region <- .validate_region(dots$region)
 
   if (backend == "rest") {
-    bounds <- if (meta$temporal == "static") NULL else .ee_bbox(sf::st_bbox(region))
+    bounds <- if (meta$temporal == "static") {
+      NULL
+    } else {
+      .ee_bbox(sf::st_bbox(region))
+    }
     built <- .ee_dataset_image(meta, did, date, bounds, dots)
     .rest_extract_raster_expr(
       built$node, region, meta, built$band, max_tries, initial_delay

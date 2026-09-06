@@ -150,9 +150,15 @@ gee_auth <- function(
 
   if (identical(.geefetch_env$project, .GEE_DEFAULT_PROJECT)) {
     cli::cli_warn(c(
-      "No Google Cloud project given; falling back to {.val {.GEE_DEFAULT_PROJECT}}.",
+      paste0(
+        "No Google Cloud project given; falling back to ",
+        "{.val {.GEE_DEFAULT_PROJECT}}."
+      ),
       i = "Earth Engine refuses this legacy project for most accounts.",
-      i = "Pass {.arg project} or set {.code options(geefetch.project = ...)}; see {.code gee_setup()}."
+      i = paste0(
+        "Pass {.arg project} or set {.code options(geefetch.project = ...)}; ",
+        "see {.code gee_setup()}."
+      )
     ))
   }
 
