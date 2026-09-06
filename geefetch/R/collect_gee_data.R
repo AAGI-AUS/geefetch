@@ -288,10 +288,11 @@ collect_gee_data <- function(
       }
     },
     error = function(e) {
+      msg <- conditionMessage(e)
       cli::cli_warn(c(
         `!` = "Batch extraction failed for {.val {did}}",
         `!` = if (!is.null(date)) paste0("Date: ", date) else "Static dataset",
-        i = conditionMessage(e)
+        i = "{msg}"
       ))
       rep(NA_real_, n_pts)
     }
@@ -350,9 +351,7 @@ collect_gee_data <- function(
   img <- .ee_select(img, bands)
   img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
 
-  # Build multi-point GeoJSON (all points in one FeatureCollection)
-  geojson <- .coords_to_geojson(coords)
-  sample_expr <- .ee_sample_regions(img, geojson, meta$scale)
+  sample_expr <- .ee_sample_regions(img, coords, meta$scale)
 
   dt <- .rest_compute_features(
     expression = sample_expr,
@@ -360,29 +359,29 @@ collect_gee_data <- function(
     initial_delay = initial_delay
   )
 
-  # Parse results: match returned point_ids to coords order
+  # Match returned rows to coords by point_id. The service drops features
+  # whose pixel is masked, so the reply is often shorter than the request
+  # and positional alignment would silently misplace values.
   band_name <- if (length(bands) == 1L) bands else bands[1L]
   values <- rep(NA_real_, n_pts)
 
-  if (nrow(dt) > 0L && "point_id" %in% names(dt) && band_name %in% names(dt)) {
-    for (i in seq_len(nrow(dt))) {
-      pid <- dt$point_id[i]
-      idx <- which(coords$point_id == pid)
-      if (length(idx) == 1L) {
-        val <- dt[[band_name]][i]
-        values[idx] <- if (is.null(val) || is.na(val)) {
-          NA_real_
-        } else {
-          as.numeric(val)
-        }
-      }
-    }
-  } else if (nrow(dt) > 0L && band_name %in% names(dt)) {
-    # No point_id in response — assume same order as input
-    n_ret <- min(nrow(dt), n_pts)
-    for (i in seq_len(n_ret)) {
+  if (nrow(dt) == 0L) {
+    return(values)
+  }
+  if (!"point_id" %in% names(dt)) {
+    cli::cli_abort(c(
+      "Earth Engine reply carries no {.field point_id} property.",
+      i = "Values cannot be aligned to the requested points safely."
+    ))
+  }
+  if (!band_name %in% names(dt)) {
+    return(values)
+  }
+  for (i in seq_len(nrow(dt))) {
+    idx <- which(coords$point_id == dt$point_id[i])
+    if (length(idx) == 1L) {
       val <- dt[[band_name]][i]
-      values[i] <- if (is.null(val) || is.na(val)) NA_real_ else as.numeric(val)
+      values[idx] <- if (is.null(val) || is.na(val)) NA_real_ else as.numeric(val)
     }
   }
 
@@ -433,9 +432,7 @@ collect_gee_data <- function(
   img <- .ee_select(img, bands)
   img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
 
-  # Build single-point GeoJSON
-  geojson <- .coords_to_geojson(pt_coords)
-  sample_expr <- .ee_sample_regions(img, geojson, meta$scale)
+  sample_expr <- .ee_sample_regions(img, pt_coords, meta$scale)
 
   dt <- .rest_compute_features(
     expression = sample_expr,

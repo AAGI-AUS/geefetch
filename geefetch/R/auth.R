@@ -48,7 +48,9 @@
 #'   HTTP 403 errors where the OAuth token's implicit quota project
 #'   differs from the intended resource project. The Earth Engine API
 #'   must be enabled on this project. If `NULL` (default), falls back
-#'   to `getOption("geefetch.project")` or `"earthengine-legacy"`.
+#'   to `getOption("geefetch.project")`, and then to `"earthengine-legacy"`
+#'   with a warning, because Earth Engine refuses that legacy project for
+#'   most accounts.
 #' @param scopes Character. OAuth scopes. Default includes Earth Engine
 #'   and Cloud Platform scopes.
 #' @param cache Character. Directory for OAuth token cache.
@@ -145,6 +147,14 @@ gee_auth <- function(
   .geefetch_env$token <- token
   .geefetch_env$project <- project %||%
     getOption("geefetch.project", .GEE_DEFAULT_PROJECT)
+
+  if (identical(.geefetch_env$project, .GEE_DEFAULT_PROJECT)) {
+    cli::cli_warn(c(
+      "No Google Cloud project given; falling back to {.val {.GEE_DEFAULT_PROJECT}}.",
+      i = "Earth Engine refuses this legacy project for most accounts.",
+      i = "Pass {.arg project} or set {.code options(geefetch.project = ...)}; see {.code gee_setup()}."
+    ))
+  }
 
   cli::cli_inform(c(
     v = "GEE authentication successful.",

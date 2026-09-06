@@ -217,48 +217,76 @@ NULL
   .ee_add(node, offset)
 }
 
-#' Build Image.sampleRegions expression for point extraction
+#' Build a Point geometry node
+#'
+#' @param lon,lat Numeric scalars, WGS84 degrees.
 #' @noRd
-.ee_sample_regions <- function(image_node, points_geojson, scale) {
+.ee_point <- function(lon, lat) {
+  .ee_call(
+    "GeometryConstructors.Point",
+    coordinates = .ee_const(list(lon, lat))
+  )
+}
+
+#' Build a Feature node carrying a point geometry and a `point_id` property
+#' @noRd
+.ee_feature <- function(lon, lat, point_id) {
+  .ee_call(
+    "Feature",
+    geometry = .ee_point(lon, lat),
+    metadata = .ee_const(list(point_id = point_id))
+  )
+}
+
+#' Build a FeatureCollection node from a table of points
+#'
+#' The Expression grammar reads a constant object as a Dictionary, so a
+#' GeoJSON FeatureCollection passed as `constantValue` is rejected by
+#' `Image.sampleRegions` (HTTP 400, "Expected type: FeatureCollection.
+#' Actual type: Dictionary<Object>"). The service accepts the invocation
+#' form the Python client serialises: `Collection` over an array of
+#' `Feature` invocations. `arrayValue$values` stays a JSON array for a
+#' single point because it is a list of objects.
+#'
+#' @param coords data.table with point_id, lon, lat columns.
+#' @returns An expression node evaluating to a FeatureCollection.
+#' @noRd
+.ee_feature_collection <- function(coords) {
+  features <- lapply(seq_len(nrow(coords)), function(i) {
+    .ee_feature(coords$lon[i], coords$lat[i], coords$point_id[i])
+  })
+  .ee_call(
+    "Collection",
+    features = list(arrayValue = list(values = features))
+  )
+}
+
+#' Build Image.sampleRegions expression for point extraction
+#'
+#' `sampleRegions` drops a feature whose pixel is masked, so the reply can
+#' be shorter than the request; callers match rows by `point_id`, never
+#' by position.
+#' @noRd
+.ee_sample_regions <- function(image_node, coords, scale) {
   .ee_call(
     "Image.sampleRegions",
     image = image_node,
-    collection = .ee_const(points_geojson),
+    collection = .ee_feature_collection(coords),
     scale = .ee_const(as.integer(scale)),
     geometries = .ee_const(TRUE)
   )
 }
 
-#' Build Image.reduceRegions expression for polygon extraction
+#' Build Image.reduceRegions expression for point extraction with a reducer
 #' @noRd
-.ee_reduce_regions <- function(image_node, regions_geojson, reducer, scale) {
+.ee_reduce_regions <- function(image_node, coords, reducer, scale) {
   .ee_call(
     "Image.reduceRegions",
     image = image_node,
-    collection = .ee_const(regions_geojson),
+    collection = .ee_feature_collection(coords),
     reducer = .ee_call(paste0("Reducer.", reducer)),
     scale = .ee_const(as.integer(scale))
   )
-}
-
-
-#' Convert an sf/data.table of points to GeoJSON FeatureCollection
-#'
-#' @param coords data.table with point_id, lon, lat columns.
-#' @returns A list in GeoJSON FeatureCollection format.
-#' @noRd
-.coords_to_geojson <- function(coords) {
-  features <- lapply(seq_len(nrow(coords)), function(i) {
-    list(
-      type = "Feature",
-      geometry = list(
-        type = "Point",
-        coordinates = list(coords$lon[i], coords$lat[i])
-      ),
-      properties = list(point_id = coords$point_id[i])
-    )
-  })
-  list(type = "FeatureCollection", features = features)
 }
 
 
@@ -360,6 +388,14 @@ NULL
   token <- .maybe_refresh_token(token)
 
   project <- .gee_project()
+  if (!is.character(project) || length(project) != 1L || !nzchar(project) ||
+      is.na(project)) {
+    cli::cli_abort(c(
+      "No Google Cloud project is set for Earth Engine requests.",
+      i = "Pass {.code gee_auth(project = \"<your-project>\")} or set {.code options(geefetch.project = \"<your-project>\")}.",
+      i = "See {.code gee_setup()} for how to create and register a project."
+    ))
+  }
   url <- paste0(.GEE_REST_BASE, "/projects/", project, "/", endpoint)
 
   # Extract access token string (handles both gargle and raw string tokens)
@@ -393,9 +429,10 @@ NULL
   resp <- tryCatch(
     httr2::req_perform(req),
     error = function(e) {
+      msg <- conditionMessage(e)
       cli::cli_abort(c(
         "GEE REST API request failed.",
-        x = conditionMessage(e),
+        x = "{msg}",
         i = "Check your authentication with {.code gee_status()}.",
         i = "Endpoint: {.val {url}}"
       ))
@@ -431,9 +468,11 @@ NULL
       )
     }
 
+    # Service text is data, never a cli template: it can carry braces and
+    # backticks that would otherwise abort inside cli's own parser.
     cli::cli_abort(c(
       "GEE REST API error (HTTP {status}).",
-      x = err_msg,
+      x = "{err_msg}",
       hints,
       i = "Endpoint: {.val {url}}"
     ))
@@ -687,9 +726,7 @@ NULL
   img <- .ee_select(img, bands)
   img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
 
-  # Build sample regions expression
-  geojson <- .coords_to_geojson(coords)
-  sample_expr <- .ee_sample_regions(img, geojson, meta$scale)
+  sample_expr <- .ee_sample_regions(img, coords, meta$scale)
 
   .rest_compute_features(
     expression = sample_expr,

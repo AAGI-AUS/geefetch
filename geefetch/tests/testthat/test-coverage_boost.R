@@ -351,10 +351,72 @@ test_that(".parse_features_to_dt handles empty input", {
   expect_equal(nrow(dt), 0L)
 })
 
-test_that(".coords_to_geojson handles single point", {
+test_that(".ee_feature_collection handles single point", {
   coords <- data.table::data.table(point_id = 1L, lon = 0, lat = 0)
-  gj <- .coords_to_geojson(coords)
-  expect_equal(length(gj$features), 1L)
+  node <- .ee_feature_collection(coords)
+  expect_length(node$functionInvocationValue$arguments$features$arrayValue$values, 1L)
+})
+
+test_that(".rest_extract_batch_points aligns a shorter reply by point_id", {
+  # The service drops masked points; here point 1 is missing and the
+  # remaining rows arrive out of order.
+  local_mocked_bindings(
+    .rest_compute_features = function(...) {
+      data.table::data.table(point_id = c(3L, 2L), elevation = c(300, 200))
+    }
+  )
+  coords <- data.table::data.table(
+    point_id = 1:3, lon = c(138, 139, 140), lat = c(-34, -35, -36)
+  )
+  vals <- .rest_extract_batch_points(
+    meta = .GEE_META$srtm_elevation, date = NULL, coords = coords,
+    max_tries = 1L, initial_delay = 0
+  )
+  expect_equal(vals, c(NA_real_, 200, 300))
+})
+
+test_that(".rest_extract_batch_points aborts when the reply lacks point_id", {
+  local_mocked_bindings(
+    .rest_compute_features = function(...) {
+      data.table::data.table(elevation = c(100, 200))
+    }
+  )
+  coords <- data.table::data.table(point_id = 1:2, lon = c(138, 139), lat = c(-34, -35))
+  expect_error(
+    .rest_extract_batch_points(
+      meta = .GEE_META$srtm_elevation, date = NULL, coords = coords,
+      max_tries = 1L, initial_delay = 0
+    ),
+    "point_id"
+  )
+})
+
+test_that("service messages with braces and backticks reach the user verbatim", {
+  local_mocked_bindings(
+    .rest_extract_batch_points = function(...) {
+      cli::cli_abort("{{bad}} `text` with {{}} braces")
+    }
+  )
+  coords <- data.table::data.table(point_id = 1L, lon = 138, lat = -34)
+  expect_warning(
+    vals <- .safe_extract_points_batch(
+      meta = .GEE_META$srtm_elevation, date = NULL, coords = coords,
+      did = "srtm_elevation", backend = "rest", cache = FALSE,
+      max_tries = 1L, initial_delay = 0
+    ),
+    "\\{bad\\} `text` with \\{\\} braces"
+  )
+  expect_true(is.na(vals))
+})
+
+test_that(".rest_request aborts clearly when no project is set", {
+  withr::local_options(geefetch.project = "")
+  local_mocked_bindings(
+    .gee_token = function() "fake-token",
+    .maybe_refresh_token = function(token) token,
+    .gee_project = function() ""
+  )
+  expect_error(.rest_request("table:computeFeatures"), "No Google Cloud project")
 })
 
 # ---- collect_gee_data.R coverage ----

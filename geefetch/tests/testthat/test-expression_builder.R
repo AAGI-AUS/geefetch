@@ -136,30 +136,63 @@ test_that(".ee_scale_offset skips identity operations", {
   expect_equal(node2$functionInvocationValue$functionName, "Image.multiply")
 })
 
-test_that(".coords_to_geojson produces valid GeoJSON", {
+test_that(".ee_feature_collection emits the invocation form the service accepts", {
   coords <- data.table::data.table(
     point_id = 1:2,
-    lon = c(138.6, 149.1),
-    lat = c(-34.9, -35.3)
+    lon = c(138.75, 145),
+    lat = c(-34.5, -30)
   )
-  gj <- .coords_to_geojson(coords)
-  expect_equal(gj$type, "FeatureCollection")
-  expect_length(gj$features, 2L)
-  expect_equal(gj$features[[1]]$type, "Feature")
-  expect_equal(gj$features[[1]]$geometry$type, "Point")
-  expect_equal(gj$features[[1]]$geometry$coordinates, list(138.6, -34.9))
-  expect_equal(gj$features[[1]]$properties$point_id, 1L)
+  node <- .ee_feature_collection(coords)
+  inv <- node$functionInvocationValue
+  expect_equal(inv$functionName, "Collection")
+  feats <- inv$arguments$features$arrayValue$values
+  expect_length(feats, 2L)
+  f1 <- feats[[1L]]$functionInvocationValue
+  expect_equal(f1$functionName, "Feature")
+  geom <- f1$arguments$geometry$functionInvocationValue
+  expect_equal(geom$functionName, "GeometryConstructors.Point")
+  expect_equal(geom$arguments$coordinates$constantValue, list(138.75, -34.5))
+  expect_equal(f1$arguments$metadata$constantValue, list(point_id = 1L))
+  # No constantValue anywhere at the collection level: that is the
+  # Dictionary-not-FeatureCollection defect.
+  expect_null(node$constantValue)
+})
+
+test_that(".ee_feature_collection serialises a single point as a JSON array", {
+  skip_if_not_installed("jsonlite")
+  coords <- data.table::data.table(point_id = 1L, lon = 138.75, lat = -34.5)
+  json <- jsonlite::toJSON(.ee_feature_collection(coords), auto_unbox = TRUE)
+  expect_match(json, '"values":\\[\\{"functionInvocationValue"', fixed = FALSE)
+  expect_match(json, '"coordinates":\\{"constantValue":\\[138.75,-34.5\\]\\}')
+  expect_match(json, '"metadata":\\{"constantValue":\\{"point_id":1\\}\\}')
 })
 
 test_that(".ee_sample_regions creates correct expression", {
   img <- .ee_load_image("TEST")
-  gj <- list(type = "FeatureCollection", features = list())
-  node <- .ee_sample_regions(img, gj, 1000L)
+  coords <- data.table::data.table(point_id = 1L, lon = 0, lat = 0)
+  node <- .ee_sample_regions(img, coords, 1000L)
   inv <- node$functionInvocationValue
   expect_equal(inv$functionName, "Image.sampleRegions")
   expect_true("image" %in% names(inv$arguments))
-  expect_true("collection" %in% names(inv$arguments))
+  expect_equal(
+    inv$arguments$collection$functionInvocationValue$functionName,
+    "Collection"
+  )
   expect_equal(inv$arguments$scale$constantValue, 1000L)
+  expect_true(inv$arguments$geometries$constantValue)
+})
+
+test_that(".ee_reduce_regions wires reducer and collection", {
+  img <- .ee_load_image("TEST")
+  coords <- data.table::data.table(point_id = 1L, lon = 0, lat = 0)
+  node <- .ee_reduce_regions(img, coords, "mean", 30L)
+  inv <- node$functionInvocationValue
+  expect_equal(inv$functionName, "Image.reduceRegions")
+  expect_equal(inv$arguments$reducer$functionInvocationValue$functionName, "Reducer.mean")
+  expect_equal(
+    inv$arguments$collection$functionInvocationValue$functionName,
+    "Collection"
+  )
 })
 
 test_that(".build_grid produces correct structure", {
