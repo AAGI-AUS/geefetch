@@ -1,4 +1,4 @@
-# geefetch (development version)
+# geefetch 0.1.0
 
 ## Bug fixes
 
