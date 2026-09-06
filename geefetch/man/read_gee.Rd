@@ -79,6 +79,17 @@ Use \code{\link[=gee_datasets]{gee_datasets()}} to list all available datasets w
 is automatically dispatchable through the generic handler.
 }
 
+\section{Region size and resampling}{
+
+Each request is capped at 2048x2048 pixels at the dataset's native
+pixel scale, to bound REST payload size. A region that would exceed
+this cap at the requested scale is resampled to fit, and \code{\link[=read_gee]{read_gee()}}
+warns with the native scale (in metres), the effective scale after
+resampling, and the resulting pixel dimensions. The pixel scale is
+fixed per dataset and is not a \code{read_gee()} argument, so request a
+smaller region to keep the native resolution.
+}
+
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # Using the dispatcher directly

@@ -53,6 +53,15 @@
 #' **User-registered:** Any dataset added via [gee_register_dataset()]
 #' is automatically dispatchable through the generic handler.
 #'
+#' @section Region size and resampling:
+#' Each request is capped at 2048x2048 pixels at the dataset's native
+#' pixel scale, to bound REST payload size. A region that would exceed
+#' this cap at the requested scale is resampled to fit, and [read_gee()]
+#' warns with the native scale (in metres), the effective scale after
+#' resampling, and the resulting pixel dimensions. The pixel scale is
+#' fixed per dataset and is not a `read_gee()` argument, so request a
+#' smaller region to keep the native resolution.
+#'
 #' @family GEE readers
 #' @seealso [collect_gee_data()] for batch point extraction returning a
 #'   [data.table::data.table].

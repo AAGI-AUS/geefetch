@@ -335,8 +335,18 @@ NULL
     height <- as.integer(ceiling(height / scale_ratio))
     pixel_size_deg <- pixel_size_deg * scale_ratio
     cli::cli_warn(c(
-      `!` = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
-      i = "Resampling to {width}x{height} pixels."
+      `!` = paste0(
+        "Requested region exceeds {max_dim}x{max_dim} pixels at the ",
+        "native {scale}m scale."
+      ),
+      i = paste0(
+        "Resampling to {width}x{height} pixels, an effective scale of ",
+        "{round(scale * scale_ratio, 1)}m."
+      ),
+      i = paste0(
+        "Request a smaller region, or a coarser scale, to keep the ",
+        "native resolution."
+      )
     ))
   }
 
