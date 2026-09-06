@@ -26,7 +26,7 @@ skip_if_not(
 #' Google account email from `GEEFETCH_EMAIL`. Neither is hard-coded here;
 #' set them in the shell before running the suite, e.g.:
 #'
-#'   GEEFETCH_PROJECT=123456789012 GEEFETCH_EMAIL=max.moldovan@gmail.com \
+#'   GEEFETCH_PROJECT=123456789012 GEEFETCH_EMAIL=you@gmail.com \
 #'   GEEFETCH_LIVE=1 Rscript -e 'devtools::test(filter = "live")'
 #'
 #' @noRd
