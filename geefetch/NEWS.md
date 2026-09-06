@@ -1,3 +1,37 @@
+# geefetch (development version)
+
+## Bug fixes
+
+* `collect_gee_data()` no longer fails live point extraction with
+  HTTP 400. The point set was sent to `Image.sampleRegions()` as a
+  GeoJSON object inside `constantValue`, which the Earth Engine
+  Expression grammar reads as a Dictionary rather than a
+  FeatureCollection. Points are now built as a `Collection` of
+  `Feature` invocations with `GeometryConstructors.Point` geometries,
+  the form the service accepts.
+* A Google Earth Engine service error message containing braces or
+  backticks (for example, one quoting a project number or field name)
+  reached the user garbled, because the text was passed to `cli` as
+  part of a message template rather than as data. Service and
+  condition text is now passed as data, so it reaches the user
+  verbatim.
+* A batch-extraction reply lacking a `point_id` property now aborts
+  with a clear message, instead of aligning returned values to the
+  requested points by position, which could silently attach a value
+  to the wrong point.
+* Calling the REST API with no Google Cloud project set now aborts
+  with guidance, instead of forming a malformed `projects//...`
+  request URL.
+* `gee_auth()` now warns when no project is supplied and it falls
+  back to the legacy `earthengine-legacy` project, which Earth Engine
+  refuses for most accounts.
+* The "region too large" warning from the internal grid builder now
+  states the dataset's native pixel scale (in metres), the effective
+  scale after resampling, and the resulting pixel dimensions, and
+  suggests requesting a smaller region to keep the native resolution.
+  Previously it gave only the resampled pixel count, with no
+  indication of the resolution lost or how to avoid it.
+
 # geefetch 0.0.0.9001 (2026-04-21)
 
 Substantial institutional-compliance and governance uplift. No changes to
