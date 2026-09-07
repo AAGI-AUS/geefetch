@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.4.2
+FROM rocker/r-ver:4.6.1
 
 # System libraries needed by geefetch's spatial stack (sf, terra) and
 # HTTP stack (httr2, curl) + doc tooling.
