@@ -244,9 +244,9 @@ test_that(".read_gee_slga builds correct band name", {
   local_mocked_bindings(
     .rest_extract_raster_expr = function(expr, region, meta, bands, ...) {
       # Verify the band name is correctly constructed. The GEE pH band is
-      # `pHc_*` (case-sensitive), grounded 2026-06-09 against the CSIRO/SLGA STAC
-      # band list -- not the `PHC_*` this test previously asserted from the
-      # code's own (wrong) convention.
+      # `pHc_*` (case-sensitive), grounded 2026-06-09 against the CSIRO/SLGA
+      # STAC band list -- not the `PHC_*` this test previously asserted from
+      # the code's own (wrong) convention.
       expect_identical(bands, "pHc_030_060_95")
       terra::rast(nrows = 10, ncols = 10, vals = runif(100, 4, 9))
     }
@@ -368,7 +368,8 @@ test_that(".parse_features_to_dt handles empty input", {
 test_that(".ee_feature_collection handles single point", {
   coords <- data.table::data.table(point_id = 1L, lon = 0, lat = 0)
   node <- .ee_feature_collection(coords)
-  expect_length(node$functionInvocationValue$arguments$features$arrayValue$values, 1L)
+  values <- node$functionInvocationValue$arguments$features$arrayValue$values
+  expect_length(values, 1L)
 })
 
 test_that(".rest_extract_batch_points aligns a shorter reply by point_id", {
@@ -395,7 +396,9 @@ test_that(".rest_extract_batch_points aborts when the reply lacks point_id", {
       data.table::data.table(elevation = c(100, 200))
     }
   )
-  coords <- data.table::data.table(point_id = 1:2, lon = c(138, 139), lat = c(-34, -35))
+  coords <- data.table::data.table(
+    point_id = 1:2, lon = c(138, 139), lat = c(-34, -35)
+  )
   expect_error(
     .rest_extract_batch_points(
       meta = .GEE_META$srtm_elevation, date = NULL, coords = coords,
@@ -405,7 +408,10 @@ test_that(".rest_extract_batch_points aborts when the reply lacks point_id", {
   )
 })
 
-test_that("service messages with braces and backticks reach the user verbatim", {
+test_that(paste0(
+  "service messages with braces and backticks reach the user ",
+  "verbatim"
+), {
   local_mocked_bindings(
     .rest_extract_batch_points = function(...) {
       cli::cli_abort("{{bad}} `text` with {{}} braces")
@@ -430,7 +436,10 @@ test_that(".rest_request aborts clearly when no project is set", {
     .maybe_refresh_token = function(token) token,
     .gee_project = function() ""
   )
-  expect_error(.rest_request("table:computeFeatures"), "No Google Cloud project")
+  expect_error(
+    .rest_request("table:computeFeatures"),
+    "No Google Cloud project"
+  )
 })
 
 # ---- collect_gee_data.R coverage ----

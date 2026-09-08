@@ -7,8 +7,10 @@
 # Usage (once, interactively):
 #
 #   1. Authenticate normally: `geefetch::gee_auth()` + `geefetch::gee_setup()`.
-#   2. Export your GEE project ID: `Sys.setenv(GEEFETCH_RECAPTURE_PROJECT = "your-gcp-project")`.
-#   3. Run the capture: `Sys.setenv(RPKG_RECAPTURE = "1"); devtools::test(filter = "backend_rest-http")`.
+#   2. Export your GEE project ID:
+#      `Sys.setenv(GEEFETCH_RECAPTURE_PROJECT = "your-gcp-project")`.
+#   3. Run the capture: `Sys.setenv(RPKG_RECAPTURE = "1")`, then
+#      `devtools::test(filter = "backend_rest-http")`.
 #   4. Verify the new cassette dirs under tests/testthat/computeFeatures-*/.
 #   5. Sanitise — `httptest2::set_redactor()` is invoked below to strip
 #      Authorization headers and any user-specific project identifiers.

@@ -278,7 +278,10 @@
 
   if (!inherits(region, c("sf", "sfc"))) {
     cli::cli_abort(c(
-      "{.arg region} must be an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
+      paste0(
+        "{.arg region} must be an {.cls sf}, {.cls sfc}, or ",
+        "{.cls SpatExtent} object."
+      ),
       i = "Got class: {.val {class(region)}}."
     ))
   }
@@ -297,7 +300,8 @@
 #' Pre-API-call validation of handler arguments
 #'
 #' Checks that required arguments are present and valid for a given dataset.
-#' This runs before any network call, so users get fast feedback on input errors.
+#' This runs before any network call, so users get fast feedback on input
+#' errors.
 #'
 #' @inheritParams .gee_shared_params
 #' @param dots Named list of user-supplied arguments.

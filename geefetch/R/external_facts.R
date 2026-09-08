@@ -16,8 +16,8 @@
 # A fact is `grounded` iff its `verified_on` is a non-NA date diffed against the
 # authority; otherwise it is `[unverified]` and must be treated as a hypothesis,
 # not a fact (recipe 52). The independent-oracle tests live in
-# `tests/testthat/test-catalogue-diff.R` (oracle B, public STAC, no GEE auth) and
-# the re-grounding script in `data-raw/reverify_external_facts.R`.
+# `tests/testthat/test-catalogue-diff.R` (oracle B, public STAC, no GEE auth)
+# and the re-grounding script in `data-raw/reverify_external_facts.R`.
 
 # Canonical grounding tokens (recipe 52). Member code MUST hardcode these exact
 # strings so a federation never drifts on the grounding label.
@@ -33,7 +33,8 @@
 
 # Build the canonical STAC catalogue URL for a GEE asset id. The public STAC is
 # static JSON keyed by provider folder + the asset id with `/` -> `_`.
-# (Verified 2026-06-09 against MODIS/061/MOD13A2 and COPERNICUS/S2_SR_HARMONIZED.)
+# (Verified 2026-06-09 against MODIS/061/MOD13A2 and
+# COPERNICUS/S2_SR_HARMONIZED.)
 .gee_stac_url <- function(collection) {
   provider <- sub("/.*$", "", collection)
   asset    <- gsub("/", "_", collection, fixed = TRUE)
@@ -82,8 +83,8 @@
   #   - slga_phc.bands : declared `PHC_000_005_EV`; the authority advertises
   #       `pHc_000_005_EV` (GEE band names are case-sensitive). Fixed in
   #       handler_registry.R (.SLGA_BAND_PREFIX) + handlers.R.
-  #   - worldclim_bio.collection : declared `WORLDCLIM/V2/BIO`, which 404s in the
-  #       GEE STAC; the hosted asset is `WORLDCLIM/V1/BIO`. Fixed in
+  #   - worldclim_bio.collection : declared `WORLDCLIM/V2/BIO`, which 404s
+  #       in the GEE STAC; the hosted asset is `WORLDCLIM/V1/BIO`. Fixed in
   #       handler_registry.R.
   "slga_phc.bands"            = list(verified_on = "2026-06-09",
                                      oracle_types = "B",
@@ -102,9 +103,9 @@
 #' dataset's collection (asset) ID, scale factor, offset, band set, and start
 #' date -- alongside the external authority that owns the fact and the date the
 #' fact was last diffed against that authority. A fact whose `verified_on` is
-#' `NA` is reported as `[unverified]`: a value the package asserts but has **not**
-#' grounded against an independent oracle, and which must be treated as a
-#' hypothesis rather than a fact.
+#' `NA` is reported as `[unverified]`: a value the package asserts but has
+#' **not** grounded against an independent oracle, and which must be treated
+#' as a hypothesis rather than a fact.
 #'
 #' The fact values are read live from the internal registry, so this table can
 #' never drift from the code it documents. Grounding is established by the

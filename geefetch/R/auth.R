@@ -387,12 +387,14 @@ gee_setup <- function() {
   # Step 5: Enable the Earth Engine API
   cli::cli_h2("Step 5: Enable the Earth Engine API")
   cli::cli_text("Visit:")
-  cli::cli_text(
-    "{.url https://console.cloud.google.com/apis/library/earthengine.googleapis.com}"
-  )
-  cli::cli_text(
-    "Confirm the project picker (top-left) shows your project, click {.strong Enable}."
-  )
+  cli::cli_text(paste0(
+    "{.url https://console.cloud.google.com/apis/library/",
+    "earthengine.googleapis.com}"
+  ))
+  cli::cli_text(paste0(
+    "Confirm the project picker (top-left) shows your project, ",
+    "click {.strong Enable}."
+  ))
   cli::cli_text(
     "Wait ~30 seconds for the enablement to propagate."
   )

@@ -57,12 +57,15 @@ test_that("read_gee does not require date for static datasets", {
   expect_false(grepl("requires a.*date", err))
 })
 
-test_that("read_gee routes Tier 2 datasets to handlers (not 'not implemented')", {
+test_that(paste0(
+  "read_gee routes Tier 2 datasets to handlers (not 'not implemented')"
+), {
   old_token <- .geefetch_env$token
   .geefetch_env$token <- "fake"
   withr::defer(.geefetch_env$token <- old_token)
 
-  # SLGA is static, so no date needed — should fail on region/REST, not "not implemented"
+  # SLGA is static, so no date needed — should fail on region/REST, not
+  # "not implemented"
   err <- tryCatch(
     read_gee("slga_cly", region = terra::ext(138, 140, -36, -34)),
     error = function(e) conditionMessage(e)

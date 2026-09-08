@@ -130,7 +130,9 @@ test_that(".parse_coordinates rejects missing coordinates", {
   expect_error(.parse_coordinates(), "No coordinates")
 })
 
-test_that(".parse_coordinates rejects data.frame without recognisable columns", {
+test_that(paste0(
+  ".parse_coordinates rejects data.frame without recognisable columns"
+), {
   df <- data.frame(a = 1, b = 2)
   expect_error(.parse_coordinates(xy = df), "must have columns")
 })

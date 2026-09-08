@@ -1,9 +1,9 @@
 # Test setup — runs once per `devtools::test()` call, before any test file.
-# Recipe 07 (HTTP testing) §"Auth in tests" + §"CI" — sanitise environment so
-# (a) a developer with real GEE credentials in their env doesn't accidentally
-# hit the live API during a normal test run, (b) the CI runner has no network
-# access expectation, (c) the disk cache is off so tests don't poison or rely
-# on a user cache directory.
+# Recipe 07 (HTTP testing) §"Auth in tests" + §"CI" — sanitise environment
+# so (a) a developer with real GEE credentials in their env doesn't
+# accidentally hit the live API during a normal test run, (b) the CI runner
+# has no network access expectation, (c) the disk cache is off so tests
+# don't poison or rely on a user cache directory.
 
 # 1. Clear any GEE-related credentials that might leak from a developer's shell,
 #    unless a maintainer has explicitly opted into the live integration suite
@@ -48,7 +48,10 @@ tryCatch(
   Sys.setlocale("LC_ALL", "en_AU.UTF-8"),
   warning = function(w) {
     # Some CI runners don't have en_AU.UTF-8; fall back to C.UTF-8.
-    tryCatch(Sys.setlocale("LC_ALL", "C.UTF-8"), warning = function(w) invisible())
+    tryCatch(
+      Sys.setlocale("LC_ALL", "C.UTF-8"),
+      warning = function(w) invisible()
+    )
   }
 )
 

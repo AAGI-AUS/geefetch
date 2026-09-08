@@ -32,9 +32,9 @@ Enumerates every fact \code{geefetch} asserts about Google Earth Engine -- each
 dataset's collection (asset) ID, scale factor, offset, band set, and start
 date -- alongside the external authority that owns the fact and the date the
 fact was last diffed against that authority. A fact whose \code{verified_on} is
-\code{NA} is reported as \verb{[unverified]}: a value the package asserts but has \strong{not}
-grounded against an independent oracle, and which must be treated as a
-hypothesis rather than a fact.
+\code{NA} is reported as \verb{[unverified]}: a value the package asserts but has
+\strong{not} grounded against an independent oracle, and which must be treated
+as a hypothesis rather than a fact.
 
 The fact values are read live from the internal registry, so this table can
 never drift from the code it documents. Grounding is established by the

@@ -124,7 +124,10 @@ collect_gee_data <- function(
     cli::cli_progress_bar(
       "Extracting",
       total = total_ops,
-      format = "{cli::pb_spin} {cli::pb_current}/{cli::pb_total} API calls | {cli::pb_elapsed}"
+      format = paste0(
+        "{cli::pb_spin} {cli::pb_current}/{cli::pb_total} API calls | ",
+        "{cli::pb_elapsed}"
+      )
     )
   }
 
@@ -509,12 +512,14 @@ collect_gee_data <- function(
   n_static <- sum(is_static)
 
   cli::cli_h2("collect_gee_data")
-  cli::cli_alert_info(
-    "Locations: {.val {n_locs}} | Dates: {.val {n_dates}} ({dates[1]} to {dates[n_dates]})"
-  )
-  cli::cli_alert_info(
-    "Datasets: {.val {length(resolved)}} ({n_ts} time-series, {n_static} static)"
-  )
+  cli::cli_alert_info(paste0(
+    "Locations: {.val {n_locs}} | Dates: {.val {n_dates}} ",
+    "({dates[1]} to {dates[n_dates]})"
+  ))
+  cli::cli_alert_info(paste0(
+    "Datasets: {.val {length(resolved)}} ",
+    "({n_ts} time-series, {n_static} static)"
+  ))
 
   # Dataset table
   info_dt <- data.table(

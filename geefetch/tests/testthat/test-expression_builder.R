@@ -74,7 +74,10 @@ test_that(".ee_filter_date creates Collection.filter with date filter", {
 test_that(".ee_first creates Collection.first", {
   col <- .ee_load_collection("TEST")
   node <- .ee_first(col)
-  expect_identical(node$functionInvocationValue$functionName, "Collection.first")
+  expect_identical(
+    node$functionInvocationValue$functionName,
+    "Collection.first"
+  )
 })
 
 test_that(".ee_select creates Image.select with band list", {
@@ -136,7 +139,9 @@ test_that(".ee_scale_offset skips identity operations", {
   expect_identical(node2$functionInvocationValue$functionName, "Image.multiply")
 })
 
-test_that(".ee_feature_collection emits the invocation form the service accepts", {
+test_that(paste0(
+  ".ee_feature_collection emits the invocation form the service accepts"
+), {
   coords <- data.table::data.table(
     point_id = 1:2,
     lon = c(138.75, 145),
@@ -151,7 +156,10 @@ test_that(".ee_feature_collection emits the invocation form the service accepts"
   expect_identical(f1$functionName, "Feature")
   geom <- f1$arguments$geometry$functionInvocationValue
   expect_identical(geom$functionName, "GeometryConstructors.Point")
-  expect_identical(geom$arguments$coordinates$constantValue, list(138.75, -34.5))
+  expect_identical(
+    geom$arguments$coordinates$constantValue,
+    list(138.75, -34.5)
+  )
   expect_identical(f1$arguments$metadata$constantValue, list(point_id = 1L))
   # No constantValue anywhere at the collection level: that is the
   # Dictionary-not-FeatureCollection defect.
@@ -239,7 +247,9 @@ test_that(".parse_features_to_dt handles NULL properties gracefully", {
 })
 
 test_that(".ee_dataset_image filters by bounds and mosaics scene collections", {
-  coords <- data.table::data.table(point_id = 1:2, lon = c(138, 145), lat = c(-34, -30))
+  coords <- data.table::data.table(
+    point_id = 1:2, lon = c(138, 145), lat = c(-34, -30)
+  )
   built <- .ee_dataset_image(
     .GEE_META$sentinel2_ndvi, "sentinel2_ndvi", as.Date("2023-01-05"),
     .ee_multipoint(coords)

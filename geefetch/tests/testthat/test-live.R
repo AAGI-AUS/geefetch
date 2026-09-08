@@ -119,13 +119,15 @@ test_that("Sentinel-2 NDVI is computed on both routes and bounded", {
   .live_auth()
   r <- read_gee(
     "sentinel2_ndvi", date = "2023-01-05",
-    region = terra::ext(138.55, 138.6, -34.6, -34.55), cache = FALSE, verbose = FALSE
+    region = terra::ext(138.55, 138.6, -34.6, -34.55),
+    cache = FALSE, verbose = FALSE
   )
   v <- terra::values(r)
   expect_gt(sum(!is.na(v)), 0L)
   expect_true(all(v[!is.na(v)] >= -1 & v[!is.na(v)] <= 1))
   pts <- collect_gee_data(
-    xy = data.frame(lon = 145, lat = -30), date_range = c("2023-01-05", "2023-01-05"),
+    xy = data.frame(lon = 145, lat = -30),
+    date_range = c("2023-01-05", "2023-01-05"),
     datasets = "sentinel2_ndvi", cache = FALSE, verbose = FALSE
   )
   expect_true(is.finite(pts$sentinel2_ndvi))

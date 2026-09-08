@@ -100,8 +100,10 @@ test_that("the decode scale_factor matches the STAC band scale", {
     # Authority on the left, package's claim on the right.
     expect_equal(band$`gee:scale`, meta[[nm]]$scale_factor,
                  tolerance = 1e-12,
-                 label = sprintf("scale_factor for %s (%s) matches STAC gee:scale",
-                                 nm, decode_pairs[[nm]]))
+                 label = sprintf(
+                   "scale_factor for %s (%s) matches STAC gee:scale",
+                   nm, decode_pairs[[nm]]
+                 ))
     # Offset, where the STAC band declares one (Landsat SR carries gee:offset).
     if (!is.null(band$`gee:offset`)) {
       expect_equal(band$`gee:offset`, meta[[nm]]$offset, tolerance = 1e-12,

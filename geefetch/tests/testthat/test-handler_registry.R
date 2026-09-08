@@ -1,4 +1,5 @@
-# test-handler_registry.R — Tests for alias resolution, metadata, and catalogue
+# test-handler_registry.R — Tests for alias resolution, metadata, and
+# catalogue
 
 test_that(".gee_resolve_id resolves normalised IDs directly", {
   expect_identical(.gee_resolve_id("modis_ndvi"), "modis_ndvi")

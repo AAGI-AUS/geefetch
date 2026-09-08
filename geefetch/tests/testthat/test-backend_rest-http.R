@@ -12,22 +12,26 @@ skip_if_no_httptest2 <- function() {
 # .gee_token(). A character string satisfies .extract_access_token()'s
 # fast path; no gargle interaction.
 local_fake_auth <- function(.local_envir = parent.frame()) {
+  geefetch_env <- asNamespace("geefetch")$.geefetch_env
   withr::defer(
     {
-      assign("token", NULL, envir = asNamespace("geefetch")$.geefetch_env)
-      assign("project", NULL, envir = asNamespace("geefetch")$.geefetch_env)
+      assign("token", NULL, envir = geefetch_env)
+      assign("project", NULL, envir = geefetch_env)
     },
     envir = .local_envir
   )
-  assign("token", "fake-access-token", envir = asNamespace("geefetch")$.geefetch_env)
-  assign("project", "ee-test", envir = asNamespace("geefetch")$.geefetch_env)
+  assign("token", "fake-access-token", envir = geefetch_env)
+  assign("project", "ee-test", envir = geefetch_env)
 }
 
 test_that(".rest_request() parses a successful computeFeatures response", {
   skip_if_no_httptest2()
   skip_if_not(
     dir.exists(test_path("cf-ok")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
-    "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
+    paste0(
+      "HTTP cassette missing; run `RPKG_RECAPTURE=1 ",
+      "devtools::test(filter = 'backend_rest-http')` to capture."
+    )
   )
   local_fake_auth()
 
@@ -57,7 +61,10 @@ test_that(".rest_request() surfaces 401 auth errors helpfully", {
   skip_if_no_httptest2()
   skip_if_not(
     dir.exists(test_path("cf-401")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
-    "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
+    paste0(
+      "HTTP cassette missing; run `RPKG_RECAPTURE=1 ",
+      "devtools::test(filter = 'backend_rest-http')` to capture."
+    )
   )
   local_fake_auth()
 
@@ -77,7 +84,10 @@ test_that(".rest_request() surfaces 429 rate-limit errors helpfully", {
   skip_if_no_httptest2()
   skip_if_not(
     dir.exists(test_path("cf-429")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
-    "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
+    paste0(
+      "HTTP cassette missing; run `RPKG_RECAPTURE=1 ",
+      "devtools::test(filter = 'backend_rest-http')` to capture."
+    )
   )
   local_fake_auth()
 
@@ -98,7 +108,10 @@ test_that(".rest_request() surfaces 403 API-not-enabled with setup guidance", {
   skip_if_no_httptest2()
   skip_if_not(
     dir.exists(test_path("cf-403")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
-    "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
+    paste0(
+      "HTTP cassette missing; run `RPKG_RECAPTURE=1 ",
+      "devtools::test(filter = 'backend_rest-http')` to capture."
+    )
   )
   local_fake_auth()
 
@@ -115,11 +128,17 @@ test_that(".rest_request() surfaces 403 API-not-enabled with setup guidance", {
   })
 })
 
-test_that(".rest_extract_batch_points() aligns values by point_id when the service drops masked points", {
+test_that(paste0(
+  ".rest_extract_batch_points() aligns values by point_id when the ",
+  "service drops masked points"
+), {
   skip_if_no_httptest2()
   skip_if_not(
     dir.exists(test_path("cf-masked")) || nzchar(Sys.getenv("RPKG_RECAPTURE")),
-    "HTTP cassette missing; run `RPKG_RECAPTURE=1 devtools::test(filter = 'backend_rest-http')` to capture."
+    paste0(
+      "HTTP cassette missing; run `RPKG_RECAPTURE=1 ",
+      "devtools::test(filter = 'backend_rest-http')` to capture."
+    )
   )
   local_fake_auth()
 

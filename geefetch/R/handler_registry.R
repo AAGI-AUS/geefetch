@@ -148,12 +148,15 @@
     valid_range = c(0, NA_real_),
     unit = "mm/day",
     domain = "Precipitation",
-    description = "CHIRPS Daily: Climate Hazards Group InfraRed Precipitation With Station Data",
+    description = paste0(
+      "CHIRPS Daily: Climate Hazards Group InfraRed Precipitation With ",
+      "Station Data"
+    ),
     date_start = "1981-01-01",
     date_end = NA_character_,
     citation = paste0(
-      "Funk, C. et al. (2015). The climate hazards infrared precipitation with ",
-      "stations -- a new environmental record for monitoring extremes. ",
+      "Funk, C. et al. (2015). The climate hazards infrared precipitation ",
+      "with stations -- a new environmental record for monitoring extremes. ",
       "Scientific Data, 2, 150066. doi:10.1038/sdata.2015.66"
     )
   ),
@@ -347,8 +350,8 @@
     date_start = "2021-10-31",
     date_end = NA_character_,
     citation = paste0(
-      "U.S. Geological Survey. Landsat 9 Collection 2 Level-2 Science Products. ",
-      "doi:10.5066/P9OGBGM6"
+      "U.S. Geological Survey. Landsat 9 Collection 2 Level-2 Science ",
+      "Products. doi:10.5066/P9OGBGM6"
     )
   ),
 
@@ -716,7 +719,10 @@ gee_register_dataset <- function(
   cli::cli_inform(c(
     v = "Registered custom dataset {.val {name}}.",
     i = "Collection: {.val {collection}}",
-    i = "Available via {.code read_gee({.val {name}})} and {.code collect_gee_data()}."
+    i = paste0(
+      "Available via {.code read_gee({.val {name}})} and ",
+      "{.code collect_gee_data()}."
+    )
   ))
 
   invisible(NULL)
