@@ -91,31 +91,85 @@ collect_gee_data <- function(
 ) {
   backend <- arg_match(backend)
 
-  # 1. Parse and validate coordinates
+  # 1. Parse and validate coordinates, date range, and datasets
   coords <- .parse_coordinates(lon, lat, xy)
-
-  # 2. Parse date range
   dates <- .parse_date_range(date_range)
+  resolved <- .cgd_resolve_datasets(datasets)
 
-  # 3. Validate datasets
+  # 2. Check authentication
+  .check_gee_auth(backend)
+
+  # 3. Classify datasets: time-series vs static
+  combined_meta <- .gee_combined_meta()
+  classified <- .cgd_classify_datasets(resolved, combined_meta)
+
+  # 4. Print info table (verbose)
+  if (verbose) {
+    .print_collection_info(
+      coords, dates, resolved, classified$is_static, combined_meta
+    )
+  }
+
+  # 5. Build scaffold: one row per (location x date)
+  dt <- .cgd_build_scaffold(coords, dates)
+
+  # 6. Extract: per-dataset (batching all points per API call)
+  # Per-dataset options for the expression builder (SLGA depth and stat)
+  dots <- list(depth = depth, stat = stat)
+  total_ops <- length(classified$ts_datasets) * length(dates) +
+    length(classified$static_datasets)
+  show_progress <- verbose && total_ops > 1L
+
+  if (show_progress) {
+    cli::cli_progress_bar(
+      "Extracting",
+      total = total_ops,
+      format = "{cli::pb_spin} {cli::pb_current}/{cli::pb_total} API calls | {cli::pb_elapsed}"
+    )
+  }
+
+  op_count <- .cgd_extract_timeseries(
+    dt, classified$ts_datasets, combined_meta, dates, coords, backend,
+    cache, dots, show_progress, op_count = 0L
+  )
+  .cgd_extract_static(
+    dt, classified$static_datasets, combined_meta, length(dates), coords,
+    backend, cache, dots, show_progress, op_count
+  )
+
+  if (show_progress) {
+    cli::cli_progress_done()
+  }
+
+  # 7. Finish: column order, optional all-NA row removal
+  .cgd_finish(dt, resolved, na.rm)
+}
+
+
+#' Validate and resolve a batch of dataset identifiers
+#'
+#' @param datasets Character vector of dataset names or aliases.
+#' @returns Character vector of normalised dataset IDs.
+#' @noRd
+.cgd_resolve_datasets <- function(datasets) {
   if (is.null(datasets) || length(datasets) == 0L) {
     cli::cli_abort(c(
       "{.arg datasets} must be a non-empty character vector.",
       i = "Use {.code gee_datasets()} to see available datasets."
     ))
   }
-  resolved <- vapply(
-    datasets,
-    .gee_resolve_id,
-    character(1L),
-    USE.NAMES = FALSE
-  )
+  vapply(datasets, .gee_resolve_id, character(1L), USE.NAMES = FALSE)
+}
 
-  # 4. Check authentication
-  .check_gee_auth(backend)
 
-  # 5. Classify datasets: time-series vs static
-  combined_meta <- .gee_combined_meta()
+#' Classify resolved dataset IDs into time-series vs static
+#'
+#' @param resolved Character vector of normalised dataset IDs.
+#' @param combined_meta Named list of dataset metadata (built-in + registered).
+#' @returns A list with `is_static` (logical, aligned to `resolved`),
+#'   `ts_datasets`, and `static_datasets`.
+#' @noRd
+.cgd_classify_datasets <- function(resolved, combined_meta) {
   is_static <- vapply(
     resolved,
     function(did) {
@@ -124,42 +178,60 @@ collect_gee_data <- function(
     },
     logical(1L)
   )
+  list(
+    is_static = is_static,
+    ts_datasets = resolved[!is_static],
+    static_datasets = resolved[is_static]
+  )
+}
 
-  ts_datasets <- resolved[!is_static]
-  static_datasets <- resolved[is_static]
 
-  # 6. Print info table (verbose)
-  if (verbose) {
-    .print_collection_info(coords, dates, resolved, is_static, combined_meta)
-  }
-
-  # Per-dataset options for the expression builder (SLGA depth and stat)
-  dots <- list(depth = depth, stat = stat)
-
-  # 7. Build scaffold: one row per (location x date)
-  n_locs <- nrow(coords)
+#' Build the (location x date) scaffold data.table
+#'
+#' @param coords data.table with point_id, lon, lat.
+#' @param dates Vector of Date objects.
+#' @returns A data.table with point_id, lon, lat, date columns.
+#' @noRd
+.cgd_build_scaffold <- function(coords, dates) {
   n_dates <- length(dates)
-
-  dt <- data.table(
+  data.table(
     point_id = rep(coords$point_id, each = n_dates),
     lon = rep(coords$lon, each = n_dates),
     lat = rep(coords$lat, each = n_dates),
-    date = rep(dates, times = n_locs)
+    date = rep(dates, times = nrow(coords))
   )
+}
 
-  # 8. Extract: per-dataset (batching all points per API call)
-  total_ops <- length(ts_datasets) * n_dates + length(static_datasets)
-  op_count <- 0L
 
-  if (verbose && total_ops > 1L) {
-    cli::cli_progress_bar(
-      "Extracting",
-      total = total_ops,
-      format = "{cli::pb_spin} {cli::pb_current}/{cli::pb_total} API calls | {cli::pb_elapsed}"
-    )
-  }
+#' Extract time-series datasets into dt, one API call per date
+#'
+#' Adds one column per dataset to `dt` by reference (`data.table::set()`).
+#'
+#' @param dt data.table scaffold from .cgd_build_scaffold(), modified
+#'   in place.
+#' @param ts_datasets Character vector of time-series dataset IDs.
+#' @param combined_meta Named list of dataset metadata.
+#' @param dates Vector of Date objects.
+#' @param coords data.table with point_id, lon, lat.
+#' @param show_progress Logical. Advance the cli progress bar per API call?
+#' @param op_count Integer. API calls completed so far (for the progress bar).
+#' @inheritParams .gee_shared_params
+#' @returns Integer. Updated `op_count` after this dataset family.
+#' @noRd
+.cgd_extract_timeseries <- function(
+  dt,
+  ts_datasets,
+  combined_meta,
+  dates,
+  coords,
+  backend,
+  cache,
+  dots,
+  show_progress,
+  op_count
+) {
+  n_dates <- length(dates)
 
-  # -- Time-series datasets: one API call per date (all points batched) --
   for (did in ts_datasets) {
     meta <- combined_meta[[did]]
     all_vals <- rep(NA_real_, nrow(dt))
@@ -167,12 +239,11 @@ collect_gee_data <- function(
     for (j in seq_len(n_dates)) {
       date_j <- dates[j]
       row_idx <- which(dt$date == date_j)
-      pts_for_date <- coords
 
       vals <- .safe_extract_points_batch(
         meta = meta,
         date = date_j,
-        coords = pts_for_date,
+        coords = coords,
         did = did,
         backend = backend,
         cache = cache,
@@ -183,13 +254,43 @@ collect_gee_data <- function(
       all_vals[row_idx] <- vals
 
       op_count <- op_count + 1L
-      if (verbose && total_ops > 1L) cli::cli_progress_update()
+      if (show_progress) cli::cli_progress_update()
     }
 
     data.table::set(dt, j = did, value = all_vals)
   }
 
-  # -- Static datasets: one API call total (all points batched) --
+  op_count
+}
+
+
+#' Extract static datasets into dt, one API call per dataset
+#'
+#' Adds one column per dataset to `dt` by reference (`data.table::set()`).
+#'
+#' @param dt data.table scaffold from .cgd_build_scaffold(), modified
+#'   in place.
+#' @param static_datasets Character vector of static dataset IDs.
+#' @param combined_meta Named list of dataset metadata.
+#' @param n_dates Integer. Number of dates in the scaffold (for replication).
+#' @param coords data.table with point_id, lon, lat.
+#' @param show_progress Logical. Advance the cli progress bar per API call?
+#' @param op_count Integer. API calls completed so far (for the progress bar).
+#' @inheritParams .gee_shared_params
+#' @returns Integer. Updated `op_count` after this dataset family.
+#' @noRd
+.cgd_extract_static <- function(
+  dt,
+  static_datasets,
+  combined_meta,
+  n_dates,
+  coords,
+  backend,
+  cache,
+  dots,
+  show_progress,
+  op_count
+) {
   for (did in static_datasets) {
     meta <- combined_meta[[did]]
 
@@ -210,20 +311,27 @@ collect_gee_data <- function(
     data.table::set(dt, j = did, value = all_vals)
 
     op_count <- op_count + 1L
-    if (verbose && total_ops > 1L) cli::cli_progress_update()
+    if (show_progress) cli::cli_progress_update()
   }
 
-  if (verbose && total_ops > 1L) {
-    cli::cli_progress_done()
-  }
+  op_count
+}
 
-  # 9. Set column order: point_id, lon, lat, date, then datasets
+
+#' Finalise column order and optional all-NA row removal
+#'
+#' @param dt data.table with the scaffold and extracted dataset columns.
+#' @param resolved Character vector of normalised dataset IDs, in the
+#'   order they should appear as columns.
+#' @param na.rm Logical. Remove rows where all dataset columns are NA?
+#' @returns The finished data.table.
+#' @noRd
+.cgd_finish <- function(dt, resolved, na.rm) {
   id_cols <- c("point_id", "lon", "lat", "date")
   dataset_cols <- intersect(resolved, names(dt))
   col_order <- intersect(c(id_cols, dataset_cols), names(dt))
   setcolorder(dt, col_order)
 
-  # 10. Optionally remove all-NA rows
   if (na.rm && length(dataset_cols) > 0L) {
     all_na <- dt[, Reduce(`&`, lapply(.SD, is.na)), .SDcols = dataset_cols]
     dt <- dt[!all_na]
