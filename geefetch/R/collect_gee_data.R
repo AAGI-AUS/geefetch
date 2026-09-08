@@ -33,10 +33,7 @@
 #'   `"0-5"`, `"5-15"`, ..., `"100-200"`, or `"all"`. Default `"0-5"`.
 #' @param stat Character. For SLGA soil datasets: statistic.
 #'   `"mean"`, `"ci_lower"`, `"ci_upper"`. Default `"mean"`.
-#' @param backend Character. `"rest"` (default) or `"rgee"`.
-#' @param cache Logical. Default `TRUE`.
-#' @param verbose Logical. Print progress table and status messages?
-#'   Default `TRUE`.
+#' @inheritParams .gee_shared_params
 #' @param na.rm Logical. Remove rows where all dataset columns are NA?
 #'   Default `FALSE`.
 #'
@@ -246,14 +243,7 @@ collect_gee_data <- function(
 #' per-point extraction if batch fails. Returns a numeric vector
 #' with one value per point (in coords row order).
 #'
-#' @param meta List. Dataset metadata.
-#' @param date Date or NULL (for static).
-#' @param coords data.table with point_id, lon, lat.
-#' @param did Character. Dataset ID.
-#' @param backend Character.
-#' @param cache Logical.
-#' @param max_tries Integer.
-#' @param initial_delay Numeric.
+#' @inheritParams .gee_shared_params
 #'
 #' @returns Numeric vector of length nrow(coords). NAs for failed points.
 #' @noRd

@@ -8,13 +8,7 @@
 #' Engine. Cloud and shadow pixels are masked using the Scene
 #' Classification Layer (SCL).
 #'
-#' @param date Character or Date. Acquisition date in `"YYYY-MM-DD"` format.
-#' @param region An [sf::sf], [sf::st_sfc()], or [terra::ext()] object
-#'   defining the spatial extent. Required.
-#' @param backend Character. `"rest"` (default) or `"rgee"`.
-#' @param cache Logical. Use disk cache? Default `TRUE`.
-#' @param max_tries Integer. Retry attempts. Default `3L`.
-#' @param initial_delay Numeric. Initial retry delay in seconds. Default `1`.
+#' @inheritParams .gee_shared_params
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values: NDVI
 #'   (-1 to 1). NA where SCL indicates cloud, shadow, or snow.

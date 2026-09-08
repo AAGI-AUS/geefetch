@@ -22,11 +22,16 @@ defining the spatial extent. Required.}
 
 \item{backend}{Character. \code{"rest"} (default) or \code{"rgee"}.}
 
-\item{cache}{Logical. Use disk cache? Default \code{TRUE}.}
+\item{cache}{Logical. Cache results in an in-session memory store?
+Default \code{TRUE}. Persisting to disk under \code{\link[tools:R_user_dir]{tools::R_user_dir()}}
+additionally requires \code{options(geefetch.cache.disk = TRUE)} or
+\code{\link[=gee_cache_disk]{gee_cache_disk()}}; see \code{\link[=gee_clear_cache]{gee_clear_cache()}} to clear either store.}
 
-\item{max_tries}{Integer. Retry attempts. Default \code{3L}.}
+\item{max_tries}{Integer. Maximum retry attempts for network failures.
+Default \code{3L}.}
 
-\item{initial_delay}{Numeric. Initial retry delay in seconds. Default \code{1}.}
+\item{initial_delay}{Numeric. Initial retry delay in seconds, doubling
+on each attempt. Default \code{1}.}
 }
 \value{
 A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values: NDVI

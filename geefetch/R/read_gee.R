@@ -6,24 +6,18 @@
 #' `r lifecycle::badge("experimental")`
 #'
 #' Central dispatcher for all GEE dataset reads. Accepts a dataset identifier
-#' (name or alias) and delegates to the appropriate internal handler.
-#' For most use cases, prefer the convenience functions (e.g.,
-#' [read_modis_ndvi()], [read_era5()]) which provide named parameters
-#' and dataset-specific documentation.
+#' (name or alias) and delegates to the appropriate internal handler. The
+#' REST `backend` requires no Python; the rgee `backend` supports advanced
+#' server-side computations. For most use cases, prefer the convenience
+#' functions (e.g., [read_modis_ndvi()], [read_era5()]) which provide named
+#' parameters and dataset-specific documentation.
 #'
+#' @inheritParams .gee_shared_params
 #' @param dataset_id Character. Dataset name or alias. Use [gee_datasets()]
 #'   to list all available datasets.
 #' @param ... Arguments passed to the dataset-specific handler. Common
 #'   arguments include `date`, `region`, `collection`, `depth`. See the
 #'   convenience function documentation for dataset-specific parameters.
-#' @param backend Character. `"rest"` (default) or `"rgee"`. The REST backend
-#'   requires no Python; the rgee backend supports advanced server-side
-#'   computations.
-#' @param cache Logical. Use disk cache for repeated queries? Default `TRUE`.
-#' @param max_tries Integer. Maximum retry attempts for network failures.
-#'   Default `3L`.
-#' @param initial_delay Numeric. Initial delay in seconds before retry
-#'   (doubles each attempt). Default `1`.
 #'
 #' @returns A [terra::rast()] SpatRaster object.
 #'

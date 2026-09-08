@@ -87,7 +87,7 @@ gee_cache_disk <- function(enable = TRUE) {
 #'
 #' Deterministic SHA256 of the dataset ID and all extraction parameters.
 #'
-#' @param did Character. Normalised dataset ID.
+#' @inheritParams .gee_shared_params
 #' @param params Named list. Extraction parameters (date, region, bands, etc.).
 #'
 #' @returns Character. Hex SHA256 hash string.
@@ -131,7 +131,7 @@ gee_cache_disk <- function(enable = TRUE) {
 #'
 #' Checks memory cache first, then disk. Respects TTL for dynamic datasets.
 #'
-#' @param did Character. Normalised dataset ID.
+#' @inheritParams .gee_shared_params
 #' @param params Named list. Extraction parameters.
 #'
 #' @returns The cached object, or NULL if not found / expired.
@@ -214,7 +214,7 @@ gee_cache_disk <- function(enable = TRUE) {
 #' GeoTIFF files (not RDS, which would lose the raster data across
 #' sessions). Data frames use fst (fast) or RDS (fallback).
 #'
-#' @param did Character. Normalised dataset ID.
+#' @inheritParams .gee_shared_params
 #' @param params Named list. Extraction parameters.
 #' @param result The object to cache.
 #'

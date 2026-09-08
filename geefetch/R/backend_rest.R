@@ -367,8 +367,7 @@ NULL
 #'
 #' @param endpoint Character. API endpoint path (appended to base URL).
 #' @param body List. Request body (will be converted to JSON).
-#' @param max_tries Integer. Max retry attempts.
-#' @param initial_delay Numeric. Initial retry delay in seconds.
+#' @inheritParams .gee_shared_params
 #' @param raw Logical. Return raw bytes instead of parsed JSON? Default FALSE.
 #'
 #' @returns Parsed JSON response as a list, or raw bytes if raw = TRUE.
@@ -497,9 +496,7 @@ NULL
 #'
 #' @param expression List. The EE expression (not wrapped in Expression).
 #' @param grid List. Grid specification from .build_grid().
-#' @param bands Character. Band IDs to include.
-#' @param max_tries Integer.
-#' @param initial_delay Numeric.
+#' @inheritParams .gee_shared_params
 #'
 #' @returns A terra::rast() SpatRaster.
 #' @noRd
@@ -545,8 +542,7 @@ NULL
 #' Request feature data via computeFeatures
 #'
 #' @param expression List. The EE expression evaluating to a FeatureCollection.
-#' @param max_tries Integer.
-#' @param initial_delay Numeric.
+#' @inheritParams .gee_shared_params
 #'
 #' @returns A data.table of extracted values.
 #' @noRd

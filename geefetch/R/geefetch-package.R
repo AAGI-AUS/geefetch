@@ -14,3 +14,47 @@ NULL
 
 # Package-level environment for session state (auth tokens, memory cache)
 .geefetch_env <- new.env(parent = emptyenv())
+
+
+#' Shared parameter documentation
+#'
+#' @description
+#' Not a real function; exists so other topics can inherit the parameter
+#' descriptions below via `@inheritParams` instead of repeating them.
+#'
+#' @param did Character. Normalised dataset ID.
+#' @param meta List. Dataset metadata from `.GEE_META`.
+#' @param date Character or Date. Acquisition date in `"YYYY-MM-DD"` format.
+#' @param coords data.table with `point_id`, `lon`, `lat` columns.
+#' @param region An [sf::sf], [sf::st_sfc()], or [terra::ext()] object
+#'   defining the spatial extent. Required.
+#' @param bands Character or NULL (use `meta$bands`).
+#' @param backend Character. `"rest"` (default) or `"rgee"`.
+#' @param cache Logical. Cache results in an in-session memory store?
+#'   Default `TRUE`. Persisting to disk under [tools::R_user_dir()]
+#'   additionally requires `options(geefetch.cache.disk = TRUE)` or
+#'   [gee_cache_disk()]; see [gee_clear_cache()] to clear either store.
+#' @param verbose Logical. Print progress table and status messages?
+#'   Default `TRUE`.
+#' @param max_tries Integer. Maximum retry attempts for network failures.
+#'   Default `3L`.
+#' @param initial_delay Numeric. Initial retry delay in seconds, doubling
+#'   on each attempt. Default `1`.
+#'
+#' @returns Nothing; not called directly.
+#' @keywords internal
+.gee_shared_params <- function(
+  did,
+  meta,
+  date,
+  coords,
+  region,
+  bands,
+  backend,
+  cache,
+  verbose,
+  max_tries,
+  initial_delay
+) {
+  NULL
+}

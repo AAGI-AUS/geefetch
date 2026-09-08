@@ -40,7 +40,10 @@ Use \code{\link[=gee_datasets]{gee_datasets()}} to list available options.}
 
 \item{backend}{Character. \code{"rest"} (default) or \code{"rgee"}.}
 
-\item{cache}{Logical. Default \code{TRUE}.}
+\item{cache}{Logical. Cache results in an in-session memory store?
+Default \code{TRUE}. Persisting to disk under \code{\link[tools:R_user_dir]{tools::R_user_dir()}}
+additionally requires \code{options(geefetch.cache.disk = TRUE)} or
+\code{\link[=gee_cache_disk]{gee_cache_disk()}}; see \code{\link[=gee_clear_cache]{gee_clear_cache()}} to clear either store.}
 
 \item{verbose}{Logical. Print progress table and status messages?
 Default \code{TRUE}.}
