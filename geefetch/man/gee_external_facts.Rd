@@ -51,6 +51,7 @@ gee_external_facts(grounded_only = TRUE)
 \code{\link[=gee_datasets]{gee_datasets()}}
 
 Other utilities:
+\code{\link[=gee_cache_disk]{gee_cache_disk()}},
 \code{\link[=gee_clear_cache]{gee_clear_cache()}},
 \code{\link[=gee_datasets]{gee_datasets()}},
 \code{\link[=gee_register_dataset]{gee_register_dataset()}}

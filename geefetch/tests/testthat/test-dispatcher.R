@@ -81,9 +81,10 @@ test_that("read_gee routes to cache on repeated call", {
     date = "2024-06-15",
     region = terra::ext(138, 140, -36, -34)
   )
-  # A raster with real cell values, so the disk cache write succeeds and
-  # this test exercises the cache-read path only (not the write-failure
-  # fallback, which is covered in test-cache.R).
+  # Disk caching is off by default, so .cache_set() populates the
+  # in-session memory store only; this test exercises the cache-read
+  # path via that memory layer (disk read/write is covered in
+  # test-cache.R, which opts in via geefetch.cache.disk).
   fake_result <- terra::rast(nrows = 10, ncols = 10, vals = seq_len(100))
   .cache_set("modis_ndvi", cache_key, fake_result)
   withr::defer(.geefetch_env$mem_cache <- NULL)

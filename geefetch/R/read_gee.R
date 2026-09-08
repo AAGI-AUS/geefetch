@@ -74,7 +74,7 @@
 #' # Aliases are case-insensitive
 #' elev <- read_gee("srtm", region = terra::ext(138, 140, -36, -34))
 #'
-#' # Equivalent convenience function (preferred)
+#' # Equivalent convenience function, preferred
 #' ndvi <- read_modis_ndvi(date = "2024-06-15",
 #'                         region = terra::ext(138, 140, -36, -34))
 #'

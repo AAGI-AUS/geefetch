@@ -3,6 +3,7 @@
 export(collect_gee_data)
 export(ext)
 export(gee_auth)
+export(gee_cache_disk)
 export(gee_clear_cache)
 export(gee_datasets)
 export(gee_external_facts)

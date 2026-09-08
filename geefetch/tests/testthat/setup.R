@@ -25,13 +25,20 @@ if (!identical(Sys.getenv("GEEFETCH_LIVE"), "1")) {
   Sys.setenv(NO_INTERNET = "true")
 }
 
-# 3. Cache off for the duration of the test run. Individual tests may
-#    re-enable it via withr::local_options(geefetch.cache.enabled = TRUE)
-#    if they want to exercise cache code paths.
+# 3. Disk caching is opt-in (see gee_cache_disk()) so it defaults to off
+#    regardless of this block; the temp directory below is a defensive
+#    redirect in case a test enables it without also setting its own
+#    directory. Removed at the end of the test run so it doesn't linger.
+#    Individual tests may re-enable disk caching via
+#    withr::local_options(geefetch.cache.disk = TRUE).
+.geefetch_test_cache_dir <- tempfile("geefetch-cache-")
+withr::defer(
+  unlink(.geefetch_test_cache_dir, recursive = TRUE),
+  teardown_env()
+)
 options(
-  geefetch.cache.enabled = FALSE,
-  geefetch.cache.dir     = tempfile("geefetch-cache-"),
-  geefetch.cache.ttl     = 0
+  geefetch.cache.disk = FALSE,
+  geefetch.cache_dir  = .geefetch_test_cache_dir
 )
 
 # 4. Reproducibility — pin locale so cli snapshot output is stable across

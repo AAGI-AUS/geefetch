@@ -17,7 +17,10 @@ test_that(".cache_hash is order-independent for parameter names", {
 })
 
 test_that("cache round-trip works for data.frames", {
-  withr::local_options(list(geefetch.cache_dir = withr::local_tempdir()))
+  withr::local_options(list(
+    geefetch.cache.disk = TRUE,
+    geefetch.cache_dir = withr::local_tempdir()
+  ))
 
   # Ensure clean state
   .geefetch_env$mem_cache <- NULL
@@ -43,7 +46,10 @@ test_that("cache round-trip works for data.frames", {
 })
 
 test_that("cache round-trip works for non-data.frame objects", {
-  withr::local_options(list(geefetch.cache_dir = withr::local_tempdir()))
+  withr::local_options(list(
+    geefetch.cache.disk = TRUE,
+    geefetch.cache_dir = withr::local_tempdir()
+  ))
   .geefetch_env$mem_cache <- NULL
 
   did <- "test_raster"
@@ -60,7 +66,10 @@ test_that("cache round-trip works for non-data.frame objects", {
 
 test_that("gee_clear_cache removes files", {
   tmp <- withr::local_tempdir()
-  withr::local_options(list(geefetch.cache_dir = tmp))
+  withr::local_options(list(
+    geefetch.cache.disk = TRUE,
+    geefetch.cache_dir = tmp
+  ))
   .geefetch_env$mem_cache <- NULL
 
   # Create some cache entries
@@ -79,7 +88,10 @@ test_that("gee_clear_cache removes files", {
 
 test_that("gee_clear_cache older_than filter works", {
   tmp <- withr::local_tempdir()
-  withr::local_options(list(geefetch.cache_dir = tmp))
+  withr::local_options(list(
+    geefetch.cache.disk = TRUE,
+    geefetch.cache_dir = tmp
+  ))
   .geefetch_env$mem_cache <- NULL
 
   # Create a cache entry
@@ -95,7 +107,10 @@ test_that("gee_clear_cache older_than filter works", {
 
 test_that("cache handles corrupt files gracefully", {
   tmp <- withr::local_tempdir()
-  withr::local_options(list(geefetch.cache_dir = tmp))
+  withr::local_options(list(
+    geefetch.cache.disk = TRUE,
+    geefetch.cache_dir = tmp
+  ))
   .geefetch_env$mem_cache <- NULL
 
   # Write a corrupt file
@@ -112,7 +127,10 @@ test_that("cache handles corrupt files gracefully", {
 })
 
 test_that(".cache_set falls back to memory-only when the disk write fails", {
-  withr::local_options(list(geefetch.cache_dir = withr::local_tempdir()))
+  withr::local_options(list(
+    geefetch.cache.disk = TRUE,
+    geefetch.cache_dir = withr::local_tempdir()
+  ))
   .geefetch_env$mem_cache <- NULL
 
   did <- "test_valueless_raster"

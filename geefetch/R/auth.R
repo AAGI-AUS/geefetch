@@ -100,10 +100,10 @@
 #'   email   = "me@@gmail.com"
 #' )
 #'
-#' # Interactive OAuth (uses cached account)
+#' # Interactive OAuth using a cached account
 #' gee_auth(project = "123456789012")
 #'
-#' # Service account (CI / non-interactive)
+#' # Service account for CI or non-interactive use
 #' gee_auth(project = "123456789012", path = "path/to/service-account.json")
 #'
 #' @export

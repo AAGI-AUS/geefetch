@@ -41,6 +41,7 @@ gee_datasets(domain = "Vegetation")
 \code{\link[=read_gee]{read_gee()}}, \code{\link[=gee_register_dataset]{gee_register_dataset()}}
 
 Other utilities:
+\code{\link[=gee_cache_disk]{gee_cache_disk()}},
 \code{\link[=gee_clear_cache]{gee_clear_cache()}},
 \code{\link[=gee_external_facts]{gee_external_facts()}},
 \code{\link[=gee_register_dataset]{gee_register_dataset()}}
