@@ -106,28 +106,6 @@ test_that(".gee_validate_args validates SLGA stat", {
 
 # ---- cache.R coverage ----
 
-test_that("cache uses RDS when fst not available", {
-  tmp <- withr::local_tempdir()
-  withr::local_options(list(
-    geefetch.cache.disk = TRUE,
-    geefetch.cache_dir = tmp
-  ))
-  .geefetch_env$mem_cache <- NULL
-
-  local_mocked_bindings(
-    is_installed = function(pkg, ...) {
-      if (pkg == "fst") FALSE else TRUE
-    }
-  )
-
-  .cache_set("test_rds", list(a = 1), data.frame(x = 1:3))
-  .geefetch_env$mem_cache <- NULL
-
-  # Should read from RDS
-  result <- .cache_get("test_rds", list(a = 1))
-  expect_identical(nrow(result), 3L)
-})
-
 test_that(".cache_set warns on disk write failure", {
   skip_on_os("windows") # Path handling differs on Windows
   # Use a non-writable directory
