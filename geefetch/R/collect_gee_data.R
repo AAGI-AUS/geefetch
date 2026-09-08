@@ -431,7 +431,7 @@ collect_gee_data <- function(
     )
   )
   cli::cli_text("")
-  print(info_dt, topn = 20L)
+  cli::cli_verbatim(.format_dataset_table(info_dt))
   cli::cli_text("")
 
   total_calls <- (n_ts * n_dates * n_locs) + (n_static * n_locs)
@@ -439,4 +439,36 @@ collect_gee_data <- function(
     "Estimated API calls: {.val {total_calls}} (before caching)"
   )
   cli::cli_text("")
+}
+
+
+#' Format a data.table as fixed-width text lines, header + rule + rows
+#'
+#' Avoids an unsuppressable `print()`/`cat()` call: the caller passes the
+#' formatted lines to `cli::cli_verbatim()` instead.
+#'
+#' @param dt A data.table.
+#' @returns Character vector of formatted lines.
+#' @noRd
+.format_dataset_table <- function(dt) {
+  cols <- names(dt)
+  cells <- lapply(dt, as.character)
+  widths <- vapply(cols, function(cn) {
+    max(nchar(cn), nchar(cells[[cn]]))
+  }, integer(1L))
+
+  pad_row <- function(values) {
+    paste(
+      mapply(formatC, values, width = -widths, USE.NAMES = FALSE),
+      collapse = "  "
+    )
+  }
+
+  header <- pad_row(cols)
+  rule <- pad_row(vapply(widths, function(w) strrep("-", w), character(1L)))
+  rows <- vapply(seq_len(nrow(dt)), function(i) {
+    pad_row(vapply(cells, `[[`, character(1L), i))
+  }, character(1L))
+
+  c(header, rule, rows)
 }
