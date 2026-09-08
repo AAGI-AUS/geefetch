@@ -46,7 +46,7 @@ read_modis_ndvi <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   read_gee(
     "modis_ndvi",
     date = date,

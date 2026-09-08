@@ -108,7 +108,7 @@ gee_cache_disk <- function(enable = TRUE) {
 .cache_ext <- function(result) {
   if (inherits(result, "SpatRaster")) {
     ".tif"
-  } else if (is.data.frame(result) && rlang::is_installed("fst")) {
+  } else if (is.data.frame(result) && is_installed("fst")) {
     ".fst"
   } else {
     ".rds"
@@ -180,7 +180,7 @@ gee_cache_disk <- function(enable = TRUE) {
     {
       if (endsWith(fpath, ".tif")) {
         terra::rast(fpath)
-      } else if (endsWith(fpath, ".fst") && rlang::is_installed("fst")) {
+      } else if (endsWith(fpath, ".fst") && is_installed("fst")) {
         fst::read_fst(fpath, as.data.table = TRUE)
       } else {
         readRDS(fpath)

@@ -168,7 +168,7 @@
       xy <- sf::st_transform(xy, 4326)
     }
     coords <- sf::st_coordinates(xy)
-    dt <- data.table::data.table(
+    dt <- data.table(
       point_id = seq_len(nrow(coords)),
       lon = coords[, 1L],
       lat = coords[, 2L]
@@ -223,7 +223,7 @@
     .validate_single_coord(lat[i], "lat")
   }
 
-  data.table::data.table(
+  data.table(
     point_id = seq_along(lon),
     lon = as.numeric(lon),
     lat = as.numeric(lat)

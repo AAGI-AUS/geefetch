@@ -574,9 +574,9 @@ gee_datasets <- function(domain = NULL) {
   # Build from .GEE_META + any user-registered datasets
   meta_source <- .gee_combined_meta()
 
-  dt <- data.table::rbindlist(lapply(names(meta_source), function(nm) {
+  dt <- rbindlist(lapply(names(meta_source), function(nm) {
     m <- meta_source[[nm]]
-    data.table::data.table(
+    data.table(
       dataset = nm,
       collection = m$collection,
       domain = m$domain %||% NA_character_,
@@ -686,7 +686,7 @@ gee_register_dataset <- function(
     ))
   }
 
-  temporal <- rlang::arg_match(
+  temporal <- arg_match(
     temporal,
     c("daily", "8day", "16day", "monthly", "5day", "static")
   )

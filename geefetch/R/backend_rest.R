@@ -407,14 +407,14 @@ NULL
   # Extract access token string (handles both gargle and raw string tokens)
   access_token <- .extract_access_token(token)
 
-  req <- httr2::request(url)
+  req <- request(url)
   # X-Goog-User-Project overrides the token's default quota project so the
   # call is billed / quota-counted against the user-specified project, not
   # whatever project the OAuth client happened to be registered under.
   # Required whenever the token's quota project differs from the resource
   # project in the URL (documented at
   # https://cloud.google.com/docs/authentication/rest#set-quota-project).
-  req <- httr2::req_headers(
+  req <- req_headers(
     req,
     Authorization = paste("Bearer", access_token),
     `Content-Type` = "application/json",
@@ -422,10 +422,10 @@ NULL
   )
 
   if (!is.null(body)) {
-    req <- httr2::req_body_json(req, body, auto_unbox = TRUE)
+    req <- req_body_json(req, body, auto_unbox = TRUE)
   }
 
-  req <- httr2::req_retry(req, max_tries = max_tries, backoff = function(i) {
+  req <- req_retry(req, max_tries = max_tries, backoff = function(i) {
     initial_delay * 2^(i - 1L)
   })
 
@@ -433,7 +433,7 @@ NULL
   req <- httr2::req_error(req, is_error = function(resp) FALSE)
 
   resp <- tryCatch(
-    httr2::req_perform(req),
+    req_perform(req),
     error = function(e) {
       msg <- conditionMessage(e)
       cli::cli_abort(c(
@@ -445,10 +445,10 @@ NULL
     }
   )
 
-  status <- httr2::resp_status(resp)
+  status <- resp_status(resp)
   if (status >= 400L) {
     err_body <- tryCatch(
-      httr2::resp_body_json(resp),
+      resp_body_json(resp),
       error = function(e) list(error = list(message = "Unknown error"))
     )
     err_msg <- err_body$error$message %||% "No error message returned."
@@ -485,9 +485,9 @@ NULL
   }
 
   if (raw) {
-    httr2::resp_body_raw(resp)
+    resp_body_raw(resp)
   } else {
-    httr2::resp_body_json(resp)
+    resp_body_json(resp)
   }
 }
 
@@ -581,7 +581,7 @@ NULL
   }
 
   if (length(all_features) == 0L) {
-    return(data.table::data.table())
+    return(data.table())
   }
 
   # Parse GeoJSON features into data.table
@@ -600,5 +600,5 @@ NULL
     })
     as.data.frame(props, stringsAsFactors = FALSE)
   })
-  data.table::rbindlist(rows, fill = TRUE)
+  rbindlist(rows, fill = TRUE)
 }

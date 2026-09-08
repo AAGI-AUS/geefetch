@@ -17,8 +17,7 @@ test_that("gee_status reports rgee as not available when missing", {
   local_mocked_bindings(
     is_installed = function(pkg, ...) {
       if (pkg == "rgee") FALSE else TRUE
-    },
-    .package = "rlang"
+    }
   )
   old_token <- .geefetch_env$token
   .geefetch_env$token <- NULL
@@ -118,8 +117,7 @@ test_that("cache uses RDS when fst not available", {
   local_mocked_bindings(
     is_installed = function(pkg, ...) {
       if (pkg == "fst") FALSE else TRUE
-    },
-    .package = "rlang"
+    }
   )
 
   .cache_set("test_rds", list(a = 1), data.frame(x = 1:3))
@@ -335,8 +333,7 @@ test_that(".read_gee_generic works for worldclim with variable override", {
 
 test_that(".rgee_extract aborts when rgee not installed", {
   local_mocked_bindings(
-    is_installed = function(pkg, ...) FALSE,
-    .package = "rlang"
+    is_installed = function(pkg, ...) FALSE
   )
   expect_error(
     .rgee_extract(.GEE_META$modis_ndvi, NULL, NULL, 1L, 1),

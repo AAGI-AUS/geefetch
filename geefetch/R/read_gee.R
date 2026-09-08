@@ -82,7 +82,7 @@ read_gee <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
 
   # 1. Resolve alias to normalised dataset ID
   did <- .gee_resolve_id(dataset_id)

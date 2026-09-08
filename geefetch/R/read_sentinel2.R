@@ -36,7 +36,7 @@ read_sentinel2 <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   read_gee(
     "sentinel2_ndvi",
     date = date,

@@ -155,11 +155,11 @@ gee_external_facts <- function(grounded_only = FALSE) {
       list(fact = "date_start",   kind = "bound",
            value = m$date_start %||% NA_character_)
     )
-    data.table::rbindlist(lapply(facts, function(f) {
+    rbindlist(lapply(facts, function(f) {
       fid  <- paste0(nm, ".", f$fact)
       prov <- .GEE_FACT_PROVENANCE[[fid]]
       von  <- if (is.null(prov)) NA_character_ else prov$verified_on
-      data.table::data.table(
+      data.table(
         dataset      = nm,
         fact_id      = fid,
         kind         = f$kind,
@@ -174,7 +174,7 @@ gee_external_facts <- function(grounded_only = FALSE) {
     }))
   })
 
-  dt <- data.table::rbindlist(rows)
+  dt <- rbindlist(rows)
   if (isTRUE(grounded_only)) dt <- dt[!is.na(verified_on)]
   dt[]
 }

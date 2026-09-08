@@ -326,7 +326,7 @@
 #' Generic rgee extraction fallback
 #' @noRd
 .rgee_extract <- function(meta, date, region, max_tries, initial_delay) {
-  if (!rlang::is_installed("rgee")) {
+  if (!is_installed("rgee")) {
     cli::cli_abort(c(
       "The {.pkg rgee} package is required for {.code backend = \"rgee\"}.",
       i = "Install with: {.code install.packages(\"rgee\")}",

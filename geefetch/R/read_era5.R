@@ -44,9 +44,9 @@ read_era5 <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   variable <- tolower(variable)
-  variable <- rlang::arg_match(variable)
+  variable <- arg_match(variable)
 
   did <- data.table::fifelse(
     variable == "temperature",

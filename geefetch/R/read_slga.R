@@ -63,11 +63,11 @@ read_slga <- function(
   initial_delay = 1L
 ) {
   collection <- toupper(collection)
-  collection <- rlang::arg_match(collection)
+  collection <- arg_match(collection)
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   stat <- tolower(stat)
-  stat <- rlang::arg_match(stat)
+  stat <- arg_match(stat)
 
   did <- paste0("slga_", tolower(collection))
 

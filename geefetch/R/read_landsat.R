@@ -36,7 +36,7 @@ read_landsat <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   read_gee(
     "landsat_ndvi",
     date = date,

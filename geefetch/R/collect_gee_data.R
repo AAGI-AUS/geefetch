@@ -89,7 +89,7 @@ collect_gee_data <- function(
   verbose = TRUE,
   na.rm = FALSE
 ) {
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
 
   # 1. Parse and validate coordinates
   coords <- .parse_coordinates(lon, lat, xy)
@@ -140,7 +140,7 @@ collect_gee_data <- function(
   n_locs <- nrow(coords)
   n_dates <- length(dates)
 
-  dt <- data.table::data.table(
+  dt <- data.table(
     point_id = rep(coords$point_id, each = n_dates),
     lon = rep(coords$lon, each = n_dates),
     lat = rep(coords$lat, each = n_dates),
@@ -221,7 +221,7 @@ collect_gee_data <- function(
   id_cols <- c("point_id", "lon", "lat", "date")
   dataset_cols <- intersect(resolved, names(dt))
   col_order <- intersect(c(id_cols, dataset_cols), names(dt))
-  data.table::setcolorder(dt, col_order)
+  setcolorder(dt, col_order)
 
   # 10. Optionally remove all-NA rows
   if (na.rm && length(dataset_cols) > 0L) {
@@ -375,7 +375,7 @@ collect_gee_data <- function(
   max_tries,
   initial_delay
 ) {
-  if (!rlang::is_installed("rgee")) {
+  if (!is_installed("rgee")) {
     cli::cli_abort(c(
       "The {.pkg rgee} package is required for {.code backend = \"rgee\"}.",
       i = "Install with: {.code install.packages(\"rgee\")}",
@@ -409,7 +409,7 @@ collect_gee_data <- function(
   )
 
   # Dataset table
-  info_dt <- data.table::data.table(
+  info_dt <- data.table(
     dataset = resolved,
     type = ifelse(is_static, "static", "time-series"),
     domain = vapply(

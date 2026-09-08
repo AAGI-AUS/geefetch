@@ -36,7 +36,7 @@ read_srtm <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   read_gee(
     "srtm_elevation",
     region = region,

@@ -209,7 +209,7 @@ gee_auth <- function(
       ))
     }
   } else if (backend == "rgee") {
-    if (!rlang::is_installed("rgee")) {
+    if (!is_installed("rgee")) {
       cli::cli_abort(c(
         "The {.pkg rgee} package is required for {.code backend = \"rgee\"}.",
         i = "Install with: {.code install.packages(\"rgee\")}",
@@ -250,7 +250,7 @@ gee_status <- function() {
   token <- .gee_token()
   authed <- !is.null(token)
 
-  rgee_avail <- rlang::is_installed("rgee")
+  rgee_avail <- is_installed("rgee")
 
   cache_dir <- .cache_dir()
   cache_exists <- dir.exists(cache_dir)
@@ -340,7 +340,7 @@ gee_setup <- function() {
   cli::cli_h2("Step 1: Check R dependencies")
   cli::cli_alert_success("{.pkg gargle}: installed")
   cli::cli_alert_success("{.pkg httr2}: installed")
-  if (rlang::is_installed("rgee")) {
+  if (is_installed("rgee")) {
     cli::cli_alert_success("{.pkg rgee}: installed (optional advanced backend)")
   } else {
     cli::cli_alert_info("{.pkg rgee}: not installed (optional, not required)")
