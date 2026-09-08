@@ -2,6 +2,12 @@
 
 ## User-visible changes
 
+* **Cached tables are now stored with qs2.** Writing is about 35 times
+  faster and reading about 7 times faster than the previous gzip RDS
+  format on a 687k-row table, at the same size on disk. Rasters are
+  unaffected and stay GeoTIFF. The cache key now carries a format
+  version, so an existing on-disk cache is simply rebuilt on first use
+  rather than read under the new format.
 * **Disk caching is now opt-in.** `read_gee()` and `collect_gee_data()`
   still cache extraction results in an in-session memory store whenever
   `cache = TRUE` (the default), but persisting results to disk under
