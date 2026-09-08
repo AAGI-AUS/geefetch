@@ -34,7 +34,6 @@ Imports:
     jsonlite,
     lifecycle,
     lubridate,
-    parallel,
     qs2,
     rlang (>= 1.1.0),
     sf,

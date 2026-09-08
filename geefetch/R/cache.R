@@ -147,33 +147,18 @@ gee_cache_disk <- function(enable = TRUE) {
 }
 
 
-#' Thread count for qs2 disk I/O, computed once per session
+#' Thread count for qs2 disk I/O
 #'
-#' Respects `getOption("geefetch.threads")` if the caller has set one;
-#' otherwise falls back to one less than the detected core count,
-#' floored at 1. Memoised in the package environment so the (cheap but
-#' non-trivial) core-count detection only runs once. Honours
-#' `_R_CHECK_LIMIT_CORES_`, capping at 2 threads under CRAN checks.
+#' `options(geefetch.threads = n)` sets it; the default of two keeps the
+#' package within CRAN's core policy while still using qs2's threading.
 #'
 #' @returns Integer. Thread count for `qs2::qd_save()` / `qd_read()` /
 #'   `qs_save()` / `qs_read()`.
 #'
 #' @noRd
 .cache_threads <- function() {
-  cached <- .geefetch_env$cache_threads
-  if (!is.null(cached)) {
-    return(cached)
-  }
-  opt <- getOption("geefetch.threads")
-  n <- if (!is.null(opt)) {
-    as.integer(opt)
-  } else if (nzchar(Sys.getenv("_R_CHECK_LIMIT_CORES_"))) {
-    2L
-  } else {
-    max(1L, detectCores() - 1L)
-  }
-  .geefetch_env$cache_threads <- n
-  n
+  n <- getOption("geefetch.threads", 2L)
+  max(1L, as.integer(n))
 }
 
 

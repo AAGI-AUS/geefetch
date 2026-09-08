@@ -6,7 +6,6 @@
 #'   setattr is.data.table as.data.table copy
 #' @importFrom lifecycle deprecated
 #' @importFrom jsonlite fromJSON
-#' @importFrom parallel detectCores
 #' @importFrom qs2 qd_save qd_read qs_save qs_read
 #' @importFrom rlang abort warn inform is_installed arg_match check_required
 #'   caller_env `%||%`
