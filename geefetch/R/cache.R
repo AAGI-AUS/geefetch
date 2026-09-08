@@ -18,7 +18,8 @@
 #' @returns Logical.
 #' @noRd
 .cache_disk_enabled <- function() {
-  isTRUE(getOption("geefetch.cache.disk", FALSE))
+  isTRUE(.geefetch_env$cache_disk) ||
+    isTRUE(getOption("geefetch.cache.disk", FALSE))
 }
 
 
@@ -52,7 +53,7 @@ gee_cache_disk <- function(enable = TRUE) {
     cli::cli_abort("{.arg enable} must be a single TRUE or FALSE.")
   }
   old <- .cache_disk_enabled()
-  options(geefetch.cache.disk = enable)
+  .geefetch_env$cache_disk <- enable
   invisible(old)
 }
 

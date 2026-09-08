@@ -33,6 +33,10 @@ Default \code{3L}.}
 \item{initial_delay}{Numeric. Initial retry delay in seconds, doubling
 on each attempt. Default \code{1}.}
 }
+\value{
+No value. This topic only documents arguments shared by several
+functions.
+}
 \description{
 Not a real function; exists so other topics can inherit the parameter
 descriptions below via \verb{@inheritParams} instead of repeating them.

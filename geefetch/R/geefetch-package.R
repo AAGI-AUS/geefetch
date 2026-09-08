@@ -41,6 +41,8 @@ NULL
 #' @param initial_delay Numeric. Initial retry delay in seconds, doubling
 #'   on each attempt. Default `1`.
 #'
+#' @returns No value. This topic only documents arguments shared by several
+#'   functions.
 #' @name gee_shared_params
 #' @keywords internal
 NULL
