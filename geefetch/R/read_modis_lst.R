@@ -7,7 +7,7 @@
 #' 8-Day L3 1km) from Google Earth Engine. Returns a [terra::rast()]
 #' SpatRaster with QA-masked daytime LST values in Kelvin.
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values: LST in
 #'   Kelvin. NA where QA indicates cloud or poor quality.

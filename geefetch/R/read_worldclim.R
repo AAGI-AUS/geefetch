@@ -9,7 +9,7 @@
 #' WorldClim version 1, not version 2; the two differ in both their
 #' normal period and their source publication.
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @param variable Character. Bioclimatic variable band name. One of
 #'   `"bio01"` through `"bio19"`. Default `"bio01"` (annual mean
 #'   temperature, degrees C x 10).

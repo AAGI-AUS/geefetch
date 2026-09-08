@@ -7,7 +7,7 @@
 #' Google Earth Engine. Supports 7 soil attributes, 6 depth layers,
 #' and 3 statistics. This is a static dataset (no date required).
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @param collection Character. Soil attribute to extract. One of:
 #'   - `"CLY"` — Clay content (percent)
 #'   - `"SND"` — Sand content (percent)

@@ -405,20 +405,20 @@ gee_setup <- function() {
   cli::cli_text(
     "Use the project {.strong number} and the matching {.arg email}:"
   )
-  cli::cli_code(paste0(
-    'gee_auth(\n',
-    '  project = "123456789012",    # <-- your project NUMBER\n',
-    '  email   = "you@gmail.com"    # <-- matching Google account\n',
-    ')'
+  cli::cli_code(c(
+    "gee_auth(",
+    "  project = \"123456789012\",    # <-- your project NUMBER",
+    "  email   = \"you@gmail.com\"    # <-- matching Google account",
+    ")"
   ))
   cli::cli_text(
     "For non-interactive / CI use, pass a service-account JSON key:"
   )
-  cli::cli_code(paste0(
-    'gee_auth(\n',
-    '  project = "123456789012",\n',
-    '  path    = "path/to/service-account.json"\n',
-    ')'
+  cli::cli_code(c(
+    "gee_auth(",
+    "  project = \"123456789012\",",
+    "  path    = \"path/to/service-account.json\"",
+    ")"
   ))
 
   # Step 7: Verify + persist
@@ -443,10 +443,10 @@ gee_setup <- function() {
   cli::cli_text(
     "with your resource project. Restart R, wipe the cache, re-auth:"
   )
-  cli::cli_code(paste0(
-    'unlink(list.files(gargle::gargle_oauth_cache(), full.names = TRUE))\n',
-    '# restart R, then:\n',
-    'gee_auth(project = "123456789012", email = "you@gmail.com")'
+  cli::cli_code(c(
+    "unlink(list.files(gargle::gargle_oauth_cache(), full.names = TRUE))",
+    "# restart R, then:",
+    "gee_auth(project = \"123456789012\", email = \"you@gmail.com\")"
   ))
 
   invisible(NULL)

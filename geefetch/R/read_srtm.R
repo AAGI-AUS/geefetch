@@ -7,7 +7,7 @@
 #' Digital Elevation Model) from Google Earth Engine. This is a static
 #' dataset — no `date` argument is needed.
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values:
 #'   elevation in metres above sea level.

@@ -285,7 +285,7 @@
 #' This runs before any network call, so users get fast feedback on input
 #' errors.
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @param dots Named list of user-supplied arguments.
 #'
 #' @returns NULL (invisibly). Aborts on validation failure.

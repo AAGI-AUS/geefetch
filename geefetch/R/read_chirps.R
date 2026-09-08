@@ -7,7 +7,7 @@
 #' Precipitation With Station Data) from Google Earth Engine.
 #' Returns a [terra::rast()] SpatRaster with precipitation in mm/day.
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values:
 #'   precipitation in mm/day.

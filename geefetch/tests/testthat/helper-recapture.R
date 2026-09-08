@@ -20,8 +20,9 @@
 # project identifier. The redactor below enforces that, but a human review
 # before commit is still expected.
 
-if (nzchar(Sys.getenv("RPKG_RECAPTURE")) &&
-    requireNamespace("httptest2", quietly = TRUE)) {
+recapture <- nzchar(Sys.getenv("RPKG_RECAPTURE")) &&
+  requireNamespace("httptest2", quietly = TRUE)
+if (recapture) {
   httptest2::set_redactor(function(response) {
     response <- httptest2::redact_headers(response, "Authorization")
     response <- httptest2::gsub_response(

@@ -41,21 +41,6 @@ NULL
 #' @param initial_delay Numeric. Initial retry delay in seconds, doubling
 #'   on each attempt. Default `1`.
 #'
-#' @returns Nothing; not called directly.
-#' @rdname gee_shared_params
+#' @name gee_shared_params
 #' @keywords internal
-.gee_shared_params <- function(
-  did,
-  meta,
-  date,
-  coords,
-  region,
-  bands,
-  backend,
-  cache,
-  verbose,
-  max_tries,
-  initial_delay
-) {
-  NULL
-}
+NULL

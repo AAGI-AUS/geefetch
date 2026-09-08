@@ -24,10 +24,8 @@ skip_if_not_installed("httr2")
 # itself the finding for a fabricated/renamed collection ID).
 .fetch_stac <- function(collection) {
   url <- .gee_stac_url(collection)
-  resp <- tryCatch(
-    httr2::req_perform(httr2::req_error(httr2::request(url),
-                                        is_error = function(r) FALSE)),
-    error = function(e) NULL)
+  req <- httr2::req_error(httr2::request(url), is_error = function(r) FALSE)
+  resp <- tryCatch(httr2::req_perform(req), error = function(e) NULL)
   if (is.null(resp) || httr2::resp_status(resp) != 200L) return(NULL)
   # The STAC bucket serves JSON as text/plain, so bypass the content-type check.
   httr2::resp_body_json(resp, check_type = FALSE)

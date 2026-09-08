@@ -33,7 +33,7 @@
 #'   `"0-5"`, `"5-15"`, ..., `"100-200"`, or `"all"`. Default `"0-5"`.
 #' @param stat Character. For SLGA soil datasets: statistic.
 #'   `"mean"`, `"ci_lower"`, `"ci_upper"`. Default `"mean"`.
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @param na.rm Logical. Remove rows where all dataset columns are NA?
 #'   Default `FALSE`.
 #'
@@ -218,7 +218,7 @@ collect_gee_data <- function(
 #' @param coords data.table with point_id, lon, lat.
 #' @param show_progress Logical. Advance the cli progress bar per API call?
 #' @param op_count Integer. API calls completed so far (for the progress bar).
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @returns Integer. Updated `op_count` after this dataset family.
 #' @noRd
 .cgd_extract_timeseries <- function(
@@ -279,7 +279,7 @@ collect_gee_data <- function(
 #' @param coords data.table with point_id, lon, lat.
 #' @param show_progress Logical. Advance the cli progress bar per API call?
 #' @param op_count Integer. API calls completed so far (for the progress bar).
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @returns Integer. Updated `op_count` after this dataset family.
 #' @noRd
 .cgd_extract_static <- function(
@@ -354,7 +354,7 @@ collect_gee_data <- function(
 #' per-point extraction if batch fails. Returns a numeric vector
 #' with one value per point (in coords row order).
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #'
 #' @returns Numeric vector of length nrow(coords). NAs for failed points.
 #' @noRd

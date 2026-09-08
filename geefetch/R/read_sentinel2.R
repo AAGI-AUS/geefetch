@@ -8,7 +8,7 @@
 #' Engine. Cloud and shadow pixels are masked using the Scene
 #' Classification Layer (SCL).
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values: NDVI
 #'   (-1 to 1). NA where SCL indicates cloud, shadow, or snow.

@@ -7,7 +7,7 @@
 #' from Google Earth Engine. Supports temperature and precipitation
 #' variables via the `variable` argument.
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @param variable Character. `"temperature"` (default) or `"precipitation"`.
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values:

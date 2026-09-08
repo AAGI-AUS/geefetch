@@ -12,7 +12,7 @@
 #' functions (e.g., [read_modis_ndvi()], [read_era5()]) which provide named
 #' parameters and dataset-specific documentation.
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @param dataset_id Character. Dataset name or alias. Use [gee_datasets()]
 #'   to list all available datasets.
 #' @param ... Arguments passed to the dataset-specific handler. Common

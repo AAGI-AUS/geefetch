@@ -7,7 +7,7 @@
 #' reflectance (LANDSAT/LC09/C02/T1_L2) on Google Earth Engine.
 #' Cloud, shadow, and snow pixels are masked using the QA_PIXEL band.
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values: NDVI
 #'   (-1 to 1). NA where QA_PIXEL indicates cloud, shadow, or snow.

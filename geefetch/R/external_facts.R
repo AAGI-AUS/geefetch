@@ -40,7 +40,9 @@
   asset    <- gsub("/", "_", collection, fixed = TRUE)
   sprintf(
     "https://earthengine-stac.storage.googleapis.com/catalog/%s/%s.json",
-    provider, asset)
+    provider,
+    asset
+  )
 }
 
 # Static provenance lookup, keyed by fact_id. Absent rows default to
@@ -63,35 +65,45 @@
 # Everything else is [unverified] until test-catalogue-diff.R / a live run
 # grounds it.
 .GEE_FACT_PROVENANCE <- list(
-  "modis_ndvi.collection"     = list(verified_on = "2026-06-09",
-                                     oracle_types = c("A", "B"),
-                                     reverify_by  = "stable"),
-  "modis_ndvi.scale_factor"   = list(verified_on = "2026-06-09",
-                                     oracle_types = c("B", "D"),
-                                     reverify_by  = "stable"),
-  "sentinel2_ndvi.collection" = list(verified_on = "2026-06-09",
-                                     oracle_types = c("A", "B"),
-                                     reverify_by  = "stable"),
-  "sentinel2_ndvi.scale_factor" = list(verified_on = "2026-06-09",
-                                     oracle_types = c("B", "D"),
-                                     reverify_by  = "stable"),
-  "sentinel2_ndvi.offset"     = list(verified_on = "2026-06-09",
-                                     oracle_types = c("B", "D", "F"),
-                                     reverify_by  = "stable"),
+  "modis_ndvi.collection" = list(
+    verified_on = "2026-06-09",
+    oracle_types = c("A", "B"),
+    reverify_by = "stable"
+  ),
+  "modis_ndvi.scale_factor" = list(
+    verified_on = "2026-06-09",
+    oracle_types = c("B", "D"),
+    reverify_by = "stable"
+  ),
+  "sentinel2_ndvi.collection" = list(
+    verified_on = "2026-06-09",
+    oracle_types = c("A", "B"),
+    reverify_by = "stable"
+  ),
+  "sentinel2_ndvi.scale_factor" = list(
+    verified_on = "2026-06-09",
+    oracle_types = c("B", "D"),
+    reverify_by = "stable"
+  ),
+  "sentinel2_ndvi.offset" = list(
+    verified_on = "2026-06-09",
+    oracle_types = c("B", "D", "F"),
+    reverify_by = "stable"
+  ),
   # GROUNDED 2026-06-09 by CORRECTING a confirmed wrong fact the catalogue-diff
   # oracle caught (the self-consistency tests passed both):
-  #   - slga_phc.bands : declared `PHC_000_005_EV`; the authority advertises
-  #       `pHc_000_005_EV` (GEE band names are case-sensitive). Fixed in
-  #       handler_registry.R (.SLGA_BAND_PREFIX) + handlers.R.
-  #   - worldclim_bio.collection : declared `WORLDCLIM/V2/BIO`, which 404s
-  #       in the GEE STAC; the hosted asset is `WORLDCLIM/V1/BIO`. Fixed in
-  #       handler_registry.R.
+  #   - slga_phc.bands: the authority advertises pHc_000_005_EV, with a
+  #       lower-case "c", where PHC_000_005_EV had been declared.
+  #   - worldclim_bio.collection: the hosted asset is WORLDCLIM/V1/BIO, not
+  #       the V2 id that had been declared.
   "slga_phc.bands"            = list(verified_on = "2026-06-09",
                                      oracle_types = "B",
                                      reverify_by  = "stable"),
-  "worldclim_bio.collection"  = list(verified_on = "2026-06-09",
-                                     oracle_types = c("A", "B"),
-                                     reverify_by  = "stable")
+  "worldclim_bio.collection" = list(
+    verified_on = "2026-06-09",
+    oracle_types = c("A", "B"),
+    reverify_by = "stable"
+  )
 )
 
 #' External-fact provenance registry
@@ -168,8 +180,11 @@ gee_external_facts <- function(grounded_only = FALSE) {
         source       = .gee_stac_url(m$collection),
         verified_on  = von,
         grounding    = if (is.na(von)) .GEE_UNVERIFIED else .GEE_GROUNDED,
-        oracle_types = if (is.null(prov)) NA_character_
-                       else paste(prov$oracle_types, collapse = ","),
+        oracle_types = if (is.null(prov)) {
+          NA_character_
+        } else {
+          paste(prov$oracle_types, collapse = ",")
+        },
         reverify_by  = if (is.null(prov)) NA_character_ else prov$reverify_by
       )
     }))

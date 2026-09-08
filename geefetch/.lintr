@@ -1,0 +1,9 @@
+linters: linters_with_defaults(line_length_linter(80L))
+exclusions: list(
+    "tests/testthat/cf-401",
+    "tests/testthat/cf-403",
+    "tests/testthat/cf-429",
+    "tests/testthat/cf-ok",
+    "tests/testthat/cf-masked"
+  )
+encoding: "UTF-8"

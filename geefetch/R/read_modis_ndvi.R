@@ -8,7 +8,7 @@
 #' [terra::rast()] SpatRaster with QA-masked, scaled NDVI values
 #' (range: approximately -0.2 to 1.0).
 #'
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @param date Character or Date. Acquisition date in `"YYYY-MM-DD"` format.
 #'   The nearest available 16-day composite containing this date is returned.
 #'

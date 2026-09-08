@@ -367,7 +367,7 @@ NULL
 #'
 #' @param endpoint Character. API endpoint path (appended to base URL).
 #' @param body List. Request body (will be converted to JSON).
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #' @param raw Logical. Return raw bytes instead of parsed JSON? Default FALSE.
 #'
 #' @returns Parsed JSON response as a list, or raw bytes if raw = TRUE.
@@ -391,8 +391,9 @@ NULL
   token <- .maybe_refresh_token(token)
 
   project <- .gee_project()
-  if (!is.character(project) || length(project) != 1L || !nzchar(project) ||
-      is.na(project)) {
+  project_ok <- is.character(project) && length(project) == 1L &&
+    !is.na(project) && nzchar(project)
+  if (!project_ok) {
     cli::cli_abort(c(
       "No Google Cloud project is set for Earth Engine requests.",
       i = paste0(
@@ -455,8 +456,9 @@ NULL
 
     # Specific guidance for common errors
     hints <- character()
-    if (status == 403L &&
-        grepl("API has not been used", err_msg, fixed = TRUE)) {
+    api_disabled <- status == 403L &&
+      grepl("API has not been used", err_msg, fixed = TRUE)
+    if (api_disabled) {
       hints <- c(
         i = "The Earth Engine API is not enabled on your Google Cloud project.",
         i = "To fix: visit the link in the error above and click 'Enable'.",
@@ -496,7 +498,7 @@ NULL
 #'
 #' @param expression List. The EE expression (not wrapped in Expression).
 #' @param grid List. Grid specification from .build_grid().
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #'
 #' @returns A terra::rast() SpatRaster.
 #' @noRd
@@ -542,7 +544,7 @@ NULL
 #' Request feature data via computeFeatures
 #'
 #' @param expression List. The EE expression evaluating to a FeatureCollection.
-#' @inheritParams .gee_shared_params
+#' @inheritParams gee_shared_params
 #'
 #' @returns A data.table of extracted values.
 #' @noRd
