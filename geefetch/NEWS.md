@@ -1,5 +1,17 @@
 # geefetch 0.1.0
 
+## User-visible changes
+
+* **Disk caching is now opt-in.** `read_gee()` and `collect_gee_data()`
+  still cache extraction results in an in-session memory store whenever
+  `cache = TRUE` (the default), but persisting results to disk under
+  `tools::R_user_dir()` now requires `options(geefetch.cache.disk = TRUE)`
+  or the new `gee_cache_disk()` helper. Previously every cache-enabled
+  call wrote to disk unconditionally. `gee_clear_cache()` clears both the
+  memory store and, if it was ever populated, the disk store.
+* `collect_gee_data()`'s verbose progress table is now emitted through
+  `cli` instead of a bare `print()` call, still gated on `verbose`.
+
 ## Bug fixes
 
 * The seven SLGA soil datasets failed on both routes because
