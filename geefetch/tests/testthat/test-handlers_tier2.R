@@ -50,23 +50,6 @@ test_that("read_slga validates collection argument", {
   )
 })
 
-# ---- Computed indices ----
-
-test_that(".ee_normalized_difference builds correct expression tree", {
-  img <- .ee_load_image("TEST")
-  nd <- .ee_normalized_difference(img, "B8", "B4")
-  inv <- nd$functionInvocationValue
-  expect_equal(inv$functionName, "Image.divide")
-
-  # Numerator should be subtract
-  num <- inv$arguments$image1$functionInvocationValue
-  expect_equal(num$functionName, "Image.subtract")
-
-  # Denominator should be add
-  den <- inv$arguments$image2$functionInvocationValue
-  expect_equal(den$functionName, "Image.add")
-})
-
 test_that(".ee_mask_landsat_qa builds correct expression", {
   img <- .ee_load_image("TEST")
   masked <- .ee_mask_landsat_qa(img)

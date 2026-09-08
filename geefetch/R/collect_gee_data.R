@@ -376,47 +376,6 @@ collect_gee_data <- function(
 }
 
 
-#' Extract a single point value via REST API
-#'
-#' Builds the expression for one point and one date, calls computeFeatures.
-#'
-#' @returns Numeric value or NA_real_.
-#' @noRd
-.rest_extract_single_point <- function(
-  meta,
-  date,
-  pt_coords,
-  max_tries,
-  initial_delay,
-  did = NULL,
-  dots = list()
-) {
-  built <- .ee_dataset_image(
-    meta, did %||% "", date, .ee_multipoint(pt_coords), dots
-  )
-  band_name <- built$band
-  sample_expr <- .ee_sample_regions(built$node, pt_coords, meta$scale)
-
-  dt <- .rest_compute_features(
-    expression = sample_expr,
-    max_tries = max_tries,
-    initial_delay = initial_delay
-  )
-
-  if (nrow(dt) == 0L) {
-    return(NA_real_)
-  }
-
-  # Extract the first band value
-  if (band_name %in% names(dt)) {
-    val <- dt[[band_name]][1L]
-    if (is.null(val) || is.na(val)) NA_real_ else as.numeric(val)
-  } else {
-    NA_real_
-  }
-}
-
-
 #' rgee point extraction fallback
 #' @noRd
 .rgee_extract_point <- function(

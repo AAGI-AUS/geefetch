@@ -54,10 +54,11 @@
 #   - sentinel2.scale_factor: STAC eo:bands["B8"|"B4"]$`gee:scale` == 0.0001.
 #   - sentinel2.offset      : no band `gee:offset` in STAC (== 0); the
 #       S2_SR_HARMONIZED product already corrects the post-2022 -1000 DN shift
-#       upstream, so a package-level offset of 0 is consistent. (The declared
-#       scale/offset are not applied on the S2 NDVI path anyway -- handlers.R
-#       computes NDVI from raw DN via .ee_normalized_difference; scale cancels
-#       in the ratio. Dead-but-consistent metadata, not a value error.)
+#       upstream, so a package-level offset of 0 is consistent. (The S2 NDVI
+#       path -- expression_dataset.R's normalised-difference branch -- applies
+#       scale and offset to both bands before the ratio; with offset == 0 the
+#       common scale factor cancels in the ratio either way, so the metadata
+#       is consistent regardless.)
 # Everything else is [unverified] until test-catalogue-diff.R / a live run
 # grounds it.
 .GEE_FACT_PROVENANCE <- list(

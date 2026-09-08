@@ -6,7 +6,11 @@
 # Architecture:
 #   1. Expression builder (.ee_*) — constructs GEE computation graph as JSON
 #   2. Request functions (.rest_request, .rest_compute_*) — send to REST API
-#   3. Extraction functions (.rest_extract_*) — high-level: build expr + request + parse
+#
+# High-level extraction (build expression, request, parse) lives in
+# handlers.R (.rest_extract_raster_expr) and collect_gee_data.R
+# (.rest_extract_batch_points), both of which call the request functions
+# defined here.
 
 #' @importFrom httr2 request req_headers req_body_json req_perform
 #'   req_retry resp_body_json resp_status resp_body_raw
@@ -279,19 +283,6 @@ NULL
     geometries = .ee_const(TRUE)
   )
 }
-
-#' Build Image.reduceRegions expression for point extraction with a reducer
-#' @noRd
-.ee_reduce_regions <- function(image_node, coords, reducer, scale) {
-  .ee_call(
-    "Image.reduceRegions",
-    image = image_node,
-    collection = .ee_feature_collection(coords),
-    reducer = .ee_call(paste0("Reducer.", reducer)),
-    scale = .ee_const(as.integer(scale))
-  )
-}
-
 
 # ===========================================================================
 # Section 3: Grid / affine transform builders
@@ -613,93 +604,4 @@ NULL
     as.data.frame(props, stringsAsFactors = FALSE)
   })
   data.table::rbindlist(rows, fill = TRUE)
-}
-
-
-# ===========================================================================
-# Section 5: High-level extraction functions
-# ===========================================================================
-
-#' Extract raster data for a dataset via REST API
-#'
-#' Builds the full expression (load → filter → select → scale → offset),
-#' computes the grid, and calls computePixels.
-#'
-#' @param meta List. Dataset metadata from .GEE_META.
-#' @param date Date. Acquisition date.
-#' @param region sf/sfc object or NULL (defaults to global).
-#' @param bands Character or NULL (use meta$bands).
-#' @param max_tries Integer.
-#' @param initial_delay Numeric.
-#'
-#' @returns A terra::rast() SpatRaster.
-#' @noRd
-.rest_extract_raster <- function(
-  meta,
-  date = NULL,
-  region = NULL,
-  bands = NULL,
-  max_tries = 3L,
-  initial_delay = 1L
-) {
-  if (is.null(region)) {
-    cli::cli_abort(c(
-      "{.arg region} is required for raster extraction via REST API.",
-      i = "Provide an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
-      i = paste0("Example: {.code terra::ext(138, 140, -36, -34)}")
-    ))
-  }
-
-  region <- .validate_region(region)
-  bbox <- sf::st_bbox(region)
-  grid <- .build_grid(bbox = bbox, scale = meta$scale)
-  bounds <- if (identical(meta$temporal, "static")) NULL else .ee_bbox(bbox)
-  built <- .ee_dataset_image(
-    meta, "", date, bounds, list(variable = bands)
-  )
-
-  .rest_compute_pixels(
-    expression = built$node,
-    grid = grid,
-    bands = built$band,
-    max_tries = max_tries,
-    initial_delay = initial_delay
-  )
-}
-
-
-#' Extract point values for a dataset via REST API
-#'
-#' Builds the expression (load → filter → select → scale → sampleRegions),
-#' calls computeFeatures, returns data.table.
-#'
-#' @param meta List. Dataset metadata from .GEE_META.
-#' @param date Date. Acquisition date (NULL for static datasets).
-#' @param coords data.table with point_id, lon, lat columns.
-#' @param bands Character or NULL (use meta$bands).
-#' @param reducer Character. Spatial reducer for buffered extraction.
-#' @param max_tries Integer.
-#' @param initial_delay Numeric.
-#'
-#' @returns A data.table with point_id and extracted band values.
-#' @noRd
-.rest_extract_points <- function(
-  meta,
-  date = NULL,
-  coords,
-  bands = NULL,
-  reducer = "first",
-  max_tries = 3L,
-  initial_delay = 1L
-) {
-  built <- .ee_dataset_image(
-    meta, "", date, .ee_multipoint(coords), list(variable = bands)
-  )
-  sample_expr <- .ee_sample_regions(built$node, coords, meta$scale)
-
-  .rest_compute_features(
-    expression = sample_expr,
-    max_tries = max_tries,
-    initial_delay = initial_delay
-  )
 }

@@ -182,19 +182,6 @@ test_that(".ee_sample_regions creates correct expression", {
   expect_true(inv$arguments$geometries$constantValue)
 })
 
-test_that(".ee_reduce_regions wires reducer and collection", {
-  img <- .ee_load_image("TEST")
-  coords <- data.table::data.table(point_id = 1L, lon = 0, lat = 0)
-  node <- .ee_reduce_regions(img, coords, "mean", 30L)
-  inv <- node$functionInvocationValue
-  expect_equal(inv$functionName, "Image.reduceRegions")
-  expect_equal(inv$arguments$reducer$functionInvocationValue$functionName, "Reducer.mean")
-  expect_equal(
-    inv$arguments$collection$functionInvocationValue$functionName,
-    "Collection"
-  )
-})
-
 test_that(".build_grid produces correct structure", {
   skip_if_not_installed("sf")
   bbox <- c(xmin = 138, ymin = -36, xmax = 140, ymax = -34)

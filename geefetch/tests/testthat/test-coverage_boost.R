@@ -431,40 +431,6 @@ test_that(".rest_request aborts clearly when no project is set", {
 
 # ---- collect_gee_data.R coverage ----
 
-test_that(".rest_extract_single_point handles static datasets", {
-  local_mocked_bindings(
-    .rest_compute_features = function(...) {
-      data.table::data.table(point_id = 1L, elevation = 350)
-    }
-  )
-
-  pt <- data.table::data.table(point_id = 1L, lon = 138.6, lat = -34.9)
-  val <- .rest_extract_single_point(
-    meta = .GEE_META$srtm_elevation,
-    date = NULL,
-    pt_coords = pt,
-    max_tries = 1L,
-    initial_delay = 0
-  )
-  expect_equal(val, 350)
-})
-
-test_that(".rest_extract_single_point returns NA for empty response", {
-  local_mocked_bindings(
-    .rest_compute_features = function(...) data.table::data.table()
-  )
-
-  pt <- data.table::data.table(point_id = 1L, lon = 138.6, lat = -34.9)
-  val <- .rest_extract_single_point(
-    meta = .GEE_META$era5_temp,
-    date = as.Date("2024-01-01"),
-    pt_coords = pt,
-    max_tries = 1L,
-    initial_delay = 0
-  )
-  expect_true(is.na(val))
-})
-
 test_that(".rest_extract_batch_points applies QA masking for MODIS", {
   local_mocked_bindings(
     .rest_compute_features = function(expression, ...) {
