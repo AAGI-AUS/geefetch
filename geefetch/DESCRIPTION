@@ -34,12 +34,13 @@ Imports:
     jsonlite,
     lifecycle,
     lubridate,
+    parallel,
+    qs2,
     rlang (>= 1.1.0),
     sf,
     terra,
     utils
 Suggests:
-    fst,
     ggplot2 (>= 3.5.0),
     httptest2,
     knitr,

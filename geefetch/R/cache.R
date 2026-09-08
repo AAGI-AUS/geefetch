@@ -4,15 +4,23 @@
 #   1. In-memory (session-level) — keyed list in .geefetch_env$mem_cache.
 #      Always active whenever a caller passes `cache = TRUE`.
 #   2. On-disk — format-aware:
-#      - data.frames: .fst (if available) or .rds
-#      - SpatRaster: .tif (GeoTIFF via terra::writeRaster)
-#      - Other objects: .rds
+#      - SpatRaster: .tif (GeoTIFF via terra::writeRaster, uncompressed)
+#      - vectors, lists, data.frames, matrices: .qdata (qs2::qd_save())
+#      - anything qdata can't hold: .qs2 (qs2::qs_save())
 #      Disabled by default. A package must not write to a user's disk
 #      without being asked; enable with `options(geefetch.cache.disk = TRUE)`
 #      or gee_cache_disk(TRUE).
 #
-# Cache keys are SHA256 hashes of (dataset_id, extraction_parameters).
+# Cache keys are SHA256 hashes of (format version, dataset_id,
+# extraction_parameters); bumping .CACHE_FORMAT invalidates every
+# existing on-disk entry without ever reading it back under a stale
+# format, so the old file is simply missed, and re-fetched.
 # TTL: 30 days for dynamic datasets, infinite for static (SRTM, SLGA).
+
+# Bump this when the on-disk cache format changes so old files are
+# never misread under a new reader; they are just missed and rebuilt.
+.CACHE_FORMAT <- "qs2-1"
+
 
 #' Is disk caching currently enabled?
 #' @returns Logical.
@@ -86,7 +94,11 @@ gee_cache_disk <- function(enable = TRUE) {
 
 #' Compute a cache key hash
 #'
-#' Deterministic SHA256 of the dataset ID and all extraction parameters.
+#' Deterministic SHA256 of the on-disk format version, the dataset ID
+#' and all extraction parameters. Including the format version means a
+#' change to the on-disk format (e.g. this package's move to qs2) shifts
+#' every key, so files written by an earlier format are never found,
+#' and therefore never misread, under the new one.
 #'
 #' @inheritParams gee_shared_params
 #' @param params Named list. Extraction parameters (date, region, bands, etc.).
@@ -97,6 +109,7 @@ gee_cache_disk <- function(enable = TRUE) {
 .cache_hash <- function(did, params) {
   # Sort parameter names for deterministic hashing
   key_parts <- list(
+    format = .CACHE_FORMAT,
     dataset = did,
     params = params[order(names(params))]
   )
@@ -105,14 +118,20 @@ gee_cache_disk <- function(enable = TRUE) {
 
 
 #' Determine the disk cache file extension for an object
+#'
+#' SpatRaster objects stay GeoTIFF. Everything qs2's qdata format can
+#' hold (vectors, lists, data.frames, matrices) is written with
+#' `qs2::qd_save()`; anything else falls back to the general-purpose
+#' `qs2::qs_save()`.
+#'
 #' @noRd
 .cache_ext <- function(result) {
   if (inherits(result, "SpatRaster")) {
     ".tif"
-  } else if (is.data.frame(result) && is_installed("fst")) {
-    ".fst"
+  } else if (is.list(result) || is.atomic(result)) {
+    ".qdata"
   } else {
-    ".rds"
+    ".qs2"
   }
 }
 
@@ -120,11 +139,41 @@ gee_cache_disk <- function(enable = TRUE) {
 #' Find an existing cache file for a given hash
 #' @noRd
 .cache_find_file <- function(d, hash) {
-  for (ext in c(".tif", ".fst", ".rds")) {
+  for (ext in c(".tif", ".qdata", ".qs2")) {
     fpath <- file.path(d, paste0(hash, ext))
     if (file.exists(fpath)) return(fpath)
   }
   NULL
+}
+
+
+#' Thread count for qs2 disk I/O, computed once per session
+#'
+#' Respects `getOption("geefetch.threads")` if the caller has set one;
+#' otherwise falls back to one less than the detected core count,
+#' floored at 1. Memoised in the package environment so the (cheap but
+#' non-trivial) core-count detection only runs once. Honours
+#' `_R_CHECK_LIMIT_CORES_`, capping at 2 threads under CRAN checks.
+#'
+#' @returns Integer. Thread count for `qs2::qd_save()` / `qd_read()` /
+#'   `qs_save()` / `qs_read()`.
+#'
+#' @noRd
+.cache_threads <- function() {
+  cached <- .geefetch_env$cache_threads
+  if (!is.null(cached)) {
+    return(cached)
+  }
+  opt <- getOption("geefetch.threads")
+  n <- if (!is.null(opt)) {
+    as.integer(opt)
+  } else if (nzchar(Sys.getenv("_R_CHECK_LIMIT_CORES_"))) {
+    2L
+  } else {
+    max(1L, detectCores() - 1L)
+  }
+  .geefetch_env$cache_threads <- n
+  n
 }
 
 
@@ -181,10 +230,14 @@ gee_cache_disk <- function(enable = TRUE) {
     {
       if (endsWith(fpath, ".tif")) {
         terra::rast(fpath)
-      } else if (endsWith(fpath, ".fst") && is_installed("fst")) {
-        fst::read_fst(fpath, as.data.table = TRUE)
+      } else if (endsWith(fpath, ".qdata")) {
+        out <- qd_read(fpath, nthreads = .cache_threads())
+        # qdata drops the data.table externalptr on the way out; restore
+        # it in place so the round trip returns a proper data.table.
+        if (is.data.table(out)) setDT(out)
+        out
       } else {
-        readRDS(fpath)
+        qs_read(fpath, nthreads = .cache_threads())
       }
     },
     error = function(e) {
@@ -212,8 +265,10 @@ gee_cache_disk <- function(enable = TRUE) {
 #' Store a result in cache
 #'
 #' Writes to both memory and disk. SpatRaster objects are written as
-#' GeoTIFF files (not RDS, which would lose the raster data across
-#' sessions). Data frames use fst (fast) or RDS (fallback).
+#' GeoTIFF files (not qs2, which would lose the raster data across
+#' sessions). Everything else is written with qs2, using the qdata
+#' format where the object qualifies and the general qs2 format
+#' otherwise; see `.cache_ext()`.
 #'
 #' @inheritParams gee_shared_params
 #' @param params Named list. Extraction parameters.
@@ -243,10 +298,19 @@ gee_cache_disk <- function(enable = TRUE) {
     {
       if (ext == ".tif") {
         terra::writeRaster(result, fpath, overwrite = TRUE)
-      } else if (ext == ".fst") {
-        fst::write_fst(result, fpath)
+      } else if (ext == ".qdata") {
+        to_save <- result
+        if (is.data.table(to_save)) {
+          # qdata treats the data.table externalptr attribute
+          # (.internal.selfref) as an unsupported type and warns once
+          # per session; strip it from a shallow copy so the write is
+          # silent, and setDT() restores it on read.
+          to_save <- copy(to_save)
+          setattr(to_save, ".internal.selfref", NULL)
+        }
+        qd_save(to_save, fpath, nthreads = .cache_threads())
       } else {
-        saveRDS(result, fpath)
+        qs_save(result, fpath, nthreads = .cache_threads())
       }
     },
     error = function(e) {
@@ -302,7 +366,7 @@ gee_clear_cache <- function(older_than = NULL) {
 
   files <- list.files(
     d,
-    pattern = "\\.(fst|rds|tif)$",
+    pattern = "\\.(tif|qdata|qs2|fst|rds)$",
     full.names = TRUE
   )
 
