@@ -159,7 +159,7 @@ test_that("Tier 2 datasets no longer give 'not implemented' error", {
     read_gee("slga_cly", region = terra::ext(138, 140, -36, -34)),
     error = function(e) conditionMessage(e)
   )
-  expect_false(grepl("not yet implemented", err))
+  expect_false(grepl("not yet implemented", err, fixed = TRUE))
 })
 
 # ---- gee_datasets() updated count ----

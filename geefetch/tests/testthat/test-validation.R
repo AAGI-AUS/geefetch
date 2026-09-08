@@ -86,21 +86,21 @@ test_that(".parse_coordinates works with lon/lat vectors", {
 })
 
 test_that(".parse_coordinates works with data.frame xy", {
-  df <- data.frame(lon = c(138.6), lat = c(-34.9))
+  df <- data.frame(lon = 138.6, lat = -34.9)
   dt <- .parse_coordinates(xy = df)
   expect_equal(nrow(dt), 1L)
   expect_equal(dt$lon, 138.6)
 })
 
 test_that(".parse_coordinates works with x/y column names", {
-  df <- data.frame(x = c(138.6), y = c(-34.9))
+  df <- data.frame(x = 138.6, y = -34.9)
   dt <- .parse_coordinates(xy = df)
   expect_equal(dt$lon, 138.6)
   expect_equal(dt$lat, -34.9)
 })
 
 test_that(".parse_coordinates works with longitude/latitude column names", {
-  df <- data.frame(longitude = c(138.6), latitude = c(-34.9))
+  df <- data.frame(longitude = 138.6, latitude = -34.9)
   dt <- .parse_coordinates(xy = df)
   expect_equal(dt$lon, 138.6)
 })
@@ -119,7 +119,7 @@ test_that(".parse_coordinates works with sf POINT objects", {
 
 test_that(".parse_coordinates rejects mismatched lengths", {
   expect_error(
-    .parse_coordinates(lon = c(1, 2), lat = c(1)),
+    .parse_coordinates(lon = c(1, 2), lat = 1),
     "same length"
   )
 })

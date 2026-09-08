@@ -403,7 +403,7 @@ NULL
       i = "See {.code gee_setup()} for how to create and register a project."
     ))
   }
-  url <- paste0(.gee_rest_base(), "/projects/", project, "/", endpoint)
+  url <- file.path(.gee_rest_base(), "projects", project, endpoint)
 
   # Extract access token string (handles both gargle and raw string tokens)
   access_token <- .extract_access_token(token)
@@ -456,7 +456,8 @@ NULL
 
     # Specific guidance for common errors
     hints <- character()
-    if (status == 403L && grepl("API has not been used", err_msg)) {
+    if (status == 403L &&
+        grepl("API has not been used", err_msg, fixed = TRUE)) {
       hints <- c(
         i = "The Earth Engine API is not enabled on your Google Cloud project.",
         i = "To fix: visit the link in the error above and click 'Enable'.",

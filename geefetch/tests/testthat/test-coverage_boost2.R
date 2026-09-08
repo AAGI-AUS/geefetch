@@ -5,9 +5,9 @@
 test_that("gee_setup prints all 5 steps", {
   output <- capture.output(gee_setup(), type = "message")
   output_str <- paste(output, collapse = "\n")
-  expect_true(grepl("Step 1", output_str))
-  expect_true(grepl("Step 5", output_str))
-  expect_true(grepl("gee_auth", output_str))
+  expect_true(grepl("Step 1", output_str, fixed = TRUE))
+  expect_true(grepl("Step 5", output_str, fixed = TRUE))
+  expect_true(grepl("gee_auth", output_str, fixed = TRUE))
 })
 
 # ---- handlers.R: remaining handler paths ----

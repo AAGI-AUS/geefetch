@@ -36,7 +36,7 @@
 # (Verified 2026-06-09 against MODIS/061/MOD13A2 and COPERNICUS/S2_SR_HARMONIZED.)
 .gee_stac_url <- function(collection) {
   provider <- sub("/.*$", "", collection)
-  asset    <- gsub("/", "_", collection)
+  asset    <- gsub("/", "_", collection, fixed = TRUE)
   sprintf(
     "https://earthengine-stac.storage.googleapis.com/catalog/%s/%s.json",
     provider, asset)
@@ -86,7 +86,7 @@
   #       GEE STAC; the hosted asset is `WORLDCLIM/V1/BIO`. Fixed in
   #       handler_registry.R.
   "slga_phc.bands"            = list(verified_on = "2026-06-09",
-                                     oracle_types = c("B"),
+                                     oracle_types = "B",
                                      reverify_by  = "stable"),
   "worldclim_bio.collection"  = list(verified_on = "2026-06-09",
                                      oracle_types = c("A", "B"),
@@ -147,7 +147,7 @@ gee_external_facts <- function(grounded_only = FALSE) {
       list(fact = "collection",   kind = "locator",
            value = m$collection),
       list(fact = "bands",        kind = "enum",
-           value = paste(m$bands, collapse = ", ")),
+           value = toString(m$bands)),
       list(fact = "scale_factor", kind = "scale",
            value = format(m$scale_factor, scientific = FALSE)),
       list(fact = "offset",       kind = "scale",

@@ -67,7 +67,7 @@ test_that("read_gee routes Tier 2 datasets to handlers (not 'not implemented')",
     read_gee("slga_cly", region = terra::ext(138, 140, -36, -34)),
     error = function(e) conditionMessage(e)
   )
-  expect_false(grepl("not yet implemented", err))
+  expect_false(grepl("not yet implemented", err, fixed = TRUE))
 })
 
 test_that("read_gee routes to cache on repeated call", {

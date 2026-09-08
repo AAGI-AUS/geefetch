@@ -86,7 +86,7 @@
     warning = function(w) NULL
   )
 
-  if (is.null(dates) || any(is.na(dates))) {
+  if (is.null(dates) || anyNA(dates)) {
     cli::cli_abort(c(
       "Cannot parse {.arg date_range} as dates.",
       i = "Expected format: {.val YYYY-MM-DD}.",
