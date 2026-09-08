@@ -231,24 +231,6 @@
 }
 
 
-# ---- Dataset validation ----
-
-#' Validate that a dataset ID exists in the registry
-#'
-#' @param dataset_id Character. Normalised dataset ID.
-#'
-#' @returns The validated ID (invisibly). Aborts on failure.
-#'
-#' @noRd
-.validate_dataset <- function(dataset_id) {
-  combined <- .gee_combined_meta()
-  if (!dataset_id %in% names(combined)) {
-    .gee_not_implemented(dataset_id)
-  }
-  invisible(dataset_id)
-}
-
-
 # ---- Region / extent validation ----
 
 #' Validate and normalise a spatial region argument

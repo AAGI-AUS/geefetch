@@ -42,6 +42,7 @@ NULL
 #'   on each attempt. Default `1`.
 #'
 #' @returns Nothing; not called directly.
+#' @rdname gee_shared_params
 #' @keywords internal
 .gee_shared_params <- function(
   did,

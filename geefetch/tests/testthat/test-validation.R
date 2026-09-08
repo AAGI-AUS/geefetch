@@ -137,17 +137,6 @@ test_that(paste0(
   expect_error(.parse_coordinates(xy = df), "must have columns")
 })
 
-# ---- Dataset validation ----
-
-test_that(".validate_dataset accepts known datasets", {
-  expect_invisible(.validate_dataset("modis_ndvi"))
-  expect_invisible(.validate_dataset("srtm_elevation"))
-})
-
-test_that(".validate_dataset rejects unknown datasets", {
-  expect_error(.validate_dataset("nonexistent"), "not recognised")
-})
-
 # ---- Region validation ----
 
 test_that(".validate_region returns NULL for NULL input", {
