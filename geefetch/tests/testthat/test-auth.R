@@ -20,9 +20,9 @@ test_that("gee_status() returns expected structure", {
     )
   )
   expect_false(result$authenticated)
-  expect_true(is.character(result$project))
-  expect_true(is.logical(result$rgee_available))
-  expect_true(is.numeric(result$cache_size))
+  expect_type(result$project, "character")
+  expect_type(result$rgee_available, "logical")
+  expect_type(result$cache_size, "double")
   expect_true(is.integer(result$n_datasets) || is.numeric(result$n_datasets))
 })
 
@@ -47,7 +47,7 @@ test_that(".gee_project returns default project", {
   .geefetch_env$project <- NULL
   withr::defer(.geefetch_env$project <- old_project)
 
-  expect_equal(.gee_project(), "earthengine-legacy")
+  expect_identical(.gee_project(), "earthengine-legacy")
 })
 
 test_that("gee_auth rejects nonexistent service account file", {

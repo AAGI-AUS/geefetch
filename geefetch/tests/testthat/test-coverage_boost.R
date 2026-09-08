@@ -38,7 +38,7 @@ test_that("gee_status reports cache size when cache exists", {
   withr::defer(.geefetch_env$token <- old_token)
 
   result <- gee_status()
-  expect_true(result$cache_size > 0)
+  expect_gt(result$cache_size, 0)
   expect_true(result$authenticated)
 })
 
@@ -48,7 +48,7 @@ test_that(".gee_project uses option when set", {
   .geefetch_env$project <- NULL
   withr::defer(.geefetch_env$project <- old_project)
 
-  expect_equal(.gee_project(), "my-custom-project")
+  expect_identical(.gee_project(), "my-custom-project")
 })
 
 # ---- utils.R coverage ----
@@ -72,7 +72,7 @@ test_that(".validate_region transforms non-WGS84 sf", {
     crs = 32754
   )
   result <- .validate_region(poly_utm)
-  expect_equal(sf::st_crs(result)$epsg, 4326L)
+  expect_identical(sf::st_crs(result)$epsg, 4326L)
 })
 
 test_that(".parse_coordinates transforms non-WGS84 sf points", {
@@ -83,8 +83,9 @@ test_that(".parse_coordinates transforms non-WGS84 sf points", {
     crs = 32754
   )
   dt <- .parse_coordinates(xy = pts_utm)
-  expect_true(dt$lon[1] > 100 && dt$lon[1] < 180)
-  expect_true(dt$lat[1] < 0)
+  expect_gt(dt$lon[1], 100)
+  expect_lt(dt$lon[1], 180)
+  expect_lt(dt$lat[1], 0)
 })
 
 test_that(".parse_coordinates rejects non-POINT sf", {
@@ -126,7 +127,7 @@ test_that("cache uses RDS when fst not available", {
 
   # Should read from RDS
   result <- .cache_get("test_rds", list(a = 1))
-  expect_equal(nrow(result), 3L)
+  expect_identical(nrow(result), 3L)
 })
 
 test_that(".cache_set warns on disk write failure", {
@@ -148,13 +149,13 @@ test_that("gee_clear_cache handles empty cache dir", {
   tmp <- withr::local_tempdir()
   withr::local_options(list(geefetch.cache_dir = tmp))
   n <- gee_clear_cache()
-  expect_equal(n, 0L)
+  expect_identical(n, 0L)
 })
 
 test_that("gee_clear_cache handles non-existent dir", {
   withr::local_options(list(geefetch.cache_dir = "/nonexistent/dir"))
   n <- gee_clear_cache()
-  expect_equal(n, 0L)
+  expect_identical(n, 0L)
 })
 
 # ---- qa_masking.R coverage ----
@@ -163,27 +164,27 @@ test_that(".ee_mask_modis_vi builds correct structure", {
   img <- .ee_load_image("TEST")
   masked <- .ee_mask_modis_vi(img)
   inv <- masked$functionInvocationValue
-  expect_equal(inv$functionName, "Image.updateMask")
+  expect_identical(inv$functionName, "Image.updateMask")
   # Check that the mask uses lte comparison
   mask_inv <- inv$arguments$mask$functionInvocationValue
-  expect_equal(mask_inv$functionName, "Image.lte")
+  expect_identical(mask_inv$functionName, "Image.lte")
 })
 
 test_that(".ee_mask_modis_lst builds correct structure", {
   img <- .ee_load_image("TEST")
   masked <- .ee_mask_modis_lst(img)
   inv <- masked$functionInvocationValue
-  expect_equal(inv$functionName, "Image.updateMask")
+  expect_identical(inv$functionName, "Image.updateMask")
 })
 
 test_that(".ee_mask_s2_scl builds correct OR chain", {
   img <- .ee_load_image("TEST")
   masked <- .ee_mask_s2_scl(img)
   inv <- masked$functionInvocationValue
-  expect_equal(inv$functionName, "Image.updateMask")
+  expect_identical(inv$functionName, "Image.updateMask")
   # The mask should be an OR chain
   mask_inv <- inv$arguments$mask$functionInvocationValue
-  expect_equal(mask_inv$functionName, "Image.or")
+  expect_identical(mask_inv$functionName, "Image.or")
 })
 
 # ---- handlers.R coverage (mocked) ----
@@ -248,7 +249,7 @@ test_that(".read_gee_slga builds correct band name", {
       # `pHc_*` (case-sensitive), grounded 2026-06-09 against the CSIRO/SLGA STAC
       # band list -- not the `PHC_*` this test previously asserted from the
       # code's own (wrong) convention.
-      expect_equal(bands, "pHc_030_060_95")
+      expect_identical(bands, "pHc_030_060_95")
       terra::rast(nrows = 10, ncols = 10, vals = runif(100, 4, 9))
     }
   )
@@ -272,9 +273,9 @@ test_that(".read_gee_sentinel2 applies SCL masking and computes NDVI", {
     .rest_extract_raster_expr = function(expr, ...) {
       # The expression is the NDVI ratio renamed to a single NDVI band
       inv <- expr$functionInvocationValue
-      expect_equal(inv$functionName, "Image.rename")
-      expect_equal(inv$arguments$names$constantValue, list("NDVI"))
-      expect_equal(
+      expect_identical(inv$functionName, "Image.rename")
+      expect_identical(inv$arguments$names$constantValue, list("NDVI"))
+      expect_identical(
         inv$arguments$input$functionInvocationValue$functionName,
         "Image.divide"
       )
@@ -295,8 +296,8 @@ test_that(".read_gee_landsat applies QA masking and computes NDVI", {
   local_mocked_bindings(
     .rest_extract_raster_expr = function(expr, ...) {
       inv <- expr$functionInvocationValue
-      expect_equal(inv$functionName, "Image.rename")
-      expect_equal(
+      expect_identical(inv$functionName, "Image.rename")
+      expect_identical(
         inv$arguments$input$functionInvocationValue$functionName,
         "Image.divide"
       )
@@ -317,7 +318,7 @@ test_that(".read_gee_generic works for worldclim with variable override", {
   local_mocked_bindings(
     .rest_extract_raster_expr = function(expr, region, meta, bands, ...) {
       # Verify the band was overridden to bio12
-      expect_equal(bands, "bio12")
+      expect_identical(bands, "bio12")
       terra::rast(nrows = 10, ncols = 10, vals = runif(100))
     }
   )
@@ -356,15 +357,15 @@ test_that(".rest_request aborts when not authenticated", {
 test_that(".build_grid handles equatorial coordinates", {
   bbox <- c(xmin = 36, ymin = -2, xmax = 38, ymax = 0)
   grid <- .build_grid(bbox, scale = 1000L)
-  expect_true(grid$dimensions$width > 0)
-  expect_true(grid$dimensions$height > 0)
-  expect_equal(grid$crsCode, "EPSG:4326")
+  expect_gt(grid$dimensions$width, 0)
+  expect_gt(grid$dimensions$height, 0)
+  expect_identical(grid$crsCode, "EPSG:4326")
 })
 
 test_that(".parse_features_to_dt handles empty input", {
   dt <- .parse_features_to_dt(list())
   expect_s3_class(dt, "data.table")
-  expect_equal(nrow(dt), 0L)
+  expect_identical(nrow(dt), 0L)
 })
 
 test_that(".ee_feature_collection handles single point", {
@@ -388,7 +389,7 @@ test_that(".rest_extract_batch_points aligns a shorter reply by point_id", {
     meta = .GEE_META$srtm_elevation, date = NULL, coords = coords,
     max_tries = 1L, initial_delay = 0
   )
-  expect_equal(vals, c(NA_real_, 200, 300))
+  expect_identical(vals, c(NA_real_, 200, 300))
 })
 
 test_that(".rest_extract_batch_points aborts when the reply lacks point_id", {
@@ -482,7 +483,7 @@ test_that(".rest_extract_batch_points handles multi-point response", {
     max_tries = 1L,
     initial_delay = 0
   )
-  expect_equal(vals, c(100, 200, 300))
+  expect_identical(vals, c(100, 200, 300))
 })
 
 test_that("collect_gee_data verbose mode prints info table", {

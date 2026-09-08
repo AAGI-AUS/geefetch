@@ -41,7 +41,7 @@ skip_if_not_installed("httr2")
                                 character(1)))
 }
 
-meta <- geefetch:::.GEE_META
+meta <- .GEE_META
 
 test_that("every declared collection ID resolves in the GEE STAC", {
   # A 404 here = a fabricated or renamed asset ID (recipe 52 class 1/2).

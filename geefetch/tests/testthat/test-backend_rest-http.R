@@ -38,11 +38,11 @@ test_that(".rest_request() parses a successful computeFeatures response", {
     # Collection-of-Feature invocation `.ee_feature_collection()` builds for
     # real point extraction (grounded against the live API 2026-09-06).
     coords <- data.table::data.table(point_id = 1L, lon = 138.6, lat = -34.6)
-    resp <- geefetch:::.rest_request(
+    resp <- .rest_request(
       endpoint = "table:computeFeatures",
       body = list(
-        expression = geefetch:::.ee_expression(
-          geefetch:::.ee_feature_collection(coords)
+        expression = .ee_expression(
+          .ee_feature_collection(coords)
         ),
         pageSize = 5000L
       )
@@ -63,7 +63,7 @@ test_that(".rest_request() surfaces 401 auth errors helpfully", {
 
   httptest2::with_mock_dir("cf-401", {
     expect_error(
-      geefetch:::.rest_request(
+      .rest_request(
         endpoint = "table:computeFeatures",
         body = list(expression = list(result = "0", values = list()))
       ),
@@ -83,7 +83,7 @@ test_that(".rest_request() surfaces 429 rate-limit errors helpfully", {
 
   httptest2::with_mock_dir("cf-429", {
     expect_error(
-      geefetch:::.rest_request(
+      .rest_request(
         endpoint = "table:computeFeatures",
         body = list(expression = list(result = "0", values = list())),
         max_tries = 1L
@@ -106,7 +106,7 @@ test_that(".rest_request() surfaces 403 API-not-enabled with setup guidance", {
     # Full message pattern is snapshot-tested separately; here just confirm
     # the error mentions the Earth Engine API being un-enabled.
     expect_error(
-      geefetch:::.rest_request(
+      .rest_request(
         endpoint = "table:computeFeatures",
         body = list(expression = list(result = "0", values = list()))
       ),
@@ -144,7 +144,7 @@ test_that(".rest_extract_batch_points() aligns values by point_id when the servi
   )
 
   httptest2::with_mock_dir("cf-masked", {
-    vals <- geefetch:::.rest_extract_batch_points(
+    vals <- .rest_extract_batch_points(
       meta = smap_meta,
       date = as.Date("2022-06-01"),
       coords = coords,

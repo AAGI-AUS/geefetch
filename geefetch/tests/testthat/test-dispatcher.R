@@ -53,7 +53,7 @@ test_that("read_gee does not require date for static datasets", {
     ),
     regexp = "exceeds 2048x2048 pixels"
   )
-  expect_true(is.character(err))
+  expect_type(err, "character")
   expect_false(grepl("requires a.*date", err))
 })
 

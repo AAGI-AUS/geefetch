@@ -5,15 +5,15 @@ test_that(".cache_hash produces consistent SHA256 hashes", {
   h2 <- .cache_hash("modis_ndvi", list(date = "2024-06-15"))
   h3 <- .cache_hash("modis_ndvi", list(date = "2024-06-16"))
 
-  expect_equal(h1, h2)
+  expect_identical(h1, h2)
   expect_false(h1 == h3)
-  expect_true(nchar(h1) > 0L) # digest length depends on algo
+  expect_gt(nchar(h1), 0L) # digest length depends on algo
 })
 
 test_that(".cache_hash is order-independent for parameter names", {
   h1 <- .cache_hash("test", list(a = 1, b = 2))
   h2 <- .cache_hash("test", list(b = 2, a = 1))
-  expect_equal(h1, h2)
+  expect_identical(h1, h2)
 })
 
 test_that("cache round-trip works for data.frames", {
@@ -37,12 +37,12 @@ test_that("cache round-trip works for data.frames", {
 
   # Get (memory)
   cached <- .cache_get(did, params)
-  expect_equal(nrow(cached), 3L)
+  expect_identical(nrow(cached), 3L)
 
   # Clear memory, force disk read
   .geefetch_env$mem_cache <- NULL
   cached_disk <- .cache_get(did, params)
-  expect_equal(nrow(cached_disk), 3L)
+  expect_identical(nrow(cached_disk), 3L)
 })
 
 test_that("cache round-trip works for non-data.frame objects", {
@@ -60,8 +60,8 @@ test_that("cache round-trip works for non-data.frame objects", {
   .geefetch_env$mem_cache <- NULL
 
   cached <- .cache_get(did, params)
-  expect_equal(cached$type, "raster")
-  expect_equal(cached$values, 1:10)
+  expect_identical(cached$type, "raster")
+  expect_identical(cached$values, 1:10)
 })
 
 test_that("gee_clear_cache removes files", {
@@ -77,13 +77,13 @@ test_that("gee_clear_cache removes files", {
   .cache_set("d2", list(a = 2), data.frame(x = 2))
 
   files_before <- list.files(tmp, pattern = "\\.(fst|rds)$")
-  expect_true(length(files_before) >= 2L)
+  expect_gte(length(files_before), 2L)
 
   n <- gee_clear_cache()
-  expect_equal(n, length(files_before))
+  expect_identical(n, length(files_before))
 
   files_after <- list.files(tmp, pattern = "\\.(fst|rds)$")
-  expect_equal(length(files_after), 0L)
+  expect_length(files_after, 0L)
 })
 
 test_that("gee_clear_cache older_than filter works", {
@@ -99,10 +99,10 @@ test_that("gee_clear_cache older_than filter works", {
 
   # File is brand new, so older_than = 1 should not remove it
   n <- gee_clear_cache(older_than = 1)
-  expect_equal(n, 0L)
+  expect_identical(n, 0L)
 
   files <- list.files(tmp, pattern = "\\.(fst|rds)$")
-  expect_true(length(files) >= 1L)
+  expect_gte(length(files), 1L)
 })
 
 test_that("cache handles corrupt files gracefully", {

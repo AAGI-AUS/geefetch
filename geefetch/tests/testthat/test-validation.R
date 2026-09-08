@@ -3,8 +3,8 @@
 # ---- Date validation ----
 
 test_that(".validate_date parses valid date formats", {
-  expect_equal(.validate_date("2024-06-15"), as.Date("2024-06-15"))
-  expect_equal(.validate_date(as.Date("2024-06-15")), as.Date("2024-06-15"))
+  expect_identical(.validate_date("2024-06-15"), as.Date("2024-06-15"))
+  expect_identical(.validate_date(as.Date("2024-06-15")), as.Date("2024-06-15"))
 })
 
 test_that(".validate_date rejects invalid dates", {
@@ -20,7 +20,7 @@ test_that(".validate_date checks dataset date range", {
     "before"
   )
   # Valid date should pass
-  expect_equal(
+  expect_identical(
     .validate_date("2024-06-15", dataset_id = "modis_ndvi"),
     as.Date("2024-06-15")
   )
@@ -31,6 +31,8 @@ test_that(".validate_date checks dataset date range", {
 test_that(".parse_date_range expands length-2 to sequence", {
   dates <- .parse_date_range(c("2024-01-01", "2024-01-05"))
   expect_length(dates, 5L)
+  # seq.Date() returns an integer-backed Date, as.Date() a double-backed
+  # one; both are valid Date storage modes, so compare by value only.
   expect_equal(dates[1L], as.Date("2024-01-01"))
   expect_equal(dates[5L], as.Date("2024-01-05"))
 })
@@ -38,7 +40,7 @@ test_that(".parse_date_range expands length-2 to sequence", {
 test_that(".parse_date_range passes through explicit vectors", {
   explicit <- as.Date(c("2024-01-01", "2024-03-15", "2024-06-01"))
   result <- .parse_date_range(explicit)
-  expect_equal(result, sort(explicit))
+  expect_identical(result, sort(explicit))
 })
 
 test_that(".parse_date_range rejects reversed range", {
@@ -58,8 +60,8 @@ test_that(".parse_date_range rejects empty input", {
 test_that(".validate_single_coord accepts valid coordinates", {
   expect_equal(.validate_single_coord(138.6, "lon"), 138.6)
   expect_equal(.validate_single_coord(-34.9, "lat"), -34.9)
-  expect_equal(.validate_single_coord(0, "lon"), 0)
-  expect_equal(.validate_single_coord(0, "lat"), 0)
+  expect_identical(.validate_single_coord(0, "lon"), 0)
+  expect_identical(.validate_single_coord(0, "lat"), 0)
 })
 
 test_that(".validate_single_coord rejects out-of-range", {
@@ -80,7 +82,7 @@ test_that(".validate_single_coord rejects non-numeric", {
 test_that(".parse_coordinates works with lon/lat vectors", {
   dt <- .parse_coordinates(lon = c(138.6, 149.1), lat = c(-34.9, -35.3))
   expect_s3_class(dt, "data.table")
-  expect_equal(nrow(dt), 2L)
+  expect_identical(nrow(dt), 2L)
   expect_true(all(c("point_id", "lon", "lat") %in% names(dt)))
   expect_equal(dt$lon, c(138.6, 149.1))
 })
@@ -88,7 +90,7 @@ test_that(".parse_coordinates works with lon/lat vectors", {
 test_that(".parse_coordinates works with data.frame xy", {
   df <- data.frame(lon = 138.6, lat = -34.9)
   dt <- .parse_coordinates(xy = df)
-  expect_equal(nrow(dt), 1L)
+  expect_identical(nrow(dt), 1L)
   expect_equal(dt$lon, 138.6)
 })
 
@@ -113,7 +115,7 @@ test_that(".parse_coordinates works with sf POINT objects", {
     crs = 4326
   )
   dt <- .parse_coordinates(xy = pts)
-  expect_equal(nrow(dt), 2L)
+  expect_identical(nrow(dt), 2L)
   expect_equal(dt$lon[1L], 138.6, tolerance = 0.001)
 })
 
@@ -154,7 +156,7 @@ test_that(".validate_region converts SpatExtent", {
   skip_if_not_installed("terra")
   ext <- terra::ext(138, 140, -36, -34)
   result <- .validate_region(ext)
-  expect_true(inherits(result, c("sf", "sfc")))
+  expect_s3_class(result, c("sf", "sfc"))
 })
 
 test_that(".validate_region rejects non-spatial objects", {

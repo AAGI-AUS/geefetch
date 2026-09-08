@@ -3,9 +3,9 @@
 # ---- SLGA band name construction ----
 
 test_that(".slga_depth_to_code maps correctly", {
-  expect_equal(.slga_depth_to_code("0-5"), "000_005")
-  expect_equal(.slga_depth_to_code("100-200"), "100_200")
-  expect_equal(.slga_depth_to_code("30-60"), "030_060")
+  expect_identical(.slga_depth_to_code("0-5"), "000_005")
+  expect_identical(.slga_depth_to_code("100-200"), "100_200")
+  expect_identical(.slga_depth_to_code("30-60"), "030_060")
 })
 
 test_that(".slga_depth_to_code rejects invalid depth", {
@@ -13,9 +13,9 @@ test_that(".slga_depth_to_code rejects invalid depth", {
 })
 
 test_that(".slga_stat_to_code maps correctly", {
-  expect_equal(.slga_stat_to_code("mean"), "EV")
-  expect_equal(.slga_stat_to_code("ci_lower"), "05")
-  expect_equal(.slga_stat_to_code("ci_upper"), "95")
+  expect_identical(.slga_stat_to_code("mean"), "EV")
+  expect_identical(.slga_stat_to_code("ci_lower"), "05")
+  expect_identical(.slga_stat_to_code("ci_upper"), "95")
 })
 
 test_that(".slga_stat_to_code rejects invalid stat", {
@@ -26,7 +26,7 @@ test_that("SLGA band name construction is correct", {
   depth <- .slga_depth_to_code("15-30")
   stat <- .slga_stat_to_code("mean")
   band <- paste0("CLY", "_", depth, "_", stat)
-  expect_equal(band, "CLY_015_030_EV")
+  expect_identical(band, "CLY_015_030_EV")
 })
 
 test_that("read_slga routes through dispatcher", {
@@ -54,7 +54,7 @@ test_that(".ee_mask_landsat_qa builds correct expression", {
   img <- .ee_load_image("TEST")
   masked <- .ee_mask_landsat_qa(img)
   inv <- masked$functionInvocationValue
-  expect_equal(inv$functionName, "Image.updateMask")
+  expect_identical(inv$functionName, "Image.updateMask")
 })
 
 test_that("read_sentinel2 routes through dispatcher", {
@@ -107,9 +107,9 @@ test_that("WorldClim with variable argument doesn't error on validation", {
 })
 
 test_that("OpenLandMap datasets resolve correctly", {
-  expect_equal(.gee_resolve_id("openlandmap_soc"), "openlandmap_soc")
-  expect_equal(.gee_resolve_id("OPENLANDMAP_CLAY"), "openlandmap_clay")
-  expect_equal(.gee_resolve_id("OPENLANDMAP_PH"), "openlandmap_ph")
+  expect_identical(.gee_resolve_id("openlandmap_soc"), "openlandmap_soc")
+  expect_identical(.gee_resolve_id("OPENLANDMAP_CLAY"), "openlandmap_clay")
+  expect_identical(.gee_resolve_id("OPENLANDMAP_PH"), "openlandmap_ph")
 })
 
 test_that("OpenLandMap routes through generic handler", {
@@ -169,5 +169,5 @@ test_that("gee_datasets() includes Tier 3 datasets", {
   expect_true("worldclim_bio" %in% dt$dataset)
   expect_true("openlandmap_soc" %in% dt$dataset)
   expect_true("openlandmap_clay" %in% dt$dataset)
-  expect_true(nrow(dt) >= 18L) # 6 T1 + 9 T2 + 4 T3 = 19
+  expect_gte(nrow(dt), 18L) # 6 T1 + 9 T2 + 4 T3 = 19
 })

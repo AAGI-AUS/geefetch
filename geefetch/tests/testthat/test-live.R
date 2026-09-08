@@ -129,5 +129,5 @@ test_that("Sentinel-2 NDVI is computed on both routes and bounded", {
     datasets = "sentinel2_ndvi", cache = FALSE, verbose = FALSE
   )
   expect_true(is.finite(pts$sentinel2_ndvi))
-  expect_true(abs(pts$sentinel2_ndvi) <= 1)
+  expect_lte(abs(pts$sentinel2_ndvi), 1)
 })

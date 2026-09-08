@@ -143,7 +143,7 @@ test_that(".safe_extract_points_batch returns NA vector on error", {
     ),
     "Batch extraction failed"
   )
-  expect_equal(length(vals), 2L)
+  expect_length(vals, 2L)
   expect_true(all(is.na(vals)))
 })
 
@@ -174,14 +174,14 @@ test_that("collect_gee_data with mock produces correct output shape", {
 
   expect_s3_class(dt, "data.table")
   # 2 locations x 3 dates = 6 rows
-  expect_equal(nrow(dt), 6L)
+  expect_identical(nrow(dt), 6L)
   expect_true(all(
     c("point_id", "lon", "lat", "date", "modis_ndvi", "srtm_elevation") %in%
       names(dt)
   ))
   expect_equal(unique(dt$modis_ndvi), 0.65)
   expect_equal(unique(dt$srtm_elevation), 200.0)
-  expect_equal(sort(unique(dt$point_id)), c(1L, 2L))
+  expect_identical(sort(unique(dt$point_id)), c(1L, 2L))
 })
 
 test_that("collect_gee_data na.rm removes all-NA rows", {
@@ -209,7 +209,7 @@ test_that("collect_gee_data na.rm removes all-NA rows", {
     verbose = FALSE
   )
 
-  expect_equal(nrow(dt), 2L)
+  expect_identical(nrow(dt), 2L)
   expect_false(as.Date("2024-01-02") %in% dt$date)
 })
 
@@ -232,7 +232,7 @@ test_that("collect_gee_data column order is correct", {
     verbose = FALSE
   )
 
-  expect_equal(names(dt)[1:4], c("point_id", "lon", "lat", "date"))
+  expect_identical(names(dt)[1:4], c("point_id", "lon", "lat", "date"))
 })
 
 test_that("collect_gee_data verbose mode prints info", {
