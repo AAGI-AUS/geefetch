@@ -45,6 +45,13 @@
   )
 }
 
+# The catalogue document that owns a dataset's facts. Usually the asset the
+# reader samples; for an image read from inside an image collection (SLGA) it
+# is the parent collection, because the STAC publishes no per-image document.
+.gee_stac_id <- function(meta) {
+  meta$stac_id %||% meta$collection
+}
+
 # Static provenance lookup, keyed by fact_id. Absent rows default to
 # `[unverified]` (verified_on = NA). `reverify_by` is "stable" for asset IDs /
 # band sets, "volatile" for moving date windows.
@@ -177,7 +184,7 @@ gee_external_facts <- function(grounded_only = FALSE) {
         fact_id      = fid,
         kind         = f$kind,
         value        = as.character(f$value),
-        source       = .gee_stac_url(m$collection),
+        source       = .gee_stac_url(.gee_stac_id(m)),
         verified_on  = von,
         grounding    = if (is.na(von)) .GEE_UNVERIFIED else .GEE_GROUNDED,
         oracle_types = if (is.null(prov)) {

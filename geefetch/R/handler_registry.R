@@ -183,8 +183,16 @@
 
   # -- Tier 2: Extended datasets (handlers to be implemented in Phase 4) --
 
+  # The SLGA datasets read an IMAGE that lives inside the `CSIRO/SLGA` image
+  # collection (`CSIRO/SLGA/CLY` and so on), because the collection itself is
+  # not an image and cannot be sampled directly (0.1.0). The public STAC
+  # publishes one document for the collection and none for the images inside
+  # it, so `stac_id` names the catalogue document that owns each dataset's
+  # facts and `collection` names the asset the reader samples. Where the two
+  # coincide, `stac_id` is omitted and defaults to `collection`.
   slga_cly = list(
     collection = "CSIRO/SLGA/CLY",
+    stac_id = "CSIRO/SLGA",
     bands = "CLY_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -210,6 +218,7 @@
 
   slga_snd = list(
     collection = "CSIRO/SLGA/SND",
+    stac_id = "CSIRO/SLGA",
     bands = "SND_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -227,6 +236,7 @@
 
   slga_awc = list(
     collection = "CSIRO/SLGA/AWC",
+    stac_id = "CSIRO/SLGA",
     bands = "AWC_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -244,6 +254,7 @@
 
   slga_slt = list(
     collection = "CSIRO/SLGA/SLT",
+    stac_id = "CSIRO/SLGA",
     bands = "SLT_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -261,6 +272,7 @@
 
   slga_bdw = list(
     collection = "CSIRO/SLGA/BDW",
+    stac_id = "CSIRO/SLGA",
     bands = "BDW_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -278,6 +290,7 @@
 
   slga_phc = list(
     collection = "CSIRO/SLGA/pHc",
+    stac_id = "CSIRO/SLGA",
     bands = "pHc_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -295,6 +308,7 @@
 
   slga_nto = list(
     collection = "CSIRO/SLGA/NTO",
+    stac_id = "CSIRO/SLGA",
     bands = "NTO_000_005_EV",
     scale = 90L,
     temporal = "static",

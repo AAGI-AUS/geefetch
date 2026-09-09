@@ -40,17 +40,27 @@ skip_if_not_installed("httr2")
 }
 
 meta <- .GEE_META
+stac_id <- .gee_stac_id
 
 test_that("every declared collection ID resolves in the GEE STAC", {
   # A 404 here = a fabricated or renamed asset ID (recipe 52 class 1/2).
+  # A dataset read from an image inside an image collection (SLGA) names the
+  # parent collection as its `stac_id`; the STAC has no per-image document.
   for (nm in names(meta)) {
-    stac <- .fetch_stac(meta[[nm]]$collection)
+    sid <- stac_id(meta[[nm]])
+    stac <- .fetch_stac(sid)
     expect_false(is.null(stac),
-                 label = sprintf("STAC resolves for %s (%s)",
-                                 nm, meta[[nm]]$collection))
+                 label = sprintf("STAC resolves for %s (%s)", nm, sid))
     if (!is.null(stac)) {
-      expect_identical(stac$id, meta[[nm]]$collection,
+      expect_identical(stac$id, sid,
                        label = sprintf("STAC id matches for %s", nm))
+    }
+    if (!identical(sid, meta[[nm]]$collection)) {
+      # The sampled asset must sit inside the catalogue document that owns it,
+      # or the parent is the wrong authority for the dataset's bands.
+      expect_true(startsWith(meta[[nm]]$collection, paste0(sid, "/")),
+                  label = sprintf("%s is an image inside %s for %s",
+                                  meta[[nm]]$collection, sid, nm))
     }
   }
 })
@@ -58,7 +68,7 @@ test_that("every declared collection ID resolves in the GEE STAC", {
 test_that("every declared band exists in the asset's STAC band list", {
   # A band absent from the authority's list = a fabricated band name.
   for (nm in names(meta)) {
-    stac <- .fetch_stac(meta[[nm]]$collection)
+    stac <- .fetch_stac(stac_id(meta[[nm]]))
     skip_if(is.null(stac), sprintf("STAC unavailable for %s", nm))
     stac_band_names <- names(.stac_bands(stac))
     for (b in meta[[nm]]$bands) {
@@ -89,7 +99,7 @@ test_that("the decode scale_factor matches the STAC band scale", {
   )
   for (nm in names(decode_pairs)) {
     skip_if(is.null(meta[[nm]]), sprintf("%s not in registry", nm))
-    stac <- .fetch_stac(meta[[nm]]$collection)
+    stac <- .fetch_stac(stac_id(meta[[nm]]))
     skip_if(is.null(stac), sprintf("STAC unavailable for %s", nm))
     band <- .stac_bands(stac)[[decode_pairs[[nm]]]]
     skip_if(is.null(band) || is.null(band$`gee:scale`),

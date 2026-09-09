@@ -20,6 +20,13 @@
 
 ## Bug fixes
 
+* The live catalogue check failed for the seven SLGA datasets after 0.1.0
+  pointed them at the attribute images inside `CSIRO/SLGA`. Google's public
+  catalogue publishes one record for the collection and none for the images,
+  so each SLGA entry now carries `stac_id = "CSIRO/SLGA"`: the check compares
+  bands against that record and confirms the sampled image belongs to it, and
+  `gee_external_facts()` cites it as the source. The asset the reader samples
+  is unchanged.
 * The seven SLGA soil datasets failed on both routes because
   `CSIRO/SLGA` is an image collection, not an image; each dataset now
   reads its attribute image (`CSIRO/SLGA/CLY` and so on).
