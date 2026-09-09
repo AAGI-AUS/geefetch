@@ -17,6 +17,11 @@
   memory store and, if it was ever populated, the disk store.
 * `collect_gee_data()`'s verbose progress table is now emitted through
   `cli` instead of a bare `print()` call, still gated on `verbose`.
+* Rasters returned by `read_gee()` and the `read_*()` aliases now name
+  their layers after the bands that were requested (`NDVI`, `elevation`,
+  and so on). The layer previously carried the name of the temporary
+  file the GeoTIFF was written to, which also became the column name in
+  `terra::extract()` output.
 
 ## Bug fixes
 

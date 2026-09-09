@@ -537,6 +537,14 @@ NULL
   on.exit(unlink(tmp), add = TRUE)
   r <- terra::rast(tmp)
   r <- r * 1
+  # computePixels returns an unnamed GeoTIFF, so terra falls back to the
+  # tempfile's name and that name then shows up in print() and in the column
+  # terra::extract() produces. Name the layers after the bands that were asked
+  # for.
+  if (!is.null(bands) && length(bands) == terra::nlyr(r)) {
+    names(r) <- unlist(bands)
+    terra::varnames(r) <- unlist(bands)
+  }
   r
 }
 
