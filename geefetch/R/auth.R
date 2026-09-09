@@ -152,7 +152,7 @@ gee_auth <- function(
     cli::cli_warn(c(
       paste0(
         "No Google Cloud project given; falling back to ",
-        "{.val {.GEE_DEFAULT_PROJECT}}."
+        "{.val {(.GEE_DEFAULT_PROJECT)}}."
       ),
       i = "Earth Engine refuses this legacy project for most accounts.",
       i = paste0(

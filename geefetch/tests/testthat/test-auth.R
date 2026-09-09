@@ -57,6 +57,29 @@ test_that("gee_auth rejects nonexistent service account file", {
   )
 })
 
+test_that("gee_auth warns, and does not error, when no project is given", {
+  # The fallback message names the default project. Interpolating a
+  # dot-prefixed object directly ({.GEE_DEFAULT_PROJECT}) is read by cli as a
+  # style, not a value, and aborts the call the warning was meant to soften.
+  local_mocked_bindings(
+    token_fetch = function(...) "fake_token_for_test",
+    .package = "gargle"
+  )
+  old_token <- .geefetch_env$token
+  old_project <- .geefetch_env$project
+  withr::defer({
+    .geefetch_env$token <- old_token
+    .geefetch_env$project <- old_project
+  })
+  withr::local_options(list(geefetch.project = NULL))
+
+  expect_warning(
+    gee_auth(email = "test@test.com"),
+    "falling back to"
+  )
+  expect_identical(.geefetch_env$project, .GEE_DEFAULT_PROJECT)
+})
+
 test_that("gee_setup runs without error", {
   expect_no_error(gee_setup())
 })
