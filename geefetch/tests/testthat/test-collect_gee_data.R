@@ -184,6 +184,32 @@ test_that("collect_gee_data with mock produces correct output shape", {
   expect_identical(sort(unique(dt$point_id)), c(1L, 2L))
 })
 
+test_that("collect_gee_data runs with the progress bar shown", {
+  # The bar is created in collect_gee_data() and ticked from the extraction
+  # helpers. cli looks a bar up by the environment that created it, so an
+  # id-less update from another frame aborts the run; every other test here
+  # passes verbose = FALSE and would not see it.
+  old_token <- .geefetch_env$token
+  .geefetch_env$token <- "fake"
+  withr::defer(.geefetch_env$token <- old_token)
+
+  local_mocked_bindings(
+    .safe_extract_points_batch = function(meta, date, coords, did, ...) {
+      rep(1.0, nrow(coords))
+    }
+  )
+
+  expect_no_error(
+    dt <- collect_gee_data(
+      lon = 138.6, lat = -34.9,
+      date_range = c("2024-01-01", "2024-01-03"),
+      datasets = c("era5_temp", "srtm_elevation"),
+      verbose = TRUE
+    )
+  )
+  expect_identical(nrow(dt), 3L)
+})
+
 test_that("collect_gee_data na.rm removes all-NA rows", {
   old_token <- .geefetch_env$token
   .geefetch_env$token <- "fake"

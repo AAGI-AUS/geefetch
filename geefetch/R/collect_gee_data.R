@@ -120,7 +120,10 @@ collect_gee_data <- function(
     length(classified$static_datasets)
   show_progress <- verbose && total_ops > 1L
 
-  if (show_progress) {
+  # The helpers below tick the bar from their own frames, so hold on to the
+  # bar's id: cli resolves a bar by the environment that created it, and an
+  # id-less update from another function cannot find it.
+  pb <- if (show_progress) {
     cli::cli_progress_bar(
       "Extracting",
       total = total_ops,
@@ -129,19 +132,21 @@ collect_gee_data <- function(
         "{cli::pb_elapsed}"
       )
     )
+  } else {
+    NULL
   }
 
   op_count <- .cgd_extract_timeseries(
     dt, classified$ts_datasets, combined_meta, dates, coords, backend,
-    cache, dots, show_progress, op_count = 0L
+    cache, dots, pb, op_count = 0L
   )
   .cgd_extract_static(
     dt, classified$static_datasets, combined_meta, length(dates), coords,
-    backend, cache, dots, show_progress, op_count
+    backend, cache, dots, pb, op_count
   )
 
-  if (show_progress) {
-    cli::cli_progress_done()
+  if (!is.null(pb)) {
+    cli::cli_progress_done(id = pb)
   }
 
   # 7. Finish: column order, optional all-NA row removal
@@ -216,7 +221,8 @@ collect_gee_data <- function(
 #' @param combined_meta Named list of dataset metadata.
 #' @param dates Vector of Date objects.
 #' @param coords data.table with point_id, lon, lat.
-#' @param show_progress Logical. Advance the cli progress bar per API call?
+#' @param pb Progress-bar id from `cli::cli_progress_bar()`, or `NULL` when
+#'   no bar is shown.
 #' @param op_count Integer. API calls completed so far (for the progress bar).
 #' @inheritParams gee_shared_params
 #' @returns Integer. Updated `op_count` after this dataset family.
@@ -230,7 +236,7 @@ collect_gee_data <- function(
   backend,
   cache,
   dots,
-  show_progress,
+  pb,
   op_count
 ) {
   n_dates <- length(dates)
@@ -257,7 +263,7 @@ collect_gee_data <- function(
       all_vals[row_idx] <- vals
 
       op_count <- op_count + 1L
-      if (show_progress) cli::cli_progress_update()
+      if (!is.null(pb)) cli::cli_progress_update(id = pb)
     }
 
     data.table::set(dt, j = did, value = all_vals)
@@ -277,7 +283,8 @@ collect_gee_data <- function(
 #' @param combined_meta Named list of dataset metadata.
 #' @param n_dates Integer. Number of dates in the scaffold (for replication).
 #' @param coords data.table with point_id, lon, lat.
-#' @param show_progress Logical. Advance the cli progress bar per API call?
+#' @param pb Progress-bar id from `cli::cli_progress_bar()`, or `NULL` when
+#'   no bar is shown.
 #' @param op_count Integer. API calls completed so far (for the progress bar).
 #' @inheritParams gee_shared_params
 #' @returns Integer. Updated `op_count` after this dataset family.
@@ -291,7 +298,7 @@ collect_gee_data <- function(
   backend,
   cache,
   dots,
-  show_progress,
+  pb,
   op_count
 ) {
   for (did in static_datasets) {
@@ -314,7 +321,7 @@ collect_gee_data <- function(
     data.table::set(dt, j = did, value = all_vals)
 
     op_count <- op_count + 1L
-    if (show_progress) cli::cli_progress_update()
+    if (!is.null(pb)) cli::cli_progress_update(id = pb)
   }
 
   op_count
