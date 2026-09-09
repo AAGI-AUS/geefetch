@@ -21,7 +21,8 @@ with columns:
 \item{source}{The authority that owns the fact (a GEE STAC catalogue URL).}
 \item{verified_on}{ISO date last diffed against \code{source}, or \code{NA}.}
 \item{grounding}{\code{"grounded"} or \code{"[unverified]"}.}
-\item{oracle_types}{Which oracle(s) ground (or would ground) the fact.}
+\item{check_types}{Which independent source(s) ground, or would ground,
+the fact.}
 \item{reverify_by}{\code{"stable"} or \code{"volatile"}.}
 }
 }
@@ -33,12 +34,12 @@ dataset's collection (asset) ID, scale factor, offset, band set, and start
 date -- alongside the external authority that owns the fact and the date the
 fact was last diffed against that authority. A fact whose \code{verified_on} is
 \code{NA} is reported as \verb{[unverified]}: a value the package asserts but has
-\strong{not} grounded against an independent oracle, and which must be treated
+\strong{not} checked against an independent source, and which must be treated
 as a hypothesis rather than a fact.
 
 The fact values are read live from the internal registry, so this table can
 never drift from the code it documents. Grounding is established by the
-independent-oracle tests (catalogue diff against the public GEE STAC, and an
+independent checks (catalogue diff against the public GEE STAC, and an
 optional live-contract check); see the package tests.
 }
 \examples{

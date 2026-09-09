@@ -1,7 +1,8 @@
-# test-catalogue-diff.R — independent-oracle tests (recipe 52 gate F14).
+# test-catalogue-diff.R — independent checks against the public catalogue.
 #
-# This is the oracle the registry's self-consistency tests are NOT. It diffs the
-# facts geefetch asserts about GEE (in `.GEE_META`) against the AUTHORITY that
+# These are the checks the registry's self-consistency tests are not. They
+# diff the facts geefetch asserts about GEE (in `.GEE_META`) against the
+# AUTHORITY that
 # owns them: the public Google Earth Engine STAC catalogue (static JSON, no GEE
 # auth or project needed). The "expected" side of every assertion is the live
 # STAC value; the "actual" side is geefetch's hard-coded value. A failure here
@@ -9,15 +10,15 @@
 #
 # Why this matters: `test-handler_registry.R` only checks the registry against
 # itself (fields present, aliases resolve), so a fabricated collection ID or a
-# wrong scale factor stays green. This file is what would have caught the nert
-# class of error.
+# wrong scale factor stays green. This file catches that class of error.
 #
 # Network-gated. The suite declares NO_INTERNET=true by default (setup.R), so
-# these opt in explicitly: set GEEFETCH_ORACLE=1 to run. Also skip on CRAN.
+# these opt in explicitly: set GEEFETCH_CATALOGUE_CHECK=1 to run. Also skip on
+# CRAN.
 
 skip_on_cran()
-skip_if(Sys.getenv("GEEFETCH_ORACLE") != "1",
-        "set GEEFETCH_ORACLE=1 to run the live STAC catalogue-diff oracle")
+skip_if(Sys.getenv("GEEFETCH_CATALOGUE_CHECK") != "1",
+        "set GEEFETCH_CATALOGUE_CHECK=1 to run the live STAC catalogue checks")
 skip_if_not_installed("httr2")
 
 # Fetch + parse one asset's STAC JSON. Returns NULL on a non-200 (a NULL is
@@ -43,7 +44,7 @@ meta <- .GEE_META
 stac_id <- .gee_stac_id
 
 test_that("every declared collection ID resolves in the GEE STAC", {
-  # A 404 here = a fabricated or renamed asset ID (recipe 52 class 1/2).
+  # A 404 here means a fabricated or renamed asset ID.
   # A dataset read from an image inside an image collection (SLGA) names the
   # parent collection as its `stac_id`; the STAC has no per-image document.
   for (nm in names(meta)) {
