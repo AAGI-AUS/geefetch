@@ -210,6 +210,39 @@ test_that("collect_gee_data runs with the progress bar shown", {
   expect_identical(nrow(dt), 3L)
 })
 
+test_that("the announced API-call estimate matches the calls actually made", {
+  # The header used to multiply by the number of locations, while the point
+  # route sends every location in one request per dataset and date. The
+  # progress bar three lines below it told the true story.
+  old_token <- .geefetch_env$token
+  .geefetch_env$token <- "fake"
+  withr::defer(.geefetch_env$token <- old_token)
+
+  calls <- 0L
+  local_mocked_bindings(
+    .safe_extract_points_batch = function(meta, date, coords, did, ...) {
+      calls <<- calls + 1L
+      rep(1.0, nrow(coords))
+    }
+  )
+
+  msgs <- capture_messages(
+    collect_gee_data(
+      lon = c(138.6, 149.1, 153.0),
+      lat = c(-34.9, -35.3, -27.5),
+      date_range = c("2024-01-01", "2024-01-05"),
+      datasets = c("era5_temp", "srtm_elevation"),
+      verbose = TRUE
+    )
+  )
+
+  line <- grep("Estimated API calls", msgs, value = TRUE)[1L]
+  announced <- as.integer(regmatches(line, regexpr("[0-9]+", line)))
+  expect_identical(announced, calls)
+  # one call per date for the time series, one for the static dataset
+  expect_identical(calls, 6L)
+})
+
 test_that("collect_gee_data na.rm removes all-NA rows", {
   old_token <- .geefetch_env$token
   .geefetch_env$token <- "fake"

@@ -544,10 +544,15 @@ collect_gee_data <- function(
   cli::cli_verbatim(.format_dataset_table(info_dt))
   cli::cli_text("")
 
-  total_calls <- (n_ts * n_dates * n_locs) + (n_static * n_locs)
-  cli::cli_alert_info(
-    "Estimated API calls: {.val {total_calls}} (before caching)"
-  )
+  # All locations travel in one request per dataset and date, so the count
+  # does not scale with n_locs. This must stay the same expression as
+  # total_ops in collect_gee_data(), which drives the progress bar: the two
+  # appear three lines apart in the same output.
+  total_calls <- (n_ts * n_dates) + n_static
+  cli::cli_alert_info(paste0(
+    "Estimated API calls: {.val {total_calls}} (before caching); ",
+    "locations are batched into one call per dataset and date"
+  ))
   cli::cli_text("")
 }
 

@@ -49,6 +49,12 @@
   non-positive reflectances are masked before the ratio.
 * `jsonlite` is back in Imports: httr2 (>= 1.3.0) no longer imports it,
   yet every JSON response parse needs it.
+* `collect_gee_data()`'s verbose header no longer over-states the number
+  of API calls. It multiplied by the number of locations, but the point
+  route sends every location in one request per dataset and date, so a
+  three-location run announced 30 calls and made 10 -- as its own progress
+  bar reported three lines below. The estimate is now the same expression
+  that drives the bar.
 
 * `collect_gee_data()` no longer fails live point extraction with
   HTTP 400. The point set was sent to `Image.sampleRegions()` as a
