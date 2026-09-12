@@ -23,7 +23,7 @@ jobs:
       - name: Build source tarball
         run: R CMD build geefetch
       - name: Generate attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: 'geefetch_*.tar.gz'
       - name: Attach tarball + attestation to release
