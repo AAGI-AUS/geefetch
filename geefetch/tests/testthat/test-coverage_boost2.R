@@ -5,9 +5,9 @@
 test_that("gee_setup prints all 5 steps", {
   output <- capture.output(gee_setup(), type = "message")
   output_str <- paste(output, collapse = "\n")
-  expect_true(grepl("Step 1", output_str))
-  expect_true(grepl("Step 5", output_str))
-  expect_true(grepl("gee_auth", output_str))
+  expect_true(grepl("Step 1", output_str, fixed = TRUE))
+  expect_true(grepl("Step 5", output_str, fixed = TRUE))
+  expect_true(grepl("gee_auth", output_str, fixed = TRUE))
 })
 
 # ---- handlers.R: remaining handler paths ----
@@ -135,7 +135,7 @@ test_that("read_gee returns cached raster on hit", {
 
 test_that(".validate_date handles POSIXct input", {
   dt <- .validate_date(as.POSIXct("2024-06-15", tz = "UTC"))
-  expect_equal(dt, as.Date("2024-06-15"))
+  expect_identical(dt, as.Date("2024-06-15"))
 })
 
 test_that(".parse_date_range returns sorted unique dates", {
@@ -145,8 +145,8 @@ test_that(".parse_date_range returns sorted unique dates", {
     "2024-01-03",
     "2024-01-01"
   )))
-  expect_equal(length(dates), 3L)
-  expect_equal(dates[1L], as.Date("2024-01-01"))
+  expect_length(dates, 3L)
+  expect_identical(dates[1L], as.Date("2024-01-01"))
 })
 
 test_that(".validate_region handles sf with NA CRS", {
@@ -156,5 +156,5 @@ test_that(".validate_region handles sf with NA CRS", {
   )))
   # No CRS set — should still pass
   result <- .validate_region(poly)
-  expect_true(inherits(result, c("sf", "sfc")))
+  expect_s3_class(result, c("sf", "sfc"))
 })

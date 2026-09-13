@@ -21,17 +21,18 @@ to list all available datasets.}
 arguments include \code{date}, \code{region}, \code{collection}, \code{depth}. See the
 convenience function documentation for dataset-specific parameters.}
 
-\item{backend}{Character. \code{"rest"} (default) or \code{"rgee"}. The REST backend
-requires no Python; the rgee backend supports advanced server-side
-computations.}
+\item{backend}{Character. \code{"rest"} (default) or \code{"rgee"}.}
 
-\item{cache}{Logical. Use disk cache for repeated queries? Default \code{TRUE}.}
+\item{cache}{Logical. Cache results in an in-session memory store?
+Default \code{TRUE}. Persisting to disk under \code{\link[tools:R_user_dir]{tools::R_user_dir()}}
+additionally requires \code{options(geefetch.cache.disk = TRUE)} or
+\code{\link[=gee_cache_disk]{gee_cache_disk()}}; see \code{\link[=gee_clear_cache]{gee_clear_cache()}} to clear either store.}
 
 \item{max_tries}{Integer. Maximum retry attempts for network failures.
 Default \code{3L}.}
 
-\item{initial_delay}{Numeric. Initial delay in seconds before retry
-(doubles each attempt). Default \code{1}.}
+\item{initial_delay}{Numeric. Initial retry delay in seconds, doubling
+on each attempt. Default \code{1}.}
 }
 \value{
 A \code{\link[terra:rast]{terra::rast()}} SpatRaster object.
@@ -40,10 +41,11 @@ A \code{\link[terra:rast]{terra::rast()}} SpatRaster object.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
 Central dispatcher for all GEE dataset reads. Accepts a dataset identifier
-(name or alias) and delegates to the appropriate internal handler.
-For most use cases, prefer the convenience functions (e.g.,
-\code{\link[=read_modis_ndvi]{read_modis_ndvi()}}, \code{\link[=read_era5]{read_era5()}}) which provide named parameters
-and dataset-specific documentation.
+(name or alias) and delegates to the appropriate internal handler. The
+REST \code{backend} requires no Python; the rgee \code{backend} supports advanced
+server-side computations. For most use cases, prefer the convenience
+functions (e.g., \code{\link[=read_modis_ndvi]{read_modis_ndvi()}}, \code{\link[=read_era5]{read_era5()}}) which provide named
+parameters and dataset-specific documentation.
 }
 \section{Supported datasets}{
 
@@ -79,6 +81,17 @@ Use \code{\link[=gee_datasets]{gee_datasets()}} to list all available datasets w
 is automatically dispatchable through the generic handler.
 }
 
+\section{Region size and resampling}{
+
+Each request is capped at 2048x2048 pixels at the dataset's native
+pixel scale, to bound REST payload size. A region that would exceed
+this cap at the requested scale is resampled to fit, and \code{\link[=read_gee]{read_gee()}}
+warns with the native scale (in metres), the effective scale after
+resampling, and the resulting pixel dimensions. The pixel scale is
+fixed per dataset and is not a \code{read_gee()} argument, so request a
+smaller region to keep the native resolution.
+}
+
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # Using the dispatcher directly
@@ -88,7 +101,7 @@ ndvi <- read_gee("MODIS_NDVI", date = "2024-06-15",
 # Aliases are case-insensitive
 elev <- read_gee("srtm", region = terra::ext(138, 140, -36, -34))
 
-# Equivalent convenience function (preferred)
+# Equivalent convenience function, preferred
 ndvi <- read_modis_ndvi(date = "2024-06-15",
                         region = terra::ext(138, 140, -36, -34))
 \dontshow{\}) # examplesIf}
@@ -97,15 +110,15 @@ ndvi <- read_modis_ndvi(date = "2024-06-15",
 \code{\link[=collect_gee_data]{collect_gee_data()}} for batch point extraction returning a
 \link[data.table:data.table]{data.table::data.table}.
 
-Other GEE readers: 
-\code{\link{read_chirps}()},
-\code{\link{read_era5}()},
-\code{\link{read_landsat}()},
-\code{\link{read_modis_lst}()},
-\code{\link{read_modis_ndvi}()},
-\code{\link{read_sentinel2}()},
-\code{\link{read_slga}()},
-\code{\link{read_srtm}()},
-\code{\link{read_worldclim}()}
+Other GEE readers:
+\code{\link[=read_chirps]{read_chirps()}},
+\code{\link[=read_era5]{read_era5()}},
+\code{\link[=read_landsat]{read_landsat()}},
+\code{\link[=read_modis_lst]{read_modis_lst()}},
+\code{\link[=read_modis_ndvi]{read_modis_ndvi()}},
+\code{\link[=read_sentinel2]{read_sentinel2()}},
+\code{\link[=read_slga]{read_slga()}},
+\code{\link[=read_srtm]{read_srtm()}},
+\code{\link[=read_worldclim]{read_worldclim()}}
 }
 \concept{GEE readers}

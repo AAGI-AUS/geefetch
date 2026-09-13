@@ -7,14 +7,8 @@
 #' from Google Earth Engine. Supports temperature and precipitation
 #' variables via the `variable` argument.
 #'
-#' @param date Character or Date. Date in `"YYYY-MM-DD"` format.
-#' @param region An [sf::sf], [sf::st_sfc()], or [terra::ext()] object
-#'   defining the spatial extent. Required.
+#' @inheritParams gee_shared_params
 #' @param variable Character. `"temperature"` (default) or `"precipitation"`.
-#' @param backend Character. `"rest"` (default) or `"rgee"`.
-#' @param cache Logical. Use disk cache? Default `TRUE`.
-#' @param max_tries Integer. Retry attempts. Default `3L`.
-#' @param initial_delay Numeric. Initial retry delay in seconds. Default `1`.
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values:
 #'   - Temperature: degrees Celsius (converted from Kelvin)
@@ -50,9 +44,9 @@ read_era5 <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   variable <- tolower(variable)
-  variable <- rlang::arg_match(variable)
+  variable <- arg_match(variable)
 
   did <- data.table::fifelse(
     variable == "temperature",

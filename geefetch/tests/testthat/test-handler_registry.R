@@ -1,19 +1,20 @@
-# test-handler_registry.R — Tests for alias resolution, metadata, and catalogue
+# test-handler_registry.R — Tests for alias resolution, metadata, and
+# catalogue
 
 test_that(".gee_resolve_id resolves normalised IDs directly", {
-  expect_equal(.gee_resolve_id("modis_ndvi"), "modis_ndvi")
-  expect_equal(.gee_resolve_id("srtm_elevation"), "srtm_elevation")
-  expect_equal(.gee_resolve_id("era5_temp"), "era5_temp")
+  expect_identical(.gee_resolve_id("modis_ndvi"), "modis_ndvi")
+  expect_identical(.gee_resolve_id("srtm_elevation"), "srtm_elevation")
+  expect_identical(.gee_resolve_id("era5_temp"), "era5_temp")
 })
 
 test_that(".gee_resolve_id resolves aliases (case-insensitive)", {
-  expect_equal(.gee_resolve_id("MODIS_NDVI"), "modis_ndvi")
-  expect_equal(.gee_resolve_id("NDVI"), "modis_ndvi")
-  expect_equal(.gee_resolve_id("ndvi"), "modis_ndvi")
-  expect_equal(.gee_resolve_id("SRTM"), "srtm_elevation")
-  expect_equal(.gee_resolve_id("elevation"), "srtm_elevation")
-  expect_equal(.gee_resolve_id("CHIRPS"), "chirps_precip")
-  expect_equal(.gee_resolve_id("LST"), "modis_lst")
+  expect_identical(.gee_resolve_id("MODIS_NDVI"), "modis_ndvi")
+  expect_identical(.gee_resolve_id("NDVI"), "modis_ndvi")
+  expect_identical(.gee_resolve_id("ndvi"), "modis_ndvi")
+  expect_identical(.gee_resolve_id("SRTM"), "srtm_elevation")
+  expect_identical(.gee_resolve_id("elevation"), "srtm_elevation")
+  expect_identical(.gee_resolve_id("CHIRPS"), "chirps_precip")
+  expect_identical(.gee_resolve_id("LST"), "modis_lst")
 })
 
 test_that(".gee_resolve_id rejects invalid inputs", {
@@ -90,16 +91,16 @@ test_that("gee_datasets() returns a data.table with expected columns", {
     ) %in%
       names(dt)
   ))
-  expect_true(nrow(dt) >= length(.GEE_META))
+  expect_gte(nrow(dt), length(.GEE_META))
 })
 
 test_that("gee_datasets() domain filter works", {
   dt_veg <- gee_datasets(domain = "Vegetation")
   expect_true(all(dt_veg$domain == "Vegetation"))
-  expect_true(nrow(dt_veg) > 0L)
+  expect_gt(nrow(dt_veg), 0L)
 
   dt_none <- gee_datasets(domain = "NonexistentDomain")
-  expect_equal(nrow(dt_none), 0L)
+  expect_identical(nrow(dt_none), 0L)
 })
 
 test_that("gee_register_dataset() adds custom dataset to registry", {
@@ -119,7 +120,7 @@ test_that("gee_register_dataset() adds custom dataset to registry", {
   )
 
   # Should be resolvable
-  expect_equal(.gee_resolve_id("test_custom"), "test_custom")
+  expect_identical(.gee_resolve_id("test_custom"), "test_custom")
 
   # Should appear in catalogue
   dt <- gee_datasets()
@@ -155,10 +156,10 @@ test_that("gee_register_dataset() validates temporal argument", {
 })
 
 test_that("SLGA metadata constants are consistent", {
-  expect_equal(length(.SLGA_DEPTHS), 6L)
-  expect_equal(length(.SLGA_DEPTH_LABELS), 6L)
-  expect_equal(names(.SLGA_DEPTH_LABELS), .SLGA_DEPTHS)
-  expect_equal(length(.SLGA_STATS), 3L)
+  expect_length(.SLGA_DEPTHS, 6L)
+  expect_length(.SLGA_DEPTH_LABELS, 6L)
+  expect_named(.SLGA_DEPTH_LABELS, .SLGA_DEPTHS)
+  expect_length(.SLGA_STATS, 3L)
   expect_true(all(
     .SLGA_ATTRIBUTES %in% c("CLY", "SND", "AWC", "SLT", "BDW", "PHC", "NTO")
   ))

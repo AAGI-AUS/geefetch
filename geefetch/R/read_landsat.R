@@ -7,13 +7,7 @@
 #' reflectance (LANDSAT/LC09/C02/T1_L2) on Google Earth Engine.
 #' Cloud, shadow, and snow pixels are masked using the QA_PIXEL band.
 #'
-#' @param date Character or Date. Acquisition date in `"YYYY-MM-DD"` format.
-#' @param region An [sf::sf], [sf::st_sfc()], or [terra::ext()] object
-#'   defining the spatial extent. Required.
-#' @param backend Character. `"rest"` (default) or `"rgee"`.
-#' @param cache Logical. Use disk cache? Default `TRUE`.
-#' @param max_tries Integer. Retry attempts. Default `3L`.
-#' @param initial_delay Numeric. Initial retry delay in seconds. Default `1`.
+#' @inheritParams gee_shared_params
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values: NDVI
 #'   (-1 to 1). NA where QA_PIXEL indicates cloud, shadow, or snow.
@@ -42,7 +36,7 @@ read_landsat <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   read_gee(
     "landsat_ndvi",
     date = date,

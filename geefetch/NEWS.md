@@ -1,3 +1,91 @@
+# geefetch 0.1.0
+
+## User-visible changes
+
+* **Cached tables are now stored with qs2.** Writing is about 35 times
+  faster and reading about 7 times faster than the previous gzip RDS
+  format on a 687k-row table, at the same size on disk. Rasters are
+  unaffected and stay GeoTIFF. The cache key now carries a format
+  version, so an existing on-disk cache is simply rebuilt on first use
+  rather than read under the new format.
+* **Disk caching is now opt-in.** `read_gee()` and `collect_gee_data()`
+  still cache extraction results in an in-session memory store whenever
+  `cache = TRUE` (the default), but persisting results to disk under
+  `tools::R_user_dir()` now requires `options(geefetch.cache.disk = TRUE)`
+  or the new `gee_cache_disk()` helper. Previously every cache-enabled
+  call wrote to disk unconditionally. `gee_clear_cache()` clears both the
+  memory store and, if it was ever populated, the disk store.
+* `collect_gee_data()`'s verbose progress table is now emitted through
+  `cli` instead of a bare `print()` call, still gated on `verbose`.
+* Rasters returned by `read_gee()` and the `read_*()` aliases now name
+  their layers after the bands that were requested (`NDVI`, `elevation`,
+  and so on). The layer previously carried the name of the temporary
+  file the GeoTIFF was written to, which also became the column name in
+  `terra::extract()` output.
+
+## Bug fixes
+
+* The live catalogue check failed for the seven SLGA datasets after 0.1.0
+  pointed them at the attribute images inside `CSIRO/SLGA`. Google's public
+  catalogue publishes one record for the collection and none for the images,
+  so each SLGA entry now carries `stac_id = "CSIRO/SLGA"`: the check compares
+  bands against that record and confirms the sampled image belongs to it, and
+  `gee_external_facts()` cites it as the source. The asset the reader samples
+  is unchanged.
+* The seven SLGA soil datasets failed on both routes because
+  `CSIRO/SLGA` is an image collection, not an image; each dataset now
+  reads its attribute image (`CSIRO/SLGA/CLY` and so on).
+* Sentinel-2 extraction failed with "Unknown function: Image.Or"; the
+  cloud mask now calls `Image.or`.
+* Scene-based collections (Sentinel-2, Landsat) returned an arbitrary
+  scene because no spatial filter preceded `Collection.first`. Every
+  time-series request now filters the collection to images intersecting
+  the requested region or points, and scene collections are mosaicked.
+* `collect_gee_data()` now applies the same QA masks, `depth`/`stat`
+  selection and NDVI computation as `read_gee()`. Previously the point
+  route ignored `depth` and `stat` and returned raw reflectance for the
+  NDVI datasets. The cache key now includes `depth` and `stat`.
+* NDVI values outside [-1, 1] no longer appear at Landsat fill pixels;
+  non-positive reflectances are masked before the ratio.
+* `jsonlite` is back in Imports: httr2 (>= 1.3.0) no longer imports it,
+  yet every JSON response parse needs it.
+* `collect_gee_data()`'s verbose header no longer over-states the number
+  of API calls. It multiplied by the number of locations, but the point
+  route sends every location in one request per dataset and date, so a
+  three-location run announced 30 calls and made 10 -- as its own progress
+  bar reported three lines below. The estimate is now the same expression
+  that drives the bar.
+
+* `collect_gee_data()` no longer fails live point extraction with
+  HTTP 400. The point set was sent to `Image.sampleRegions()` as a
+  GeoJSON object inside `constantValue`, which the Earth Engine
+  Expression grammar reads as a Dictionary rather than a
+  FeatureCollection. Points are now built as a `Collection` of
+  `Feature` invocations with `GeometryConstructors.Point` geometries,
+  the form the service accepts.
+* A Google Earth Engine service error message containing braces or
+  backticks (for example, one quoting a project number or field name)
+  reached the user garbled, because the text was passed to `cli` as
+  part of a message template rather than as data. Service and
+  condition text is now passed as data, so it reaches the user
+  verbatim.
+* A batch-extraction reply lacking a `point_id` property now aborts
+  with a clear message, instead of aligning returned values to the
+  requested points by position, which could silently attach a value
+  to the wrong point.
+* Calling the REST API with no Google Cloud project set now aborts
+  with guidance, instead of forming a malformed `projects//...`
+  request URL.
+* `gee_auth()` now warns when no project is supplied and it falls
+  back to the legacy `earthengine-legacy` project, which Earth Engine
+  refuses for most accounts.
+* The "region too large" warning from the internal grid builder now
+  states the dataset's native pixel scale (in metres), the effective
+  scale after resampling, and the resulting pixel dimensions, and
+  suggests requesting a smaller region to keep the native resolution.
+  Previously it gave only the resampled pixel count, with no
+  indication of the resolution lost or how to avoid it.
+
 # geefetch 0.0.0.9001 (2026-04-21)
 
 Substantial institutional-compliance and governance uplift. No changes to

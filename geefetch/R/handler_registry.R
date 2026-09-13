@@ -148,12 +148,15 @@
     valid_range = c(0, NA_real_),
     unit = "mm/day",
     domain = "Precipitation",
-    description = "CHIRPS Daily: Climate Hazards Group InfraRed Precipitation With Station Data",
+    description = paste0(
+      "CHIRPS Daily: Climate Hazards Group InfraRed Precipitation With ",
+      "Station Data"
+    ),
     date_start = "1981-01-01",
     date_end = NA_character_,
     citation = paste0(
-      "Funk, C. et al. (2015). The climate hazards infrared precipitation with ",
-      "stations -- a new environmental record for monitoring extremes. ",
+      "Funk, C. et al. (2015). The climate hazards infrared precipitation ",
+      "with stations -- a new environmental record for monitoring extremes. ",
       "Scientific Data, 2, 150066. doi:10.1038/sdata.2015.66"
     )
   ),
@@ -180,8 +183,16 @@
 
   # -- Tier 2: Extended datasets (handlers to be implemented in Phase 4) --
 
+  # The SLGA datasets read an IMAGE that lives inside the `CSIRO/SLGA` image
+  # collection (`CSIRO/SLGA/CLY` and so on), because the collection itself is
+  # not an image and cannot be sampled directly (0.1.0). The public STAC
+  # publishes one document for the collection and none for the images inside
+  # it, so `stac_id` names the catalogue document that owns each dataset's
+  # facts and `collection` names the asset the reader samples. Where the two
+  # coincide, `stac_id` is omitted and defaults to `collection`.
   slga_cly = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/CLY",
+    stac_id = "CSIRO/SLGA",
     bands = "CLY_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -206,7 +217,8 @@
   ),
 
   slga_snd = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/SND",
+    stac_id = "CSIRO/SLGA",
     bands = "SND_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -223,7 +235,8 @@
   ),
 
   slga_awc = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/AWC",
+    stac_id = "CSIRO/SLGA",
     bands = "AWC_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -240,7 +253,8 @@
   ),
 
   slga_slt = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/SLT",
+    stac_id = "CSIRO/SLGA",
     bands = "SLT_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -257,7 +271,8 @@
   ),
 
   slga_bdw = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/BDW",
+    stac_id = "CSIRO/SLGA",
     bands = "BDW_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -274,7 +289,8 @@
   ),
 
   slga_phc = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/pHc",
+    stac_id = "CSIRO/SLGA",
     bands = "pHc_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -291,7 +307,8 @@
   ),
 
   slga_nto = list(
-    collection = "CSIRO/SLGA",
+    collection = "CSIRO/SLGA/NTO",
+    stac_id = "CSIRO/SLGA",
     bands = "NTO_000_005_EV",
     scale = 90L,
     temporal = "static",
@@ -310,6 +327,8 @@
   sentinel2_ndvi = list(
     collection = "COPERNICUS/S2_SR_HARMONIZED",
     bands = c("B8", "B4"),
+    composite = "mosaic",
+    index = "ndvi",
     scale = 10L,
     temporal = "5day",
     qa_band = "SCL",
@@ -331,6 +350,8 @@
   landsat_ndvi = list(
     collection = "LANDSAT/LC09/C02/T1_L2",
     bands = c("SR_B5", "SR_B4"),
+    composite = "mosaic",
+    index = "ndvi",
     scale = 30L,
     temporal = "16day",
     qa_band = "QA_PIXEL",
@@ -343,8 +364,8 @@
     date_start = "2021-10-31",
     date_end = NA_character_,
     citation = paste0(
-      "U.S. Geological Survey. Landsat 9 Collection 2 Level-2 Science Products. ",
-      "doi:10.5066/P9OGBGM6"
+      "U.S. Geological Survey. Landsat 9 Collection 2 Level-2 Science ",
+      "Products. doi:10.5066/P9OGBGM6"
     )
   ),
 
@@ -570,9 +591,9 @@ gee_datasets <- function(domain = NULL) {
   # Build from .GEE_META + any user-registered datasets
   meta_source <- .gee_combined_meta()
 
-  dt <- data.table::rbindlist(lapply(names(meta_source), function(nm) {
+  dt <- rbindlist(lapply(names(meta_source), function(nm) {
     m <- meta_source[[nm]]
-    data.table::data.table(
+    data.table(
       dataset = nm,
       collection = m$collection,
       domain = m$domain %||% NA_character_,
@@ -682,7 +703,7 @@ gee_register_dataset <- function(
     ))
   }
 
-  temporal <- rlang::arg_match(
+  temporal <- arg_match(
     temporal,
     c("daily", "8day", "16day", "monthly", "5day", "static")
   )
@@ -712,7 +733,10 @@ gee_register_dataset <- function(
   cli::cli_inform(c(
     v = "Registered custom dataset {.val {name}}.",
     i = "Collection: {.val {collection}}",
-    i = "Available via {.code read_gee({.val {name}})} and {.code collect_gee_data()}."
+    i = paste0(
+      "Available via {.code read_gee({.val {name}})} and ",
+      "{.code collect_gee_data()}."
+    )
   ))
 
   invisible(NULL)

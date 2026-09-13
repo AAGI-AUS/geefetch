@@ -20,9 +20,9 @@ test_that("gee_status() returns expected structure", {
     )
   )
   expect_false(result$authenticated)
-  expect_true(is.character(result$project))
-  expect_true(is.logical(result$rgee_available))
-  expect_true(is.numeric(result$cache_size))
+  expect_type(result$project, "character")
+  expect_type(result$rgee_available, "logical")
+  expect_type(result$cache_size, "double")
   expect_true(is.integer(result$n_datasets) || is.numeric(result$n_datasets))
 })
 
@@ -47,7 +47,7 @@ test_that(".gee_project returns default project", {
   .geefetch_env$project <- NULL
   withr::defer(.geefetch_env$project <- old_project)
 
-  expect_equal(.gee_project(), "earthengine-legacy")
+  expect_identical(.gee_project(), "earthengine-legacy")
 })
 
 test_that("gee_auth rejects nonexistent service account file", {
@@ -55,6 +55,29 @@ test_that("gee_auth rejects nonexistent service account file", {
     gee_auth(path = "/nonexistent/path/key.json"),
     "not found"
   )
+})
+
+test_that("gee_auth warns, and does not error, when no project is given", {
+  # The fallback message names the default project. Interpolating a
+  # dot-prefixed object directly ({.GEE_DEFAULT_PROJECT}) is read by cli as a
+  # style, not a value, and aborts the call the warning was meant to soften.
+  local_mocked_bindings(
+    token_fetch = function(...) "fake_token_for_test",
+    .package = "gargle"
+  )
+  old_token <- .geefetch_env$token
+  old_project <- .geefetch_env$project
+  withr::defer({
+    .geefetch_env$token <- old_token
+    .geefetch_env$project <- old_project
+  })
+  withr::local_options(list(geefetch.project = NULL))
+
+  expect_warning(
+    gee_auth(email = "test@test.com"),
+    "falling back to"
+  )
+  expect_identical(.geefetch_env$project, .GEE_DEFAULT_PROJECT)
 })
 
 test_that("gee_setup runs without error", {

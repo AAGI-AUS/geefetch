@@ -143,7 +143,7 @@ test_that(".safe_extract_points_batch returns NA vector on error", {
     ),
     "Batch extraction failed"
   )
-  expect_equal(length(vals), 2L)
+  expect_length(vals, 2L)
   expect_true(all(is.na(vals)))
 })
 
@@ -174,14 +174,73 @@ test_that("collect_gee_data with mock produces correct output shape", {
 
   expect_s3_class(dt, "data.table")
   # 2 locations x 3 dates = 6 rows
-  expect_equal(nrow(dt), 6L)
+  expect_identical(nrow(dt), 6L)
   expect_true(all(
     c("point_id", "lon", "lat", "date", "modis_ndvi", "srtm_elevation") %in%
       names(dt)
   ))
   expect_equal(unique(dt$modis_ndvi), 0.65)
   expect_equal(unique(dt$srtm_elevation), 200.0)
-  expect_equal(sort(unique(dt$point_id)), c(1L, 2L))
+  expect_identical(sort(unique(dt$point_id)), c(1L, 2L))
+})
+
+test_that("collect_gee_data runs with the progress bar shown", {
+  # The bar is created in collect_gee_data() and ticked from the extraction
+  # helpers. cli looks a bar up by the environment that created it, so an
+  # id-less update from another frame aborts the run; every other test here
+  # passes verbose = FALSE and would not see it.
+  old_token <- .geefetch_env$token
+  .geefetch_env$token <- "fake"
+  withr::defer(.geefetch_env$token <- old_token)
+
+  local_mocked_bindings(
+    .safe_extract_points_batch = function(meta, date, coords, did, ...) {
+      rep(1.0, nrow(coords))
+    }
+  )
+
+  expect_no_error(
+    dt <- collect_gee_data(
+      lon = 138.6, lat = -34.9,
+      date_range = c("2024-01-01", "2024-01-03"),
+      datasets = c("era5_temp", "srtm_elevation"),
+      verbose = TRUE
+    )
+  )
+  expect_identical(nrow(dt), 3L)
+})
+
+test_that("the announced API-call estimate matches the calls actually made", {
+  # The header used to multiply by the number of locations, while the point
+  # route sends every location in one request per dataset and date. The
+  # progress bar three lines below it told the true story.
+  old_token <- .geefetch_env$token
+  .geefetch_env$token <- "fake"
+  withr::defer(.geefetch_env$token <- old_token)
+
+  calls <- 0L
+  local_mocked_bindings(
+    .safe_extract_points_batch = function(meta, date, coords, did, ...) {
+      calls <<- calls + 1L
+      rep(1.0, nrow(coords))
+    }
+  )
+
+  msgs <- capture_messages(
+    collect_gee_data(
+      lon = c(138.6, 149.1, 153.0),
+      lat = c(-34.9, -35.3, -27.5),
+      date_range = c("2024-01-01", "2024-01-05"),
+      datasets = c("era5_temp", "srtm_elevation"),
+      verbose = TRUE
+    )
+  )
+
+  line <- grep("Estimated API calls", msgs, value = TRUE)[1L]
+  announced <- as.integer(regmatches(line, regexpr("[0-9]+", line)))
+  expect_identical(announced, calls)
+  # one call per date for the time series, one for the static dataset
+  expect_identical(calls, 6L)
 })
 
 test_that("collect_gee_data na.rm removes all-NA rows", {
@@ -209,7 +268,7 @@ test_that("collect_gee_data na.rm removes all-NA rows", {
     verbose = FALSE
   )
 
-  expect_equal(nrow(dt), 2L)
+  expect_identical(nrow(dt), 2L)
   expect_false(as.Date("2024-01-02") %in% dt$date)
 })
 
@@ -232,7 +291,7 @@ test_that("collect_gee_data column order is correct", {
     verbose = FALSE
   )
 
-  expect_equal(names(dt)[1:4], c("point_id", "lon", "lat", "date"))
+  expect_identical(names(dt)[1:4], c("point_id", "lon", "lat", "date"))
 })
 
 test_that("collect_gee_data verbose mode prints info", {

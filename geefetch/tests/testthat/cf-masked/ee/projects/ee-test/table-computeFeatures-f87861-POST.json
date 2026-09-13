@@ -1,0 +1,19 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    144.97004565680587,
+                    -29.962312369836241
+                ]
+            },
+            "properties": {
+                "point_id": 2,
+                "soil_moisture_am": 0.17369551956653595
+            }
+        }
+    ]
+}

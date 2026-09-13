@@ -6,7 +6,11 @@
 # Architecture:
 #   1. Expression builder (.ee_*) — constructs GEE computation graph as JSON
 #   2. Request functions (.rest_request, .rest_compute_*) — send to REST API
-#   3. Extraction functions (.rest_extract_*) — high-level: build expr + request + parse
+#
+# High-level extraction (build expression, request, parse) lives in
+# handlers.R (.rest_extract_raster_expr) and collect_gee_data.R
+# (.rest_extract_batch_points), both of which call the request functions
+# defined here.
 
 #' @importFrom httr2 request req_headers req_body_json req_perform
 #'   req_retry resp_body_json resp_status resp_body_raw
@@ -20,6 +24,15 @@ NULL
 #' Base URL for the GEE REST API
 #' @noRd
 .GEE_REST_BASE <- "https://earthengine.googleapis.com/v1"
+
+#' Base URL of the Earth Engine REST API
+#'
+#' `options(geefetch.rest_base = )` overrides it; the test suite uses a
+#' short host so recorded cassette paths stay under 100 bytes.
+#' @noRd
+.gee_rest_base <- function() {
+  getOption("geefetch.rest_base", .GEE_REST_BASE)
+}
 
 
 # ===========================================================================
@@ -217,50 +230,59 @@ NULL
   .ee_add(node, offset)
 }
 
-#' Build Image.sampleRegions expression for point extraction
+#' Build a Point geometry node
+#'
+#' @param lon,lat Numeric scalars, WGS84 degrees.
 #' @noRd
-.ee_sample_regions <- function(image_node, points_geojson, scale) {
+.ee_point <- function(lon, lat) {
+  .ee_call(
+    "GeometryConstructors.Point",
+    coordinates = .ee_const(list(lon, lat))
+  )
+}
+
+#' Build a Feature node carrying a point geometry and a `point_id` property
+#' @noRd
+.ee_feature <- function(lon, lat, point_id) {
+  .ee_call(
+    "Feature",
+    geometry = .ee_point(lon, lat),
+    metadata = .ee_const(list(point_id = point_id))
+  )
+}
+
+#' Build a FeatureCollection node from a table of points
+#'
+#' A constant object is read by the Expression grammar as a Dictionary, so
+#' a FeatureCollection literal is built as `Collection` over `Feature`
+#' invocations, each carrying a `point_id` property.
+#'
+#' @param coords data.table with point_id, lon, lat columns.
+#' @noRd
+.ee_feature_collection <- function(coords) {
+  features <- lapply(seq_len(nrow(coords)), function(i) {
+    .ee_feature(coords$lon[i], coords$lat[i], coords$point_id[i])
+  })
+  .ee_call(
+    "Collection",
+    features = list(arrayValue = list(values = features))
+  )
+}
+
+#' Build Image.sampleRegions expression for point extraction
+#'
+#' Masked pixels are dropped from the reply, so callers match rows by
+#' `point_id`.
+#' @noRd
+.ee_sample_regions <- function(image_node, coords, scale) {
   .ee_call(
     "Image.sampleRegions",
     image = image_node,
-    collection = .ee_const(points_geojson),
+    collection = .ee_feature_collection(coords),
     scale = .ee_const(as.integer(scale)),
     geometries = .ee_const(TRUE)
   )
 }
-
-#' Build Image.reduceRegions expression for polygon extraction
-#' @noRd
-.ee_reduce_regions <- function(image_node, regions_geojson, reducer, scale) {
-  .ee_call(
-    "Image.reduceRegions",
-    image = image_node,
-    collection = .ee_const(regions_geojson),
-    reducer = .ee_call(paste0("Reducer.", reducer)),
-    scale = .ee_const(as.integer(scale))
-  )
-}
-
-
-#' Convert an sf/data.table of points to GeoJSON FeatureCollection
-#'
-#' @param coords data.table with point_id, lon, lat columns.
-#' @returns A list in GeoJSON FeatureCollection format.
-#' @noRd
-.coords_to_geojson <- function(coords) {
-  features <- lapply(seq_len(nrow(coords)), function(i) {
-    list(
-      type = "Feature",
-      geometry = list(
-        type = "Point",
-        coordinates = list(coords$lon[i], coords$lat[i])
-      ),
-      properties = list(point_id = coords$point_id[i])
-    )
-  })
-  list(type = "FeatureCollection", features = features)
-}
-
 
 # ===========================================================================
 # Section 3: Grid / affine transform builders
@@ -307,8 +329,18 @@ NULL
     height <- as.integer(ceiling(height / scale_ratio))
     pixel_size_deg <- pixel_size_deg * scale_ratio
     cli::cli_warn(c(
-      `!` = "Requested region exceeds {max_dim}x{max_dim} pixels at native resolution.",
-      i = "Resampling to {width}x{height} pixels."
+      `!` = paste0(
+        "Requested region exceeds {max_dim}x{max_dim} pixels at the ",
+        "native {scale}m scale."
+      ),
+      i = paste0(
+        "Resampling to {width}x{height} pixels, an effective scale of ",
+        "{round(scale * scale_ratio, 1)}m."
+      ),
+      i = paste0(
+        "Request a smaller region, or a coarser scale, to keep the ",
+        "native resolution."
+      )
     ))
   }
 
@@ -335,8 +367,7 @@ NULL
 #'
 #' @param endpoint Character. API endpoint path (appended to base URL).
 #' @param body List. Request body (will be converted to JSON).
-#' @param max_tries Integer. Max retry attempts.
-#' @param initial_delay Numeric. Initial retry delay in seconds.
+#' @inheritParams gee_shared_params
 #' @param raw Logical. Return raw bytes instead of parsed JSON? Default FALSE.
 #'
 #' @returns Parsed JSON response as a list, or raw bytes if raw = TRUE.
@@ -360,19 +391,31 @@ NULL
   token <- .maybe_refresh_token(token)
 
   project <- .gee_project()
-  url <- paste0(.GEE_REST_BASE, "/projects/", project, "/", endpoint)
+  project_ok <- is.character(project) && length(project) == 1L &&
+    !is.na(project) && nzchar(project)
+  if (!project_ok) {
+    cli::cli_abort(c(
+      "No Google Cloud project is set for Earth Engine requests.",
+      i = paste0(
+        "Pass {.code gee_auth(project = \"<your-project>\")} or set ",
+        "{.code options(geefetch.project = \"<your-project>\")}."
+      ),
+      i = "See {.code gee_setup()} for how to create and register a project."
+    ))
+  }
+  url <- file.path(.gee_rest_base(), "projects", project, endpoint)
 
   # Extract access token string (handles both gargle and raw string tokens)
   access_token <- .extract_access_token(token)
 
-  req <- httr2::request(url)
+  req <- request(url)
   # X-Goog-User-Project overrides the token's default quota project so the
   # call is billed / quota-counted against the user-specified project, not
   # whatever project the OAuth client happened to be registered under.
   # Required whenever the token's quota project differs from the resource
   # project in the URL (documented at
   # https://cloud.google.com/docs/authentication/rest#set-quota-project).
-  req <- httr2::req_headers(
+  req <- req_headers(
     req,
     Authorization = paste("Bearer", access_token),
     `Content-Type` = "application/json",
@@ -380,10 +423,10 @@ NULL
   )
 
   if (!is.null(body)) {
-    req <- httr2::req_body_json(req, body, auto_unbox = TRUE)
+    req <- req_body_json(req, body, auto_unbox = TRUE)
   }
 
-  req <- httr2::req_retry(req, max_tries = max_tries, backoff = function(i) {
+  req <- req_retry(req, max_tries = max_tries, backoff = function(i) {
     initial_delay * 2^(i - 1L)
   })
 
@@ -391,28 +434,31 @@ NULL
   req <- httr2::req_error(req, is_error = function(resp) FALSE)
 
   resp <- tryCatch(
-    httr2::req_perform(req),
+    req_perform(req),
     error = function(e) {
+      msg <- conditionMessage(e)
       cli::cli_abort(c(
         "GEE REST API request failed.",
-        x = conditionMessage(e),
+        x = "{msg}",
         i = "Check your authentication with {.code gee_status()}.",
         i = "Endpoint: {.val {url}}"
       ))
     }
   )
 
-  status <- httr2::resp_status(resp)
+  status <- resp_status(resp)
   if (status >= 400L) {
     err_body <- tryCatch(
-      httr2::resp_body_json(resp),
+      resp_body_json(resp),
       error = function(e) list(error = list(message = "Unknown error"))
     )
     err_msg <- err_body$error$message %||% "No error message returned."
 
     # Specific guidance for common errors
     hints <- character()
-    if (status == 403L && grepl("API has not been used", err_msg)) {
+    api_disabled <- status == 403L &&
+      grepl("API has not been used", err_msg, fixed = TRUE)
+    if (api_disabled) {
       hints <- c(
         i = "The Earth Engine API is not enabled on your Google Cloud project.",
         i = "To fix: visit the link in the error above and click 'Enable'.",
@@ -431,18 +477,19 @@ NULL
       )
     }
 
+    # Service text is interpolated as data, not as a cli template.
     cli::cli_abort(c(
       "GEE REST API error (HTTP {status}).",
-      x = err_msg,
+      x = "{err_msg}",
       hints,
       i = "Endpoint: {.val {url}}"
     ))
   }
 
   if (raw) {
-    httr2::resp_body_raw(resp)
+    resp_body_raw(resp)
   } else {
-    httr2::resp_body_json(resp)
+    resp_body_json(resp)
   }
 }
 
@@ -451,9 +498,7 @@ NULL
 #'
 #' @param expression List. The EE expression (not wrapped in Expression).
 #' @param grid List. Grid specification from .build_grid().
-#' @param bands Character. Band IDs to include.
-#' @param max_tries Integer.
-#' @param initial_delay Numeric.
+#' @inheritParams gee_shared_params
 #'
 #' @returns A terra::rast() SpatRaster.
 #' @noRd
@@ -492,6 +537,14 @@ NULL
   on.exit(unlink(tmp), add = TRUE)
   r <- terra::rast(tmp)
   r <- r * 1
+  # computePixels returns an unnamed GeoTIFF, so terra falls back to the
+  # tempfile's name and that name then shows up in print() and in the column
+  # terra::extract() produces. Name the layers after the bands that were asked
+  # for.
+  if (!is.null(bands) && length(bands) == terra::nlyr(r)) {
+    names(r) <- unlist(bands)
+    terra::varnames(r) <- unlist(bands)
+  }
   r
 }
 
@@ -499,8 +552,7 @@ NULL
 #' Request feature data via computeFeatures
 #'
 #' @param expression List. The EE expression evaluating to a FeatureCollection.
-#' @param max_tries Integer.
-#' @param initial_delay Numeric.
+#' @inheritParams gee_shared_params
 #'
 #' @returns A data.table of extracted values.
 #' @noRd
@@ -539,7 +591,7 @@ NULL
   }
 
   if (length(all_features) == 0L) {
-    return(data.table::data.table())
+    return(data.table())
   }
 
   # Parse GeoJSON features into data.table
@@ -558,142 +610,5 @@ NULL
     })
     as.data.frame(props, stringsAsFactors = FALSE)
   })
-  data.table::rbindlist(rows, fill = TRUE)
-}
-
-
-# ===========================================================================
-# Section 5: High-level extraction functions
-# ===========================================================================
-
-#' Extract raster data for a dataset via REST API
-#'
-#' Builds the full expression (load → filter → select → scale → offset),
-#' computes the grid, and calls computePixels.
-#'
-#' @param meta List. Dataset metadata from .GEE_META.
-#' @param date Date. Acquisition date.
-#' @param region sf/sfc object or NULL (defaults to global).
-#' @param bands Character or NULL (use meta$bands).
-#' @param max_tries Integer.
-#' @param initial_delay Numeric.
-#'
-#' @returns A terra::rast() SpatRaster.
-#' @noRd
-.rest_extract_raster <- function(
-  meta,
-  date = NULL,
-  region = NULL,
-  bands = NULL,
-  max_tries = 3L,
-  initial_delay = 1L
-) {
-  bands <- bands %||% meta$bands
-
-  # Build expression: load → filter → first → select → scale/offset
-  if (meta$temporal == "static") {
-    # Static dataset: load image directly (no date filter)
-    img <- .ee_load_image(meta$collection)
-  } else {
-    # Time-series: filter collection by date window, take first
-    date_start <- date
-    # Expand date window to match temporal resolution
-    date_end <- switch(
-      meta$temporal,
-      daily = date + 1L,
-      "8day" = date + 8L,
-      "16day" = date + 16L,
-      "5day" = date + 5L,
-      monthly = lubridate::ceiling_date(date, "month"),
-      date + 1L
-    )
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date_start, date_end)
-    img <- .ee_first(col_filtered)
-  }
-
-  img <- .ee_select(img, bands)
-  img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
-
-  # Determine grid from region
-  if (is.null(region)) {
-    # Default: small region for safety (won't request the whole globe)
-    cli::cli_abort(c(
-      "{.arg region} is required for raster extraction via REST API.",
-      i = "Provide an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
-      i = paste0("Example: {.code terra::ext(138, 140, -36, -34)}")
-    ))
-  }
-
-  region <- .validate_region(region)
-  bbox <- sf::st_bbox(region)
-  grid <- .build_grid(bbox = bbox, scale = meta$scale)
-
-  .rest_compute_pixels(
-    expression = img,
-    grid = grid,
-    bands = bands,
-    max_tries = max_tries,
-    initial_delay = initial_delay
-  )
-}
-
-
-#' Extract point values for a dataset via REST API
-#'
-#' Builds the expression (load → filter → select → scale → sampleRegions),
-#' calls computeFeatures, returns data.table.
-#'
-#' @param meta List. Dataset metadata from .GEE_META.
-#' @param date Date. Acquisition date (NULL for static datasets).
-#' @param coords data.table with point_id, lon, lat columns.
-#' @param bands Character or NULL (use meta$bands).
-#' @param reducer Character. Spatial reducer for buffered extraction.
-#' @param max_tries Integer.
-#' @param initial_delay Numeric.
-#'
-#' @returns A data.table with point_id and extracted band values.
-#' @noRd
-.rest_extract_points <- function(
-  meta,
-  date = NULL,
-  coords,
-  bands = NULL,
-  reducer = "first",
-  max_tries = 3L,
-  initial_delay = 1L
-) {
-  bands <- bands %||% meta$bands
-
-  # Build expression: load → filter → first → select → scale/offset
-  if (meta$temporal == "static") {
-    img <- .ee_load_image(meta$collection)
-  } else {
-    date_start <- date
-    date_end <- switch(
-      meta$temporal,
-      daily = date + 1L,
-      "8day" = date + 8L,
-      "16day" = date + 16L,
-      "5day" = date + 5L,
-      monthly = lubridate::ceiling_date(date, "month"),
-      date + 1L
-    )
-    col <- .ee_load_collection(meta$collection)
-    col_filtered <- .ee_filter_date(col, date_start, date_end)
-    img <- .ee_first(col_filtered)
-  }
-
-  img <- .ee_select(img, bands)
-  img <- .ee_scale_offset(img, meta$scale_factor, meta$offset)
-
-  # Build sample regions expression
-  geojson <- .coords_to_geojson(coords)
-  sample_expr <- .ee_sample_regions(img, geojson, meta$scale)
-
-  .rest_compute_features(
-    expression = sample_expr,
-    max_tries = max_tries,
-    initial_delay = initial_delay
-  )
+  rbindlist(rows, fill = TRUE)
 }

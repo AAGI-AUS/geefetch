@@ -7,8 +7,10 @@
 # Usage (once, interactively):
 #
 #   1. Authenticate normally: `geefetch::gee_auth()` + `geefetch::gee_setup()`.
-#   2. Export your GEE project ID: `Sys.setenv(GEEFETCH_RECAPTURE_PROJECT = "your-gcp-project")`.
-#   3. Run the capture: `Sys.setenv(RPKG_RECAPTURE = "1"); devtools::test(filter = "backend_rest-http")`.
+#   2. Export your GEE project ID:
+#      `Sys.setenv(GEEFETCH_RECAPTURE_PROJECT = "your-gcp-project")`.
+#   3. Run the capture: `Sys.setenv(RPKG_RECAPTURE = "1")`, then
+#      `devtools::test(filter = "backend_rest-http")`.
 #   4. Verify the new cassette dirs under tests/testthat/computeFeatures-*/.
 #   5. Sanitise — `httptest2::set_redactor()` is invoked below to strip
 #      Authorization headers and any user-specific project identifiers.
@@ -18,14 +20,15 @@
 # project identifier. The redactor below enforces that, but a human review
 # before commit is still expected.
 
-if (nzchar(Sys.getenv("RPKG_RECAPTURE")) &&
-    requireNamespace("httptest2", quietly = TRUE)) {
+recapture <- nzchar(Sys.getenv("RPKG_RECAPTURE")) &&
+  requireNamespace("httptest2", quietly = TRUE)
+if (recapture) {
   httptest2::set_redactor(function(response) {
     response <- httptest2::redact_headers(response, "Authorization")
     response <- httptest2::gsub_response(
       response,
       Sys.getenv("GEEFETCH_RECAPTURE_PROJECT", "REDACTED"),
-      "geefetch-test-project"
+      "ee-test"
     )
     response
   })
