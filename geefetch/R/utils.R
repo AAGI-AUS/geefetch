@@ -86,7 +86,7 @@
     warning = function(w) NULL
   )
 
-  if (is.null(dates) || any(is.na(dates))) {
+  if (is.null(dates) || anyNA(dates)) {
     cli::cli_abort(c(
       "Cannot parse {.arg date_range} as dates.",
       i = "Expected format: {.val YYYY-MM-DD}.",
@@ -168,7 +168,7 @@
       xy <- sf::st_transform(xy, 4326)
     }
     coords <- sf::st_coordinates(xy)
-    dt <- data.table::data.table(
+    dt <- data.table(
       point_id = seq_len(nrow(coords)),
       lon = coords[, 1L],
       lat = coords[, 2L]
@@ -223,29 +223,11 @@
     .validate_single_coord(lat[i], "lat")
   }
 
-  data.table::data.table(
+  data.table(
     point_id = seq_along(lon),
     lon = as.numeric(lon),
     lat = as.numeric(lat)
   )
-}
-
-
-# ---- Dataset validation ----
-
-#' Validate that a dataset ID exists in the registry
-#'
-#' @param dataset_id Character. Normalised dataset ID.
-#'
-#' @returns The validated ID (invisibly). Aborts on failure.
-#'
-#' @noRd
-.validate_dataset <- function(dataset_id) {
-  combined <- .gee_combined_meta()
-  if (!dataset_id %in% names(combined)) {
-    .gee_not_implemented(dataset_id)
-  }
-  invisible(dataset_id)
 }
 
 
@@ -278,7 +260,10 @@
 
   if (!inherits(region, c("sf", "sfc"))) {
     cli::cli_abort(c(
-      "{.arg region} must be an {.cls sf}, {.cls sfc}, or {.cls SpatExtent} object.",
+      paste0(
+        "{.arg region} must be an {.cls sf}, {.cls sfc}, or ",
+        "{.cls SpatExtent} object."
+      ),
       i = "Got class: {.val {class(region)}}."
     ))
   }
@@ -297,9 +282,10 @@
 #' Pre-API-call validation of handler arguments
 #'
 #' Checks that required arguments are present and valid for a given dataset.
-#' This runs before any network call, so users get fast feedback on input errors.
+#' This runs before any network call, so users get fast feedback on input
+#' errors.
 #'
-#' @param did Character. Normalised dataset ID.
+#' @inheritParams gee_shared_params
 #' @param dots Named list of user-supplied arguments.
 #'
 #' @returns NULL (invisibly). Aborts on validation failure.

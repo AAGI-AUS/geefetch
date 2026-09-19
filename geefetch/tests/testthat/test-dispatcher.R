@@ -43,26 +43,34 @@ test_that("read_gee does not require date for static datasets", {
   .geefetch_env$token <- "fake"
   withr::defer(.geefetch_env$token <- old_token)
 
+  # This region exceeds 2048x2048 pixels at SRTM's native 30m scale, so
+  # .build_grid() warns about resampling before the REST pipeline fails.
   # Should fail somewhere in the REST pipeline, but NOT on "requires a date"
-  err <- tryCatch(
-    read_gee("srtm_elevation", region = terra::ext(138, 140, -36, -34)),
-    error = function(e) conditionMessage(e)
+  expect_warning(
+    err <- tryCatch(
+      read_gee("srtm_elevation", region = terra::ext(138, 140, -36, -34)),
+      error = function(e) conditionMessage(e)
+    ),
+    regexp = "exceeds 2048x2048 pixels"
   )
-  expect_true(is.character(err))
+  expect_type(err, "character")
   expect_false(grepl("requires a.*date", err))
 })
 
-test_that("read_gee routes Tier 2 datasets to handlers (not 'not implemented')", {
+test_that(paste0(
+  "read_gee routes Tier 2 datasets to handlers (not 'not implemented')"
+), {
   old_token <- .geefetch_env$token
   .geefetch_env$token <- "fake"
   withr::defer(.geefetch_env$token <- old_token)
 
-  # SLGA is static, so no date needed — should fail on region/REST, not "not implemented"
+  # SLGA is static, so no date needed — should fail on region/REST, not
+  # "not implemented"
   err <- tryCatch(
     read_gee("slga_cly", region = terra::ext(138, 140, -36, -34)),
     error = function(e) conditionMessage(e)
   )
-  expect_false(grepl("not yet implemented", err))
+  expect_false(grepl("not yet implemented", err, fixed = TRUE))
 })
 
 test_that("read_gee routes to cache on repeated call", {
@@ -76,7 +84,11 @@ test_that("read_gee routes to cache on repeated call", {
     date = "2024-06-15",
     region = terra::ext(138, 140, -36, -34)
   )
-  fake_result <- terra::rast(nrows = 10, ncols = 10)
+  # Disk caching is off by default, so .cache_set() populates the
+  # in-session memory store only; this test exercises the cache-read
+  # path via that memory layer (disk read/write is covered in
+  # test-cache.R, which opts in via geefetch.cache.disk).
+  fake_result <- terra::rast(nrows = 10, ncols = 10, vals = seq_len(100))
   .cache_set("modis_ndvi", cache_key, fake_result)
   withr::defer(.geefetch_env$mem_cache <- NULL)
 

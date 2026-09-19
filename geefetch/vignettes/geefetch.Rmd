@@ -103,7 +103,7 @@ library(geefetch)
 
 gee_auth(
   project = "123456789012",              # <-- YOUR project number as a string
-  email   = "max.moldovan@gmail.com"     # <-- the exact Google account
+  email   = "you@gmail.com"              # <-- the exact Google account
 )
 ```
 

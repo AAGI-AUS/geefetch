@@ -3,6 +3,7 @@
 export(collect_gee_data)
 export(ext)
 export(gee_auth)
+export(gee_cache_disk)
 export(gee_clear_cache)
 export(gee_datasets)
 export(gee_external_facts)
@@ -22,35 +23,53 @@ export(read_srtm)
 export(read_worldclim)
 export(st_as_sf)
 export(st_bbox)
-importFrom(data.table,as.data.table)
-importFrom(data.table,data.table)
-importFrom(data.table,is.data.table)
-importFrom(data.table,rbindlist)
-importFrom(data.table,setDT)
-importFrom(data.table,setattr)
-importFrom(data.table,setcolorder)
-importFrom(data.table,setnames)
-importFrom(httr2,req_body_json)
-importFrom(httr2,req_headers)
-importFrom(httr2,req_perform)
-importFrom(httr2,req_retry)
-importFrom(httr2,request)
-importFrom(httr2,resp_body_json)
-importFrom(httr2,resp_body_raw)
-importFrom(httr2,resp_status)
+importFrom(data.table,
+  as.data.table,
+  copy,
+  data.table,
+  is.data.table,
+  rbindlist,
+  setDT,
+  setattr,
+  setcolorder,
+  setnames
+)
+importFrom(httr2,
+  req_body_json,
+  req_headers,
+  req_perform,
+  req_retry,
+  request,
+  resp_body_json,
+  resp_body_raw,
+  resp_status
+)
+importFrom(jsonlite,fromJSON)
 importFrom(lifecycle,deprecated)
-importFrom(rlang,`%||%`)
-importFrom(rlang,abort)
-importFrom(rlang,arg_match)
-importFrom(rlang,caller_env)
-importFrom(rlang,check_required)
-importFrom(rlang,inform)
-importFrom(rlang,is_installed)
-importFrom(rlang,warn)
-importFrom(sf,st_as_sf)
-importFrom(sf,st_as_sfc)
-importFrom(sf,st_bbox)
-importFrom(terra,ext)
-importFrom(terra,plot)
-importFrom(terra,rast)
+importFrom(qs2,
+  qd_read,
+  qd_save,
+  qs_read,
+  qs_save
+)
+importFrom(rlang,
+  `%||%`,
+  abort,
+  arg_match,
+  caller_env,
+  check_required,
+  inform,
+  is_installed,
+  warn
+)
+importFrom(sf,
+  st_as_sf,
+  st_as_sfc,
+  st_bbox
+)
+importFrom(terra,
+  ext,
+  plot,
+  rast
+)
 importFrom(utils,packageVersion)

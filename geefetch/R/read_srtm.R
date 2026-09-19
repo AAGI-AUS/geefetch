@@ -7,12 +7,7 @@
 #' Digital Elevation Model) from Google Earth Engine. This is a static
 #' dataset — no `date` argument is needed.
 #'
-#' @param region An [sf::sf], [sf::st_sfc()], or [terra::ext()] object
-#'   defining the spatial extent. Required.
-#' @param backend Character. `"rest"` (default) or `"rgee"`.
-#' @param cache Logical. Use disk cache? Default `TRUE`.
-#' @param max_tries Integer. Retry attempts. Default `3L`.
-#' @param initial_delay Numeric. Initial retry delay in seconds. Default `1`.
+#' @inheritParams gee_shared_params
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values:
 #'   elevation in metres above sea level.
@@ -41,7 +36,7 @@ read_srtm <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   read_gee(
     "srtm_elevation",
     region = region,

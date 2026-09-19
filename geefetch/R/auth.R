@@ -48,7 +48,9 @@
 #'   HTTP 403 errors where the OAuth token's implicit quota project
 #'   differs from the intended resource project. The Earth Engine API
 #'   must be enabled on this project. If `NULL` (default), falls back
-#'   to `getOption("geefetch.project")` or `"earthengine-legacy"`.
+#'   to `getOption("geefetch.project")`, and then to `"earthengine-legacy"`
+#'   with a warning, because Earth Engine refuses that legacy project for
+#'   most accounts.
 #' @param scopes Character. OAuth scopes. Default includes Earth Engine
 #'   and Cloud Platform scopes.
 #' @param cache Character. Directory for OAuth token cache.
@@ -98,10 +100,10 @@
 #'   email   = "me@@gmail.com"
 #' )
 #'
-#' # Interactive OAuth (uses cached account)
+#' # Interactive OAuth using a cached account
 #' gee_auth(project = "123456789012")
 #'
-#' # Service account (CI / non-interactive)
+#' # Service account for CI or non-interactive use
 #' gee_auth(project = "123456789012", path = "path/to/service-account.json")
 #'
 #' @export
@@ -145,6 +147,20 @@ gee_auth <- function(
   .geefetch_env$token <- token
   .geefetch_env$project <- project %||%
     getOption("geefetch.project", .GEE_DEFAULT_PROJECT)
+
+  if (identical(.geefetch_env$project, .GEE_DEFAULT_PROJECT)) {
+    cli::cli_warn(c(
+      paste0(
+        "No Google Cloud project given; falling back to ",
+        "{.val {(.GEE_DEFAULT_PROJECT)}}."
+      ),
+      i = "Earth Engine refuses this legacy project for most accounts.",
+      i = paste0(
+        "Pass {.arg project} or set {.code options(geefetch.project = ...)}; ",
+        "see {.code gee_setup()}."
+      )
+    ))
+  }
 
   cli::cli_inform(c(
     v = "GEE authentication successful.",
@@ -193,7 +209,7 @@ gee_auth <- function(
       ))
     }
   } else if (backend == "rgee") {
-    if (!rlang::is_installed("rgee")) {
+    if (!is_installed("rgee")) {
       cli::cli_abort(c(
         "The {.pkg rgee} package is required for {.code backend = \"rgee\"}.",
         i = "Install with: {.code install.packages(\"rgee\")}",
@@ -234,7 +250,7 @@ gee_status <- function() {
   token <- .gee_token()
   authed <- !is.null(token)
 
-  rgee_avail <- rlang::is_installed("rgee")
+  rgee_avail <- is_installed("rgee")
 
   cache_dir <- .cache_dir()
   cache_exists <- dir.exists(cache_dir)
@@ -324,7 +340,7 @@ gee_setup <- function() {
   cli::cli_h2("Step 1: Check R dependencies")
   cli::cli_alert_success("{.pkg gargle}: installed")
   cli::cli_alert_success("{.pkg httr2}: installed")
-  if (rlang::is_installed("rgee")) {
+  if (is_installed("rgee")) {
     cli::cli_alert_success("{.pkg rgee}: installed (optional advanced backend)")
   } else {
     cli::cli_alert_info("{.pkg rgee}: not installed (optional, not required)")
@@ -371,12 +387,14 @@ gee_setup <- function() {
   # Step 5: Enable the Earth Engine API
   cli::cli_h2("Step 5: Enable the Earth Engine API")
   cli::cli_text("Visit:")
-  cli::cli_text(
-    "{.url https://console.cloud.google.com/apis/library/earthengine.googleapis.com}"
-  )
-  cli::cli_text(
-    "Confirm the project picker (top-left) shows your project, click {.strong Enable}."
-  )
+  cli::cli_text(paste0(
+    "{.url https://console.cloud.google.com/apis/library/",
+    "earthengine.googleapis.com}"
+  ))
+  cli::cli_text(paste0(
+    "Confirm the project picker (top-left) shows your project, ",
+    "click {.strong Enable}."
+  ))
   cli::cli_text(
     "Wait ~30 seconds for the enablement to propagate."
   )
@@ -387,20 +405,20 @@ gee_setup <- function() {
   cli::cli_text(
     "Use the project {.strong number} and the matching {.arg email}:"
   )
-  cli::cli_code(paste0(
-    'gee_auth(\n',
-    '  project = "123456789012",    # <-- your project NUMBER\n',
-    '  email   = "you@gmail.com"    # <-- matching Google account\n',
-    ')'
+  cli::cli_code(c(
+    "gee_auth(",
+    "  project = \"123456789012\",    # <-- your project NUMBER",
+    "  email   = \"you@gmail.com\"    # <-- matching Google account",
+    ")"
   ))
   cli::cli_text(
     "For non-interactive / CI use, pass a service-account JSON key:"
   )
-  cli::cli_code(paste0(
-    'gee_auth(\n',
-    '  project = "123456789012",\n',
-    '  path    = "path/to/service-account.json"\n',
-    ')'
+  cli::cli_code(c(
+    "gee_auth(",
+    "  project = \"123456789012\",",
+    "  path    = \"path/to/service-account.json\"",
+    ")"
   ))
 
   # Step 7: Verify + persist
@@ -425,10 +443,10 @@ gee_setup <- function() {
   cli::cli_text(
     "with your resource project. Restart R, wipe the cache, re-auth:"
   )
-  cli::cli_code(paste0(
-    'unlink(list.files(gargle::gargle_oauth_cache(), full.names = TRUE))\n',
-    '# restart R, then:\n',
-    'gee_auth(project = "123456789012", email = "you@gmail.com")'
+  cli::cli_code(c(
+    "unlink(list.files(gargle::gargle_oauth_cache(), full.names = TRUE))",
+    "# restart R, then:",
+    "gee_auth(project = \"123456789012\", email = \"you@gmail.com\")"
   ))
 
   invisible(NULL)

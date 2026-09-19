@@ -6,8 +6,9 @@ abstract: >-
   Unified interface for extracting spatio-temporal environmental covariates
   from Google Earth Engine. Provides a central dispatcher (read_gee()) with
   convenience aliases for common datasets, batch extraction
-  (collect_gee_data()) returning data.table, and automatic disk caching.
-  Works without Python via the GEE REST API; optionally supports rgee for
+  (collect_gee_data()) returning data.table, and in-session caching with
+  optional disk persistence. Works without Python via the GEE REST API;
+  optionally supports rgee for
   advanced server-side computations.
 version: 0.0.0.9001
 date-released: "2026-04-21"

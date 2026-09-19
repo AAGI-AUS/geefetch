@@ -9,15 +9,10 @@
 #' WorldClim version 1, not version 2; the two differ in both their
 #' normal period and their source publication.
 #'
-#' @param region An [sf::sf], [sf::st_sfc()], or [terra::ext()] object
-#'   defining the spatial extent. Required.
+#' @inheritParams gee_shared_params
 #' @param variable Character. Bioclimatic variable band name. One of
 #'   `"bio01"` through `"bio19"`. Default `"bio01"` (annual mean
 #'   temperature, degrees C x 10).
-#' @param backend Character. `"rest"` (default) or `"rgee"`.
-#' @param cache Logical. Use disk cache? Default `TRUE`.
-#' @param max_tries Integer. Retry attempts. Default `3L`.
-#' @param initial_delay Numeric. Initial retry delay in seconds. Default `1`.
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values depend
 #'   on the variable (see WorldClim documentation).
@@ -61,7 +56,7 @@ read_worldclim <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
 
   # Override the band in metadata via dots
   read_gee(

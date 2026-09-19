@@ -6,24 +6,18 @@
 #' `r lifecycle::badge("experimental")`
 #'
 #' Central dispatcher for all GEE dataset reads. Accepts a dataset identifier
-#' (name or alias) and delegates to the appropriate internal handler.
-#' For most use cases, prefer the convenience functions (e.g.,
-#' [read_modis_ndvi()], [read_era5()]) which provide named parameters
-#' and dataset-specific documentation.
+#' (name or alias) and delegates to the appropriate internal handler. The
+#' REST `backend` requires no Python; the rgee `backend` supports advanced
+#' server-side computations. For most use cases, prefer the convenience
+#' functions (e.g., [read_modis_ndvi()], [read_era5()]) which provide named
+#' parameters and dataset-specific documentation.
 #'
+#' @inheritParams gee_shared_params
 #' @param dataset_id Character. Dataset name or alias. Use [gee_datasets()]
 #'   to list all available datasets.
 #' @param ... Arguments passed to the dataset-specific handler. Common
 #'   arguments include `date`, `region`, `collection`, `depth`. See the
 #'   convenience function documentation for dataset-specific parameters.
-#' @param backend Character. `"rest"` (default) or `"rgee"`. The REST backend
-#'   requires no Python; the rgee backend supports advanced server-side
-#'   computations.
-#' @param cache Logical. Use disk cache for repeated queries? Default `TRUE`.
-#' @param max_tries Integer. Maximum retry attempts for network failures.
-#'   Default `3L`.
-#' @param initial_delay Numeric. Initial delay in seconds before retry
-#'   (doubles each attempt). Default `1`.
 #'
 #' @returns A [terra::rast()] SpatRaster object.
 #'
@@ -53,6 +47,15 @@
 #' **User-registered:** Any dataset added via [gee_register_dataset()]
 #' is automatically dispatchable through the generic handler.
 #'
+#' @section Region size and resampling:
+#' Each request is capped at 2048x2048 pixels at the dataset's native
+#' pixel scale, to bound REST payload size. A region that would exceed
+#' this cap at the requested scale is resampled to fit, and [read_gee()]
+#' warns with the native scale (in metres), the effective scale after
+#' resampling, and the resulting pixel dimensions. The pixel scale is
+#' fixed per dataset and is not a `read_gee()` argument, so request a
+#' smaller region to keep the native resolution.
+#'
 #' @family GEE readers
 #' @seealso [collect_gee_data()] for batch point extraction returning a
 #'   [data.table::data.table].
@@ -65,7 +68,7 @@
 #' # Aliases are case-insensitive
 #' elev <- read_gee("srtm", region = terra::ext(138, 140, -36, -34))
 #'
-#' # Equivalent convenience function (preferred)
+#' # Equivalent convenience function, preferred
 #' ndvi <- read_modis_ndvi(date = "2024-06-15",
 #'                         region = terra::ext(138, 140, -36, -34))
 #'
@@ -79,7 +82,7 @@ read_gee <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
 
   # 1. Resolve alias to normalised dataset ID
   did <- .gee_resolve_id(dataset_id)

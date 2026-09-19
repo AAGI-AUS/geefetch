@@ -2,38 +2,43 @@
 % Please edit documentation in R/cache.R
 \name{gee_clear_cache}
 \alias{gee_clear_cache}
-\title{Clear the geefetch disk cache}
+\title{Clear the geefetch cache}
 \usage{
 gee_clear_cache(older_than = NULL)
 }
 \arguments{
-\item{older_than}{Numeric. Only remove cache files older than this
-many days. Default \code{NULL} removes all files.}
+\item{older_than}{Numeric. Only remove disk cache files older than
+this many days. Default \code{NULL} removes all disk files. The memory
+cache is always cleared in full.}
 }
 \value{
-Invisibly returns the number of cache files removed.
+Invisibly returns the number of disk cache files removed.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
-Removes cached extraction results from disk. Optionally filter by
-age to keep recent results.
+Removes cached extraction results from both the in-session memory
+store and, if disk caching has been enabled (see \code{\link[=gee_cache_disk]{gee_cache_disk()}}),
+the on-disk cache. Optionally filter the disk cache by age to keep
+recent results.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # Clear everything
 gee_clear_cache()
 
-# Clear only files older than 7 days
+# Clear only disk files older than 7 days
 gee_clear_cache(older_than = 7)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=gee_status]{gee_status()}} to check cache size.
+\code{\link[=gee_status]{gee_status()}} to check cache size, \code{\link[=gee_cache_disk]{gee_cache_disk()}} to
+enable disk persistence.
 
-Other utilities: 
-\code{\link{gee_datasets}()},
-\code{\link{gee_external_facts}()},
-\code{\link{gee_register_dataset}()}
+Other utilities:
+\code{\link[=gee_cache_disk]{gee_cache_disk()}},
+\code{\link[=gee_datasets]{gee_datasets()}},
+\code{\link[=gee_external_facts]{gee_external_facts()}},
+\code{\link[=gee_register_dataset]{gee_register_dataset()}}
 }
 \concept{utilities}

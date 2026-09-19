@@ -7,8 +7,7 @@
 #' Google Earth Engine. Supports 7 soil attributes, 6 depth layers,
 #' and 3 statistics. This is a static dataset (no date required).
 #'
-#' @param region An [sf::sf], [sf::st_sfc()], or [terra::ext()] object
-#'   defining the spatial extent. Required.
+#' @inheritParams gee_shared_params
 #' @param collection Character. Soil attribute to extract. One of:
 #'   - `"CLY"` — Clay content (percent)
 #'   - `"SND"` — Sand content (percent)
@@ -23,10 +22,6 @@
 #'   `"15-30"`, `"30-60"`, `"60-100"`, `"100-200"`. Default `"0-5"`.
 #' @param stat Character. Statistic. `"mean"` (default), `"ci_lower"`
 #'   (5th percentile), or `"ci_upper"` (95th percentile).
-#' @param backend Character. `"rest"` (default) or `"rgee"`.
-#' @param cache Logical. Use disk cache? Default `TRUE`.
-#' @param max_tries Integer. Retry attempts. Default `3L`.
-#' @param initial_delay Numeric. Initial retry delay in seconds. Default `1`.
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values depend
 #'   on the collection (e.g., percent for clay, pH units for PHC).
@@ -68,11 +63,11 @@ read_slga <- function(
   initial_delay = 1L
 ) {
   collection <- toupper(collection)
-  collection <- rlang::arg_match(collection)
+  collection <- arg_match(collection)
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   stat <- tolower(stat)
-  stat <- rlang::arg_match(stat)
+  stat <- arg_match(stat)
 
   did <- paste0("slga_", tolower(collection))
 

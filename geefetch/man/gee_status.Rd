@@ -32,8 +32,8 @@ gee_status()
 \seealso{
 \code{\link[=gee_auth]{gee_auth()}}, \code{\link[=gee_setup]{gee_setup()}}
 
-Other authentication: 
-\code{\link{gee_auth}()},
-\code{\link{gee_setup}()}
+Other authentication:
+\code{\link[=gee_auth]{gee_auth()}},
+\code{\link[=gee_setup]{gee_setup()}}
 }
 \concept{authentication}

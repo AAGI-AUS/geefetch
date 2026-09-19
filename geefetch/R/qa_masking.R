@@ -88,9 +88,9 @@
     image2 = .ee_call("Image.constant", value = .ee_const(7L))
   )
   # OR them together
-  mask <- .ee_call("Image.Or", image1 = mask_4, image2 = mask_5)
-  mask <- .ee_call("Image.Or", image1 = mask, image2 = mask_6)
-  mask <- .ee_call("Image.Or", image1 = mask, image2 = mask_7)
+  mask <- .ee_call("Image.or", image1 = mask_4, image2 = mask_5)
+  mask <- .ee_call("Image.or", image1 = mask, image2 = mask_6)
+  mask <- .ee_call("Image.or", image1 = mask, image2 = mask_7)
 
   .ee_call("Image.updateMask", image = image_node, mask = mask)
 }
@@ -120,25 +120,4 @@
     image2 = .ee_call("Image.constant", value = .ee_const(0L))
   )
   .ee_call("Image.updateMask", image = image_node, mask = mask)
-}
-
-
-# ---- Computed indices ----
-
-#' Compute Normalised Difference: (A - B) / (A + B)
-#'
-#' Used for NDVI, NDWI, etc. from two bands of an image.
-#'
-#' @param image_node EE expression node for the multi-band image.
-#' @param band_a Character. NIR band name (numerator positive).
-#' @param band_b Character. Red/other band name (numerator negative).
-#'
-#' @returns EE expression node for a single-band image with the index values.
-#' @noRd
-.ee_normalized_difference <- function(image_node, band_a, band_b) {
-  a <- .ee_select(image_node, band_a)
-  b <- .ee_select(image_node, band_b)
-  numerator <- .ee_call("Image.subtract", image1 = a, image2 = b)
-  denominator <- .ee_call("Image.add", image1 = a, image2 = b)
-  .ee_call("Image.divide", image1 = numerator, image2 = denominator)
 }

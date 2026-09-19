@@ -68,6 +68,7 @@ reference:
       - gee_register_dataset
       - gee_external_facts
       - gee_clear_cache
+      - gee_cache_disk
 
 articles:
   - title: "Getting Started"

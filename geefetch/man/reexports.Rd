@@ -14,8 +14,8 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{sf}{\code{\link[sf]{st_as_sf}}, \code{\link[sf]{st_bbox}}}
+  \item{sf}{\code{\link[sf:st_as_sf]{st_as_sf()}}, \code{\link[sf:st_bbox]{st_bbox()}}}
 
-  \item{terra}{\code{\link[terra]{ext}}, \code{\link[terra]{rast}}}
+  \item{terra}{\code{\link[terra:ext]{ext()}}, \code{\link[terra:rast]{rast()}}}
 }}
 

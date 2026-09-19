@@ -76,9 +76,10 @@ read_gee("soilgrids_ocs")
 \seealso{
 \code{\link[=gee_datasets]{gee_datasets()}}, \code{\link[=read_gee]{read_gee()}}
 
-Other utilities: 
-\code{\link{gee_clear_cache}()},
-\code{\link{gee_datasets}()},
-\code{\link{gee_external_facts}()}
+Other utilities:
+\code{\link[=gee_cache_disk]{gee_cache_disk()}},
+\code{\link[=gee_clear_cache]{gee_clear_cache()}},
+\code{\link[=gee_datasets]{gee_datasets()}},
+\code{\link[=gee_external_facts]{gee_external_facts()}}
 }
 \concept{utilities}

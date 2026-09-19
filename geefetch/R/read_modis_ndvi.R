@@ -8,14 +8,9 @@
 #' [terra::rast()] SpatRaster with QA-masked, scaled NDVI values
 #' (range: approximately -0.2 to 1.0).
 #'
+#' @inheritParams gee_shared_params
 #' @param date Character or Date. Acquisition date in `"YYYY-MM-DD"` format.
 #'   The nearest available 16-day composite containing this date is returned.
-#' @param region An [sf::sf], [sf::st_sfc()], or [terra::ext()] object
-#'   defining the spatial extent. Required.
-#' @param backend Character. `"rest"` (default) or `"rgee"`.
-#' @param cache Logical. Use disk cache? Default `TRUE`.
-#' @param max_tries Integer. Retry attempts. Default `3L`.
-#' @param initial_delay Numeric. Initial retry delay in seconds. Default `1`.
 #'
 #' @returns A [terra::rast()] SpatRaster. CRS: EPSG:4326. Values: NDVI
 #'   (scaled, approximately -0.2 to 1.0). NA where QA indicates poor quality.
@@ -51,7 +46,7 @@ read_modis_ndvi <- function(
   initial_delay = 1L
 ) {
   backend <- tolower(backend)
-  backend <- rlang::arg_match(backend)
+  backend <- arg_match(backend)
   read_gee(
     "modis_ndvi",
     date = date,

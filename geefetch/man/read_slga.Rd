@@ -16,7 +16,7 @@ read_slga(
 )
 }
 \arguments{
-\item{region}{An \link[sf:sf]{sf::sf}, \code{\link[sf:sfc]{sf::st_sfc()}}, or \code{\link[terra:ext]{terra::ext()}} object
+\item{region}{An \link[sf:sf]{sf::sf}, \code{\link[sf:st_sfc]{sf::st_sfc()}}, or \code{\link[terra:ext]{terra::ext()}} object
 defining the spatial extent. Required.}
 
 \item{collection}{Character. Soil attribute to extract. One of:
@@ -40,11 +40,16 @@ Default \code{"CLY"}.}
 
 \item{backend}{Character. \code{"rest"} (default) or \code{"rgee"}.}
 
-\item{cache}{Logical. Use disk cache? Default \code{TRUE}.}
+\item{cache}{Logical. Cache results in an in-session memory store?
+Default \code{TRUE}. Persisting to disk under \code{\link[tools:R_user_dir]{tools::R_user_dir()}}
+additionally requires \code{options(geefetch.cache.disk = TRUE)} or
+\code{\link[=gee_cache_disk]{gee_cache_disk()}}; see \code{\link[=gee_clear_cache]{gee_clear_cache()}} to clear either store.}
 
-\item{max_tries}{Integer. Retry attempts. Default \code{3L}.}
+\item{max_tries}{Integer. Maximum retry attempts for network failures.
+Default \code{3L}.}
 
-\item{initial_delay}{Numeric. Initial retry delay in seconds. Default \code{1}.}
+\item{initial_delay}{Numeric. Initial retry delay in seconds, doubling
+on each attempt. Default \code{1}.}
 }
 \value{
 A \code{\link[terra:rast]{terra::rast()}} SpatRaster. CRS: EPSG:4326. Values depend
@@ -86,15 +91,15 @@ Australia's contribution to the GlobalSoilMap project. Soil Research,
 \seealso{
 \code{\link[=read_gee]{read_gee()}}, \code{\link[=collect_gee_data]{collect_gee_data()}}
 
-Other GEE readers: 
-\code{\link{read_chirps}()},
-\code{\link{read_era5}()},
-\code{\link{read_gee}()},
-\code{\link{read_landsat}()},
-\code{\link{read_modis_lst}()},
-\code{\link{read_modis_ndvi}()},
-\code{\link{read_sentinel2}()},
-\code{\link{read_srtm}()},
-\code{\link{read_worldclim}()}
+Other GEE readers:
+\code{\link[=read_chirps]{read_chirps()}},
+\code{\link[=read_era5]{read_era5()}},
+\code{\link[=read_gee]{read_gee()}},
+\code{\link[=read_landsat]{read_landsat()}},
+\code{\link[=read_modis_lst]{read_modis_lst()}},
+\code{\link[=read_modis_ndvi]{read_modis_ndvi()}},
+\code{\link[=read_sentinel2]{read_sentinel2()}},
+\code{\link[=read_srtm]{read_srtm()}},
+\code{\link[=read_worldclim]{read_worldclim()}}
 }
 \concept{GEE readers}
