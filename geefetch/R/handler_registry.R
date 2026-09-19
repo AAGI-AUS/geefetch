@@ -542,7 +542,6 @@
 #'
 #' @noRd
 .gee_not_implemented <- function(dataset_id) {
-  available <- sort(unique(c(names(.GEE_ALIASES), names(.GEE_META))))
   cli::cli_abort(c(
     "Dataset {.val {dataset_id}} is not recognised.",
     i = "Available datasets: {.val {names(.GEE_META)}}",

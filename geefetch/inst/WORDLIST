@@ -108,6 +108,7 @@ googlesheets
 googlesheets4
 GRDC
 gtoolkit
+gzip
 HARMONIZED
 Hijmans
 HPC
@@ -163,6 +164,7 @@ pre
 pre-release
 precomputed
 Python
+qs2
 RColorBrewer
 README
 reflectance

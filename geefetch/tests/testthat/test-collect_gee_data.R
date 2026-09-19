@@ -218,10 +218,11 @@ test_that("the announced API-call estimate matches the calls actually made", {
   .geefetch_env$token <- "fake"
   withr::defer(.geefetch_env$token <- old_token)
 
-  calls <- 0L
+  counter <- new.env()
+  counter$calls <- 0L
   local_mocked_bindings(
     .safe_extract_points_batch = function(meta, date, coords, did, ...) {
-      calls <<- calls + 1L
+      counter$calls <- counter$calls + 1L
       rep(1.0, nrow(coords))
     }
   )
@@ -236,11 +237,11 @@ test_that("the announced API-call estimate matches the calls actually made", {
     )
   )
 
-  line <- grep("Estimated API calls", msgs, value = TRUE)[1L]
+  line <- grep("Estimated API calls", msgs, value = TRUE, fixed = TRUE)[1L]
   announced <- as.integer(regmatches(line, regexpr("[0-9]+", line)))
-  expect_identical(announced, calls)
+  expect_identical(announced, counter$calls)
   # one call per date for the time series, one for the static dataset
-  expect_identical(calls, 6L)
+  expect_identical(counter$calls, 6L)
 })
 
 test_that("collect_gee_data na.rm removes all-NA rows", {
